@@ -313,7 +313,7 @@ return (
           </h2>
   
 
-          <div className="flex gap-8 text-sm font-medium">
+           <div className="flex flex-wrap gap-4 md:gap-8 text-sm font-medium">
             <a href="#home" className="hover:text-cyan-400 transition">{texts[lang].home}</a>
             <a href="#about" className="hover:text-cyan-400 transition">{texts[lang].about}</a>
             <a href="#projects" className="hover:text-cyan-400 transition">{texts[lang].projects}</a>
@@ -353,13 +353,13 @@ return (
           </motion.div>
 
           <motion.h1
-            className="text-5xl md:text-6xl font-extrabold animate-gradient bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-600 bg-clip-text text-transparent"
+            className="text-3xl sm:text-5xl md:text-6xl font-extrabold animate-gradient bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-600 bg-clip-text text-transparent"
             variants={itemVariants}
           >
             {texts[lang].name}
           </motion.h1>
 
-          <motion.p className="mt-4 text-gray-300 dark:text-gray-400 text-lg md:text-xl leading-relaxed max-w-lg" variants={itemVariants}>
+          <motion.p className="mt-4 text-sm sm:text-lg md:text-xl leading-relaxed max-w-lg" variants={itemVariants}>
             {texts[lang].heroDesc}
           </motion.p>
 
@@ -622,7 +622,7 @@ return (
           <motion.input type="text" name="Name" placeholder={lang === "jp" ? "お名前" : "Name"} required className={inputClasses} variants={itemVariants} />
           <motion.input type="email" name="Email" placeholder={lang === "jp" ? "メール" : "Email"} required className={inputClasses} variants={itemVariants} />
           <motion.textarea name="Message" rows={5} placeholder={lang === "jp" ? "メッセージ" : "Message"} required className={inputClasses} variants={itemVariants} />
-          <motion.button type="submit" className="bg-gradient-to-r from-cyan-500 to-blue-700 hover:from-blue-700 hover:to-cyan-500 px-6 py-3 rounded-lg font-semibold text-white shadow-lg transition transform hover:scale-105" variants={itemVariants}>
+          <motion.button type="submit" className="bg-gradient-to-r from-cyan-500 to-blue-700 hover:from-blue-700 hover:to-cyan-500 w-full sm:w-auto px-4 sm:px-6 py-3 rounded-lg font-semibold text-white shadow-lg transition transform hover:scale-105" variants={itemVariants}>
             {texts[lang].emailMe}
           </motion.button>
         </motion.form>
