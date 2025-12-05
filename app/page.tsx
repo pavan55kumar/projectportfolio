@@ -81,6 +81,24 @@ const texts = {
     desc: "A Python-based ML app that detects spam messages using NLP.",
     github: "https://github.com/pavan55kumar/E-mail-Spam-Detection"
   },
+    {
+    title: "Weather App",
+    tech: "React, OpenWeather API, Tailwind",
+    desc: "A responsive weather app fetching real-time data from OpenWeather API.",
+    github: "https://github.com/pavan55kumar/weather-app"
+  },
+  {
+    title: "Todo Manager",
+    tech: "React, Redux, TypeScript",
+    desc: "A modern todo app with state management using Redux and TypeScript.",
+    github: "https://github.com/pavan55kumar/todo-manager"
+  },
+  {
+    title: "Chatbot Assistant",
+    tech: "Python, Flask, Transformers, Streamlit",
+    desc: "An AI-powered chatbot using HuggingFace Transformers with a simple web interface.",
+    github: "https://github.com/pavan55kumar/chatbot-assistant"
+  }
   
 ],
 
@@ -353,37 +371,38 @@ return (
         <motion.h2 className="text-4xl font-bold mb-8 bg-gradient-to-r from-cyan-300 to-blue-600 bg-clip-text text-transparent" variants={itemVariants}>
           {texts[lang].projectsTitle}
         </motion.h2>
-        <motion.div className="grid md:grid-cols-2 gap-12" variants={containerVariants}>
-          {texts[lang].projectsList.map(({ title, tech, desc, github }, i) => (
   <motion.div
-    key={i}
-    className={cn(
-      "relative p-8 rounded-2xl shadow-xl transition-transform hover:scale-105 hover:-translate-y-2",
-      i % 2 === 0
-        ? "bg-gradient-to-br from-blue-800 to-blue-900 border border-blue-500/30"
-        : "bg-gradient-to-bl from-cyan-800 to-blue-900 border border-cyan-400/30"
-    )}
-    variants={itemVariants}
-    transition={{ delay: i * 0.15 }}
-  >
-    <h4 className="text-xl font-bold mb-2 text-cyan-300">{title}</h4>
-    <p className="text-gray-400 mb-2">{tech}</p>
-    <p className="text-gray-300 leading-relaxed">{desc}</p>
-    {github && (
-  <a
-    href={github}
-    target="_blank"
-    rel="noopener noreferrer"
-    className="mt-4 inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold shadow hover:from-blue-700 hover:to-cyan-500 transition"
-  >
-    <FaGithub className="mr-2" /> View on GitHub
-  </a>
-)}
-
-  </motion.div>
-))}
-
-        </motion.div>
+  className="flex gap-8 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide"
+  variants={containerVariants}
+>
+  {texts[lang].projectsList.map(({ title, tech, desc, github }, i) => (
+    <motion.div
+      key={i}
+      className={cn(
+        "min-w-[300px] snap-start p-8 rounded-2xl shadow-xl transition-transform hover:scale-105 hover:-translate-y-2",
+        i % 2 === 0
+          ? "bg-gradient-to-br from-blue-800 to-blue-900 border border-blue-500/30"
+          : "bg-gradient-to-bl from-cyan-800 to-blue-900 border border-cyan-400/30"
+      )}
+      variants={itemVariants}
+      transition={{ delay: i * 0.15 }}
+    >
+      <h4 className="text-xl font-bold mb-2 text-cyan-300">{title}</h4>
+      <p className="text-gray-400 mb-2">{tech}</p>
+      <p className="text-gray-300 leading-relaxed">{desc}</p>
+      {github && (
+        <a
+          href={github}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center px-4 py-2 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold shadow hover:from-blue-700 hover:to-cyan-500 transition"
+        >
+          <FaGithub className="mr-2" /> View on GitHub
+        </a>
+      )}
+    </motion.div>
+  ))}
+</motion.div>
       </motion.section>
 
 {/* Certifications Section */}
