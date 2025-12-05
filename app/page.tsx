@@ -442,22 +442,7 @@ return (
 
   <div className="relative">
     {/* Arrow buttons go here (optional) */}
-    <button
-  onClick={() => scrollRef.current?.scrollBy({ left: -380, behavior: "smooth" })}
-  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-cyan-600 text-white px-3 py-2 rounded shadow hover:bg-cyan-700"
-  aria-label="Scroll left"
->
-  ◀
-</button>
-
-<button
-  onClick={() => scrollRef.current?.scrollBy({ left: 380, behavior: "smooth" })}
-  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-cyan-600 text-white px-3 py-2 rounded shadow hover:bg-cyan-700"
-  aria-label="Scroll right"
->
-  ▶
-</button>
-
+ 
     {/* Scroll container goes here */}
     <motion.div
   ref={scrollRef}
