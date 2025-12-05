@@ -307,22 +307,23 @@ return (
           showNav ? "translate-y-0" : "-translate-y-full"
         )}
       >
-        <div className="max-w-6xl mx-auto flex justify-between items-center p-4 px-8">
+          <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
           <h2 className="text-2xl font-extrabold animate-gradient bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-600 bg-clip-text text-transparent">
             {texts[lang].name}
           </h2>
   
 
-           <div className="flex flex-wrap gap-4 md:gap-8 text-sm font-medium">
-            <a href="#home" className="hover:text-cyan-400 transition">{texts[lang].home}</a>
-            <a href="#about" className="hover:text-cyan-400 transition">{texts[lang].about}</a>
-            <a href="#projects" className="hover:text-cyan-400 transition">{texts[lang].projects}</a>
-            <a href="#certifications" className="hover:text-cyan-400 transition">{texts[lang].certifications}</a>
-            <a href="#contact" className="hover:text-cyan-400 transition">{texts[lang].contact}</a>
-            <a href="/resume.pdf" download className="hover:text-yellow-400 transition">{texts[lang].resume}</a>
-          </div>
-        </div>
-      </nav>
+       {/* Navigation Links */}
+    <div className="flex flex-wrap justify-center sm:justify-end gap-3 sm:gap-6 text-sm font-medium">
+      <a href="#home" className="hover:text-cyan-400 transition">{texts[lang].home}</a>
+      <a href="#about" className="hover:text-cyan-400 transition">{texts[lang].about}</a>
+      <a href="#projects" className="hover:text-cyan-400 transition">{texts[lang].projects}</a>
+      <a href="#certifications" className="hover:text-cyan-400 transition">{texts[lang].certifications}</a>
+      <a href="#contact" className="hover:text-cyan-400 transition">{texts[lang].contact}</a>
+      <a href="/resume.pdf" download className="hover:text-yellow-400 transition">{texts[lang].resume}</a>
+    </div>
+  </div>
+</nav>
 
       {/* Hero Section */}
       <motion.section
