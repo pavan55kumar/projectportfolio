@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, Suspense, useRef } from "react";
 import Image from "next/image";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Sphere, MeshDistortMaterial, Stars } from "@react-three/drei";
 import { motion, Variants } from "framer-motion";
 import { FaGithub, FaLinkedin, FaReact, FaJsSquare } from "react-icons/fa";
+
 
 // Helper function to conditionally join class names
 const cn = (...classes: (string | boolean | undefined | null)[]) =>
@@ -160,6 +161,62 @@ export default function Home() {
   const [showNav, setShowNav] = useState(true);
   const [dark, setDark] = useState(true);
   const [lang, setLang] = useState<"en" | "jp">("en");
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+const pausedUntilRef = useRef<number>(0);
+ // Auto-scroll effect
+useEffect(() => {
+  const interval = setInterval(() => {
+    const scroller = scrollRef.current;
+    if (!scroller) return;
+
+    // Respect pause
+    if (Date.now() < pausedUntilRef.current) return;
+
+    scroller.scrollBy({ left: 320, behavior: "smooth" });
+
+    // Loop back to start if near the end
+    const max = scroller.scrollWidth - scroller.clientWidth;
+    if (scroller.scrollLeft >= max - 10) {
+      scroller.scrollTo({ left: 0, behavior: "smooth" });
+    }
+  }, 4000);
+
+  return () => clearInterval(interval);
+}, []);
+
+// Pause auto-scroll on user interaction
+useEffect(() => {
+  const scroller = scrollRef.current;
+  if (!scroller) return;
+
+  const pause = () => { pausedUntilRef.current = Date.now() + 5000; }; // pause 5s
+
+  const onScroll = () => pause();
+  const onPointerDown = () => pause();
+  const onWheel = () => pause();
+
+  scroller.addEventListener("scroll", onScroll, { passive: true });
+  scroller.addEventListener("pointerdown", onPointerDown);
+  scroller.addEventListener("wheel", onWheel, { passive: true });
+
+  return () => {
+    scroller.removeEventListener("scroll", onScroll);
+    scroller.removeEventListener("pointerdown", onPointerDown);
+    scroller.removeEventListener("wheel", onWheel);
+  };
+}, []);
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 320, behavior: "smooth" });
+    }
+  }, 4000); // auto-scroll every 4 seconds
+
+  return () => clearInterval(interval);
+}, []);
+
  
 
   useEffect(() => {
@@ -367,25 +424,57 @@ return (
       </motion.section>
 
       {/* Projects Section */}
-      <motion.section id="projects" className="py-24 px-6 max-w-5xl mx-auto relative z-30" initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }} variants={containerVariants}>
-        <motion.h2 className="text-4xl font-bold mb-8 bg-gradient-to-r from-cyan-300 to-blue-600 bg-clip-text text-transparent" variants={itemVariants}>
-          {texts[lang].projectsTitle}
-        </motion.h2>
-  <motion.div
-  className="flex gap-8 overflow-x-auto pb-6 snap-x snap-mandatory scrollbar-hide"
+      <motion.section
+  id="projects"
+  className="py-24 px-0 w-full relative z-30"  // changed
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once: true, amount: 0.4 }}
+  variants={containerVariants}
+>
+<div className="max-w-6xl mx-auto px-6">
+  <motion.h2
+    className="text-4xl font-bold mb-8 bg-gradient-to-r from-cyan-300 to-blue-600 bg-clip-text text-transparent"
+    variants={itemVariants}
+  >
+    {texts[lang].projectsTitle}
+  </motion.h2>
+
+  <div className="relative">
+    {/* Arrow buttons go here (optional) */}
+    <button
+  onClick={() => scrollRef.current?.scrollBy({ left: -380, behavior: "smooth" })}
+  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-cyan-600 text-white px-3 py-2 rounded shadow hover:bg-cyan-700"
+  aria-label="Scroll left"
+>
+  ◀
+</button>
+
+<button
+  onClick={() => scrollRef.current?.scrollBy({ left: 380, behavior: "smooth" })}
+  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-cyan-600 text-white px-3 py-2 rounded shadow hover:bg-cyan-700"
+  aria-label="Scroll right"
+>
+  ▶
+</button>
+
+    {/* Scroll container goes here */}
+    <motion.div
+  ref={scrollRef}
+  className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
   variants={containerVariants}
 >
   {texts[lang].projectsList.map(({ title, tech, desc, github }, i) => (
     <motion.div
       key={i}
       className={cn(
-        "min-w-[300px] snap-start p-8 rounded-2xl shadow-xl transition-transform hover:scale-105 hover:-translate-y-2",
+        "snap-start min-w-[340px] md:min-w-[380px] lg:min-w-[420px] p-8 rounded-2xl shadow-xl transition-transform hover:scale-105 hover:-translate-y-2",
         i % 2 === 0
           ? "bg-gradient-to-br from-blue-800 to-blue-900 border border-blue-500/30"
           : "bg-gradient-to-bl from-cyan-800 to-blue-900 border border-cyan-400/30"
       )}
       variants={itemVariants}
-      transition={{ delay: i * 0.15 }}
+      transition={{ delay: i * 0.1 }}
     >
       <h4 className="text-xl font-bold mb-2 text-cyan-300">{title}</h4>
       <p className="text-gray-400 mb-2">{tech}</p>
@@ -403,6 +492,12 @@ return (
     </motion.div>
   ))}
 </motion.div>
+
+  </div>
+</div>
+
+       
+
       </motion.section>
 
 {/* Certifications Section */}
