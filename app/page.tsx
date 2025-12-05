@@ -444,26 +444,29 @@ return (
     {/* Arrow buttons go here (optional) */}
  
     {/* Scroll container goes here */}
-    <motion.div
+ <motion.div
   ref={scrollRef}
-  className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4"
+  className="flex gap-4 sm:gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-2 sm:px-6"
   variants={containerVariants}
 >
+
   {texts[lang].projectsList.map(({ title, tech, desc, github }, i) => (
     <motion.div
       key={i}
       className={cn(
-        "snap-start min-w-[340px] md:min-w-[380px] lg:min-w-[420px] p-8 rounded-2xl shadow-xl transition-transform hover:scale-105 hover:-translate-y-2",
-        i % 2 === 0
-          ? "bg-gradient-to-br from-blue-800 to-blue-900 border border-blue-500/30"
-          : "bg-gradient-to-bl from-cyan-800 to-blue-900 border border-cyan-400/30"
-      )}
+  "snap-start min-w-[280px] sm:min-w-[320px] md:min-w-[380px] lg:min-w-[420px] p-6 sm:p-8 rounded-2xl shadow-xl transition-transform hover:scale-105 hover:-translate-y-2",
+  i % 2 === 0
+    ? "bg-gradient-to-br from-blue-800 to-blue-900 border border-blue-500/30"
+    : "bg-gradient-to-bl from-cyan-800 to-blue-900 border border-cyan-400/30"
+)}
+
       variants={itemVariants}
       transition={{ delay: i * 0.1 }}
     >
-      <h4 className="text-xl font-bold mb-2 text-cyan-300">{title}</h4>
-      <p className="text-gray-400 mb-2">{tech}</p>
-      <p className="text-gray-300 leading-relaxed">{desc}</p>
+     <h4 className="text-lg sm:text-xl font-bold mb-2 text-cyan-300">{title}</h4>
+<p className="text-sm sm:text-base text-gray-400 mb-2">{tech}</p>
+<p className="text-sm sm:text-base text-gray-300 leading-relaxed">{desc}</p>
+
       {github && (
         <a
           href={github}
