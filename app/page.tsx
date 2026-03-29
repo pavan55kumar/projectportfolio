@@ -797,7 +797,7 @@ export default function Home() {
                   ? "border-cyan-400/60 shadow-[0_0_40px_rgba(0,212,255,0.3)]"
                   : "border-[#8b1a1a]/50 shadow-[0_0_40px_rgba(139,26,26,0.25)]"
               )}>
-                <Image src="/pavan.jpg" alt="Pavan Kumar" width={112} height={112} className="object-cover" />
+                <Image src="/pavan.jpeg" alt="Pavan Kumar" width={112} height={112} className="object-cover" />
               </div>
               {/* Pulse ring */}
               <div
