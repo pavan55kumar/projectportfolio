@@ -297,6 +297,7 @@ export default function Home() {
   const [certOpen, setCertOpen] = useState(false);
   const [certIndex, setCertIndex] = useState(0);
   const [navScrolled, setNavScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const pausedUntilRef = useRef<number>(0);
@@ -315,6 +316,7 @@ export default function Home() {
       const y = window.scrollY;
       setNavScrolled(y > 30);
       setShowNav(y < 50 || y < lastY);
+      if (y > 80) setMobileMenuOpen(false);
       lastY = y;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -610,22 +612,25 @@ export default function Home() {
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
           "fixed w-full top-0 z-40 transition-all duration-500",
-          navScrolled
+          navScrolled || mobileMenuOpen
             ? dark
               ? "glass border-b border-white/8 shadow-2xl"
-              : "bg-[#f5ede0]/85 backdrop-blur-xl border-b border-[#8b1a1a]/15 shadow-[0_2px_24px_rgba(139,26,26,0.12)]"
+              : "bg-[#f5ede0]/95 backdrop-blur-xl border-b border-[#8b1a1a]/15 shadow-[0_2px_24px_rgba(139,26,26,0.12)]"
             : "bg-transparent border-b border-transparent"
         )}
       >
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          {/* Logo */}
           <motion.a
             href="#home"
             className="text-xl font-extrabold text-gradient"
             whileHover={{ scale: 1.03 }}
+            onClick={() => setMobileMenuOpen(false)}
           >
             {t.name}
           </motion.a>
 
+          {/* Desktop links */}
           <div className="hidden sm:flex items-center gap-1">
             {[
               { label: t.home, href: "#home" },
@@ -660,7 +665,97 @@ export default function Home() {
               {t.resume}
             </a>
           </div>
+
+          {/* Hamburger button — mobile only */}
+          <button
+            className="sm:hidden flex flex-col justify-center items-center w-10 h-10 rounded-xl gap-1.5 transition-all duration-200"
+            aria-label="Toggle mobile menu"
+            onClick={() => setMobileMenuOpen(o => !o)}
+          >
+            <span
+              className={cn(
+                "block h-0.5 w-6 rounded-full transition-all duration-300",
+                dark ? "bg-white/80" : "bg-[#2a1008]",
+                mobileMenuOpen && "rotate-45 translate-y-2"
+              )}
+            />
+            <span
+              className={cn(
+                "block h-0.5 w-6 rounded-full transition-all duration-300",
+                dark ? "bg-white/80" : "bg-[#2a1008]",
+                mobileMenuOpen && "opacity-0"
+              )}
+            />
+            <span
+              className={cn(
+                "block h-0.5 w-6 rounded-full transition-all duration-300",
+                dark ? "bg-white/80" : "bg-[#2a1008]",
+                mobileMenuOpen && "-rotate-45 -translate-y-2"
+              )}
+            />
+          </button>
         </div>
+
+        {/* Mobile dropdown menu */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className={cn(
+                "sm:hidden overflow-hidden border-t",
+                dark
+                  ? "border-white/8 bg-[#030712]/95 backdrop-blur-xl"
+                  : "border-[#8b1a1a]/10 bg-[#f5ede0]/98 backdrop-blur-xl"
+              )}
+            >
+              <div className="flex flex-col px-6 py-4 gap-1">
+                {[
+                  { label: t.home, href: "#home" },
+                  { label: t.about, href: "#about" },
+                  { label: t.projects, href: "#projects" },
+                  { label: t.certifications, href: "#certifications" },
+                  { label: t.contact, href: "#contact" },
+                ].map(({ label, href }, i) => (
+                  <motion.a
+                    key={href}
+                    href={href}
+                    initial={{ opacity: 0, x: -16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.06, duration: 0.25 }}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                      dark
+                        ? "text-white/70 hover:text-white hover:bg-white/6"
+                        : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8"
+                    )}
+                  >
+                    {label}
+                  </motion.a>
+                ))}
+                <motion.a
+                  href="/resume.pdf"
+                  download
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.36, duration: 0.25 }}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "mt-2 px-4 py-3 rounded-xl text-sm font-semibold border text-center transition-all duration-300",
+                    dark
+                      ? "border-cyan-400/40 text-cyan-300 hover:bg-cyan-400/10"
+                      : "border-[#8b1a1a]/40 text-[#8b1a1a] hover:bg-[#8b1a1a]/8"
+                  )}
+                >
+                  {t.resume} ↓
+                </motion.a>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.nav>
 
       {/* ─────────────────────────── HERO ─────────────────────────── */}
