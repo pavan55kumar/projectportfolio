@@ -189,15 +189,7 @@ function ContactForm({
     e.preventDefault();
     if (!fields.name || !fields.email || !fields.message) return;
 
-    // Mailto fallback if Formspree not yet configured
-     if (FORMSPREE_ID === "YOUR_FORM_ID") {
-    window.location.href = `mailto:Pavankumar.eng29@gmail.com?subject=${encodeURIComponent(
-      "Portfolio Contact from " + fields.name
-    )}&body=${encodeURIComponent(
-      `Name: ${fields.name}\nEmail: ${fields.email}\n\nMessage:\n${fields.message}`
-    )}`;
-    return;
-  }
+
 
   setStatus("sending");
   try {
