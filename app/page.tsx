@@ -8,7 +8,8 @@ import React, {
   useCallback,
 } from "react";
 import Image from "next/image";
-import { useFrame, Canvas } from "@react-three/fiber";
+import Link from "next/link";
+import { useFrame, useThree, Canvas } from "@react-three/fiber";
 import {
   OrbitControls,
   Sphere,
@@ -24,10 +25,23 @@ import {
 } from "framer-motion";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { FaGithub, FaGoogle, FaLinkedin, FaPenNib, FaReact, FaJsSquare, FaTimes } from "react-icons/fa";
+import { useTheme } from "./theme-provider";
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 const cn = (...classes: (string | boolean | undefined | null)[]) =>
   classes.filter(Boolean).join(" ");
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const update = () => setMatches(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, [query]);
+  return matches;
+}
 
 // ─── Animation Variants ───────────────────────────────────────────────────────
 const fadeUp: Variants = {
@@ -55,20 +69,37 @@ const scaleIn: Variants = {
 };
 
 // ─── 3-D Sphere ───────────────────────────────────────────────────────────────
-function InteractiveSphere({ dark }: { dark: boolean }) {
+// Scales with the screen width so it stays a tasteful orb on phones.
+// To tweak on mobile: change `0.5` (size) and `0.55` (height) below.
+function InteractiveSphere({ dark, mobile }: { dark: boolean; mobile: boolean }) {
   const mesh = useRef<any>(null);
-  useFrame(({ mouse }) => {
+  const width = useThree((s) => s.size.width);
+  const scale = width < 480 ? 0.5 : width < 768 ? 0.65 : width < 1024 ? 0.85 : 1;
+
+  useFrame(({ mouse }, delta) => {
     if (!mesh.current) return;
+    if (mobile) {
+      // no mouse on touch screens → gentle self-rotation instead
+      mesh.current.rotation.y += delta * 0.25;
+      mesh.current.rotation.x += delta * 0.08;
+      return;
+    }
     mesh.current.rotation.x +=
       (mouse.y * 0.4 - mesh.current.rotation.x) * 0.05;
     mesh.current.rotation.y +=
       (mouse.x * 0.4 - mesh.current.rotation.y) * 0.05;
   });
+
   return (
-    <Sphere ref={mesh} args={[1.3, 120, 240]}>
+    <Sphere
+      ref={mesh}
+      args={[1.3, 64, 128]}
+      scale={scale}
+      position={[0, mobile ? 0.55 : 0, 0]}
+    >
       <MeshDistortMaterial
         color={dark ? "#00d4ff" : "#8b1a1a"}
-        distort={0.42}
+        distort={mobile ? 0.32 : 0.42}
         speed={2.2}
         roughness={0.08}
         metalness={0.6}
@@ -77,12 +108,15 @@ function InteractiveSphere({ dark }: { dark: boolean }) {
   );
 }
 
-// ─── Cursor ───────────────────────────────────────────────────────────────────
+// ─── Cursor (mouse devices only) ──────────────────────────────────────────────
 function CursorGlow({ dark }: { dark: boolean }) {
+  const [enabled, setEnabled] = useState(false);
   const [pos, setPos] = useState({ x: -200, y: -200 });
   const [hovered, setHovered] = useState(false);
 
   useEffect(() => {
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    setEnabled(true);
     const onMove = (e: MouseEvent) => setPos({ x: e.clientX, y: e.clientY });
     const onEnter = (e: MouseEvent) => {
       if ((e.target as HTMLElement).closest("a, button")) setHovered(true);
@@ -97,6 +131,8 @@ function CursorGlow({ dark }: { dark: boolean }) {
       window.removeEventListener("mouseout", onLeave);
     };
   }, []);
+
+  if (!enabled) return null;
 
   const accent = dark ? "rgba(0,212,255,0.6)" : "rgba(139,26,26,0.7)";
   const fill = dark ? "rgb(0,212,255)" : "rgb(139,26,26)";
@@ -160,9 +196,6 @@ function GrainOverlay() {
 }
 
 // ─── Secure Contact Form ──────────────────────────────────────────────────────
-// SETUP: Go to https://formspree.io → create free account → create form →
-// copy the form ID (e.g. "xpwzabcd") and replace YOUR_FORM_ID below.
-// Until configured, clicking Send opens your mail app as a fallback.
 const FORMSPREE_ID = "xaqlpqpj";
 
 function ContactForm({
@@ -191,7 +224,7 @@ function ContactForm({
 
     setStatus("sending");
     try {
-      const res = await fetch("https://formspree.io/f/xaqlpqpj", {
+      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -211,7 +244,6 @@ function ContactForm({
       setStatus("error");
     }
   };
-
 
   const btnClass = cn(
     "relative w-full overflow-hidden px-8 py-4 rounded-xl font-semibold text-sm text-white transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed",
@@ -346,11 +378,7 @@ function ContactForm({
           dark ? "text-white/20" : "text-[#7a4a35]/40"
         )}
       >
-        {FORMSPREE_ID === "xaqlpqpj"
-          ? lang === "jp"
-            ? "※ クリックするとメールアプリが開きます"
-            : "※ Will open your mail app — add Formspree ID for direct sending"
-          : lang === "jp"
+        {lang === "jp"
           ? "🔒 メッセージは安全に送信されます"
           : "🔒 Sent securely via Formspree — your email stays private"}
       </motion.p>
@@ -366,7 +394,7 @@ const texts = {
     projects: "Projects",
     certifications: "Certifications",
     contact: "Contact",
-    resume: "Résumé",
+    resume: "Resume",
     name: "Pavan Kumar",
     heroRole: "Full-Stack Developer & AI Enthusiast",
     whoIAm: "Who I Am",
@@ -444,6 +472,7 @@ const texts = {
     testimonialSuccessDesc: "Your testimonial has been received.",
     testimonialSendAnother: "Leave another",
     testimonialPlaceholderMsg: "Share your experience working with or knowing Pavan...",
+    engineeringLab: "Engineering Lab",
   },
   jp: {
     home: "ホーム",
@@ -528,6 +557,7 @@ const texts = {
     testimonialSuccessDesc: "推薦状を受け取りました。",
     testimonialSendAnother: "もう一つ書く",
     testimonialPlaceholderMsg: "パヴァンとの仕事や交流の経験を共有してください...",
+    engineeringLab: "エンジニアリングラボ",
   },
 };
 
@@ -545,12 +575,6 @@ const skills = [
 // ── Your real certificate images (add more filenames here as you earn them) ──
 const certFiles = ["az1.jpeg", "az2.jpeg", "az3.jpeg"];
 
-// ── Certificate cards config ──────────────────────────────────────────────────
-// To add a new certificate later:
-//  1. Upload the image to /public/certificates/
-//  2. Add the filename to certFiles above
-//  3. Change real:false → real:true and fill in title/subtitle/issuer/year/icon
-// ──────────────────────────────────────────────────────────────────────────────
 const certCards = [
   {
     title: "Microsoft Certificates",
@@ -740,7 +764,6 @@ function TestimonialsSection({
                   : "glass-card border-[#8b1a1a]/12 hover:border-[#8b1a1a]/35 shadow-[0_2px_20px_rgba(139,26,26,0.06)] hover:shadow-[0_8px_40px_rgba(139,26,26,0.12)]"
               )}
             >
-              {/* Decorative hover glow */}
               <div
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
                 style={{
@@ -748,7 +771,6 @@ function TestimonialsSection({
                 }}
               />
 
-              {/* Giant quote mark */}
               <span
                 className="absolute top-3 right-5 text-7xl font-serif leading-none select-none pointer-events-none"
                 style={{ color: item.avatarColor, opacity: dark ? 0.1 : 0.12 }}
@@ -756,7 +778,6 @@ function TestimonialsSection({
                 ”
               </span>
 
-              {/* Message */}
               <p
                 className={cn(
                   "text-sm leading-relaxed italic flex-1 relative z-10",
@@ -766,16 +787,13 @@ function TestimonialsSection({
                 &ldquo;{item.message}&rdquo;
               </p>
 
-              {/* Stars */}
               <div className="flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, si) => (
                   <span key={si} className="text-amber-400 text-sm">★</span>
                 ))}
               </div>
 
-              {/* Author row */}
               <div className="flex items-center gap-3 pt-1 border-t relative z-10" style={{ borderColor: dark ? "rgba(255,255,255,0.06)" : "rgba(139,26,26,0.08)" }}>
-                {/* Avatar */}
                 <div
                   className="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg overflow-hidden"
                   style={{ background: `linear-gradient(135deg, ${item.avatarColor} 0%, ${item.avatarColor}99 100%)` }}
@@ -798,7 +816,6 @@ function TestimonialsSection({
                     {item.role}
                   </p>
                 </div>
-                {/* LinkedIn */}
                 {item.linkedin && (
                   <motion.a
                     href={item.linkedin}
@@ -826,7 +843,7 @@ function TestimonialsSection({
 
         {/* Leave a testimonial toggle */}
         <motion.div
-          className="mt-14 flex flex-col items-center gap-6"
+          className="mt-10 flex flex-col items-center gap-6"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -864,7 +881,6 @@ function TestimonialsSection({
             )} />
           </motion.button>
 
-          {/* Form */}
           <AnimatePresence>
             {showForm && (
               <motion.div
@@ -942,7 +958,6 @@ function TestimonialsSection({
                     animate={{ opacity: 1 }}
                     noValidate
                   >
-                    {/* Header */}
                     <div className="space-y-1">
                       <h3 className={cn("text-lg font-bold", dark ? "text-white" : "text-[#2a1008]")}>
                         {t.leaveTestimonial}
@@ -952,7 +967,6 @@ function TestimonialsSection({
                       </p>
                     </div>
 
-                    {/* Info pills */}
                     <div className="flex flex-wrap gap-2">
                       {[
                         { icon: "🔒", text: lang === "jp" ? "ブラウザーに保存" : "Stored in this browser" },
@@ -1004,7 +1018,6 @@ function TestimonialsSection({
                       </button>
                     </div>
 
-                    {/* Fields */}
                     <div className="space-y-1.5">
                       <label className={cn("text-xs font-semibold tracking-wide uppercase", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
                         {t.testimonialRole} *
@@ -1055,7 +1068,6 @@ function TestimonialsSection({
                       </div>
                     </div>
 
-                    {/* Submit */}
                     <motion.button
                       type="submit"
                       whileHover={{ scale: 1.02, y: -1 }}
@@ -1085,15 +1097,19 @@ function TestimonialsSection({
 }
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
+const sectionIds = ["home", "about", "projects", "certifications", "testimonials", "contact"] as const;
+
 export default function Home() {
+  const { dark, toggle: toggleTheme } = useTheme(); // shared with Engineering Lab
   const [showNav, setShowNav] = useState(true);
-  const [dark, setDark] = useState(true);
   const [lang, setLang] = useState<"en" | "jp">("en");
   const [certOpen, setCertOpen] = useState(false);
   const [certIndex, setCertIndex] = useState(0);
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const pausedUntilRef = useRef<number>(0);
@@ -1111,23 +1127,62 @@ export default function Home() {
 
   const t = texts[lang];
 
-  // Nav show/hide
+  const sectionLabels: Record<(typeof sectionIds)[number], string> = {
+    home: t.home,
+    about: t.about,
+    projects: t.projects,
+    certifications: t.certifications,
+    testimonials: t.testimonials,
+    contact: t.contact,
+  };
+
+  // Nav show/hide + background
   useEffect(() => {
     let lastY = 0;
     const onScroll = () => {
       const y = window.scrollY;
       setNavScrolled(y > 30);
       setShowNav(y < 50 || y < lastY);
-      if (y > 80) setMobileMenuOpen(false);
       lastY = y;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Lock page scroll while the mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
+  // Close the menu if the screen grows to desktop size
+  useEffect(() => {
+    if (!isMobile) setMobileMenuOpen(false);
+  }, [isMobile]);
+
+  // Reliable section navigation (works from the mobile menu too)
+  const goTo = useCallback(
+    (id: string) => (e: React.MouseEvent) => {
+      e.preventDefault();
+      setMobileMenuOpen(false);
+      window.setTimeout(() => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const top =
+          id === "home"
+            ? 0
+            : el.getBoundingClientRect().top + window.scrollY - 12;
+        window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+        window.history.replaceState(null, "", `#${id}`);
+      }, 80);
+    },
+    []
+  );
+
   // Active section tracking
   useEffect(() => {
-    const sectionIds = ["home", "about", "projects", "certifications", "testimonials", "contact"];
     const observers: IntersectionObserver[] = [];
     sectionIds.forEach((id) => {
       const el = document.getElementById(id);
@@ -1202,14 +1257,9 @@ export default function Home() {
     ? "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-cyan-400/60 transition-all duration-300 backdrop-blur-sm text-sm"
     : "w-full px-4 py-3 rounded-xl bg-[#ede0cc]/60 border border-[#8b1a1a]/18 text-[#2a1008] placeholder-[#7a4a35]/50 focus:outline-none focus:border-[#8b1a1a]/50 focus:bg-[#ede0cc]/90 transition-all duration-300 text-sm";
 
-  const navLinks = [
-    { label: t.home, href: "#home" },
-    { label: t.about, href: "#about" },
-    { label: t.projects, href: "#projects" },
-    { label: t.certifications, href: "#certifications" },
-    { label: t.testimonials, href: "#testimonials" },
-    { label: t.contact, href: "#contact" },
-    { label: "Engineering Lab", href: "/connect" },
+  const socials = [
+    { href: "https://github.com/pavan55kumar", icon: <FaGithub />, label: "GitHub" },
+    { href: "https://www.linkedin.com/in/pavan-kumar-6864b2320", icon: <FaLinkedin />, label: "LinkedIn" },
   ];
 
   return (
@@ -1279,14 +1329,19 @@ export default function Home() {
         />
       </div>
 
-      {/* FABs */}
-      <div className="fixed bottom-8 right-8 z-50 flex flex-col gap-3">
+      {/* FABs (hidden while the mobile menu is open — the menu has its own) */}
+      <div
+        className={cn(
+          "fixed bottom-6 right-5 sm:bottom-8 sm:right-8 z-50 flex flex-col gap-3 transition-opacity duration-300",
+          mobileMenuOpen && "pointer-events-none opacity-0"
+        )}
+      >
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Toggle Dark Mode"
           title={dark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          onClick={() => setDark(!dark)}
+          onClick={toggleTheme}
           className={cn(
             "w-12 h-12 rounded-full flex items-center justify-center text-lg shadow-xl transition-all duration-300",
             dark
@@ -1316,36 +1371,39 @@ export default function Home() {
       {/* ── NAVBAR ── */}
       <motion.nav
         initial={false}
-        animate={{ y: showNav ? 0 : -100, opacity: showNav ? 1 : 0 }}
+        animate={{
+          y: showNav || mobileMenuOpen ? 0 : -100,
+          opacity: showNav || mobileMenuOpen ? 1 : 0,
+        }}
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className={cn(
           "fixed w-full top-0 z-40 transition-all duration-500",
-          navScrolled || mobileMenuOpen
+          navScrolled && !mobileMenuOpen
             ? dark
               ? "glass border-b border-white/8 shadow-2xl"
               : "bg-[#f5ede0]/95 backdrop-blur-xl border-b border-[#8b1a1a]/15 shadow-[0_2px_24px_rgba(139,26,26,0.12)]"
             : "bg-transparent border-b border-transparent"
         )}
       >
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-6 py-3 sm:py-4 flex items-center justify-between">
           <motion.a
             href="#home"
             className="text-xl font-extrabold text-gradient"
             whileHover={{ scale: 1.03 }}
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={goTo("home")}
           >
             {t.name}
           </motion.a>
 
           {/* Desktop */}
-          <div className="hidden sm:flex items-center gap-1">
-            {navLinks.map(({ label, href }) => {
-              const sectionId = href.replace("#", "");
-              const isActive = activeSection === sectionId;
+          <div className="hidden md:flex items-center gap-1">
+            {sectionIds.map((id) => {
+              const isActive = activeSection === id;
               return (
                 <a
-                  key={href}
-                  href={href}
+                  key={id}
+                  href={`#${id}`}
+                  onClick={goTo(id)}
                   className={cn(
                     "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                     isActive
@@ -1357,10 +1415,21 @@ export default function Home() {
                       : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8"
                   )}
                 >
-                  {label}
+                  {sectionLabels[id]}
                 </a>
               );
             })}
+            <Link
+              href="/connect"
+              className={cn(
+                "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                dark
+                  ? "text-white/60 hover:text-white hover:bg-white/6"
+                  : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8"
+              )}
+            >
+              {t.engineeringLab}
+            </Link>
             <a
               href="/resume.pdf"
               download
@@ -1375,97 +1444,162 @@ export default function Home() {
             </a>
           </div>
 
-          {/* Hamburger */}
+          {/* Hamburger → X */}
           <button
+            type="button"
             className={cn(
-              "sm:hidden flex flex-col justify-center items-center w-10 h-10 rounded-xl gap-1.5 transition-colors duration-200",
-              dark ? "hover:bg-white/8" : "hover:bg-[#8b1a1a]/8"
+              "md:hidden relative h-11 w-11 rounded-full transition-colors duration-200",
+              dark ? "text-white hover:bg-white/8" : "text-[#2a1008] hover:bg-[#8b1a1a]/8"
             )}
-            aria-label="Toggle mobile menu"
+            aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen((o) => !o)}
           >
-            {[
-              mobileMenuOpen ? "rotate-45 translate-y-2" : "",
-              mobileMenuOpen ? "opacity-0" : "",
-              mobileMenuOpen ? "-rotate-45 -translate-y-2" : "",
-            ].map((extra, i) => (
-              <span
-                key={i}
-                className={cn(
-                  "block h-0.5 w-6 rounded-full transition-all duration-300",
-                  dark ? "bg-white/80" : "bg-[#2a1008]",
-                  extra
-                )}
-              />
-            ))}
+            <motion.span
+              className="absolute left-1/2 top-1/2 -ml-[10px] -mt-px h-[1.5px] w-5 rounded-full bg-current"
+              animate={{ y: mobileMenuOpen ? 0 : -4, rotate: mobileMenuOpen ? 45 : 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            />
+            <motion.span
+              className="absolute left-1/2 top-1/2 -ml-[10px] -mt-px h-[1.5px] w-5 rounded-full bg-current"
+              animate={{ y: mobileMenuOpen ? 0 : 4, rotate: mobileMenuOpen ? -45 : 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            />
           </button>
         </div>
+      </motion.nav>
 
-        {/* Mobile dropdown */}
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className={cn(
-                "sm:hidden overflow-hidden border-t",
-                dark
-                  ? "border-white/8 bg-[#030712]/95 backdrop-blur-xl"
-                  : "border-[#8b1a1a]/10 bg-[#f5ede0]/98 backdrop-blur-xl"
-              )}
-            >
-              <div className="flex flex-col px-6 py-4 gap-1">
-                {navLinks.map(({ label, href }, i) => (
+      {/* ── MOBILE MENU (full-screen, minimal) ── */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className={cn(
+              "fixed inset-0 z-30 md:hidden flex flex-col overflow-y-auto px-7 pb-8 pt-24 backdrop-blur-2xl",
+              dark ? "bg-[#030712]/95" : "bg-[#f5ede0]/97"
+            )}
+          >
+            <nav className="flex flex-col" aria-label="Mobile">
+              {sectionIds.map((id, i) => {
+                const isActive = activeSection === id;
+                return (
                   <motion.a
-                    key={href}
-                    href={href}
-                    initial={{ opacity: 0, x: -16 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06, duration: 0.25 }}
-                    onClick={() => setMobileMenuOpen(false)}
+                    key={id}
+                    href={`#${id}`}
+                    onClick={goTo(id)}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 + i * 0.04, duration: 0.3 }}
                     className={cn(
-                      "px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
-                      dark
-                        ? "text-white/70 hover:text-white hover:bg-white/6"
-                        : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8"
+                      "flex items-center justify-between border-b py-4 text-[26px] font-medium tracking-tight transition-colors",
+                      dark ? "border-white/[0.07]" : "border-[#8b1a1a]/10",
+                      isActive
+                        ? dark ? "text-white" : "text-[#8b1a1a]"
+                        : dark ? "text-white/45 active:text-white" : "text-[#2a1008]/50 active:text-[#2a1008]"
                     )}
                   >
-                    {label}
+                    {sectionLabels[id]}
+                    {isActive && (
+                      <span className={cn("h-1.5 w-1.5 rounded-full", dark ? "bg-cyan-400" : "bg-[#8b1a1a]")} />
+                    )}
                   </motion.a>
-                ))}
-                <motion.a
-                  href="/resume.pdf"
-                  download
-                  initial={{ opacity: 0, x: -16 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.36, duration: 0.25 }}
+                );
+              })}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 + sectionIds.length * 0.04, duration: 0.3 }}
+              >
+                <Link
+                  href="/connect"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    "mt-2 px-4 py-3 rounded-xl text-sm font-semibold border text-center transition-all duration-300",
-                    dark
-                      ? "border-cyan-400/40 text-cyan-300 hover:bg-cyan-400/10"
-                      : "border-[#8b1a1a]/40 text-[#8b1a1a] hover:bg-[#8b1a1a]/8"
+                    "flex items-center justify-between py-4 text-[26px] font-medium tracking-tight transition-colors",
+                    dark ? "text-white/45 active:text-white" : "text-[#2a1008]/50 active:text-[#2a1008]"
                   )}
                 >
-                  {t.resume} ↓
-                </motion.a>
+                  {t.engineeringLab}
+                  <span className="text-lg">↗</span>
+                </Link>
+              </motion.div>
+            </nav>
+
+            <div className="mt-auto space-y-5 pt-8">
+              <a
+                href="/resume.pdf"
+                download
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  "flex h-12 w-full items-center justify-center rounded-full border text-sm font-semibold transition-colors",
+                  dark
+                    ? "border-white/20 text-white hover:bg-white/8"
+                    : "border-[#8b1a1a]/35 text-[#8b1a1a] hover:bg-[#8b1a1a]/8"
+                )}
+              >
+                {t.resume}
+              </a>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-5">
+                  {socials.map(({ href, icon, label }) => (
+                    <a
+                      key={label}
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={label}
+                      className={cn("text-xl", dark ? "text-white/45 hover:text-white" : "text-[#7a4a35]/70 hover:text-[#8b1a1a]")}
+                    >
+                      {icon}
+                    </a>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    aria-label="Toggle theme"
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-full border text-base",
+                      dark ? "border-white/15" : "border-[#8b1a1a]/25"
+                    )}
+                  >
+                    {dark ? "☀️" : "🌙"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLang(lang === "en" ? "jp" : "en")}
+                    aria-label="Toggle language"
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-full border text-xs font-bold",
+                      dark ? "border-white/15 text-cyan-300" : "border-[#8b1a1a]/25 text-[#8b1a1a]"
+                    )}
+                  >
+                    {lang === "en" ? "JP" : "EN"}
+                  </button>
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.nav>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── HERO ── */}
       <section
         id="home"
         ref={heroRef}
-        className="relative h-screen w-full flex items-center justify-center overflow-hidden"
+        className="relative min-h-[100svh] w-full flex items-center justify-center overflow-hidden py-24"
       >
         <div className="absolute inset-0 z-0">
-          <Canvas camera={{ position: [0, 0, 3.5] }}>
+          <Canvas
+            camera={{ position: [0, 0, 3.5] }}
+            dpr={[1, 1.5]}
+            style={{ touchAction: isMobile ? "pan-y" : "none" }}
+          >
             <ambientLight intensity={0.8} />
             <directionalLight position={[5, 5, 5]} intensity={1.2} />
             <pointLight
@@ -1474,15 +1608,18 @@ export default function Home() {
               intensity={0.6}
             />
             <Suspense fallback={null}>
-              <Stars radius={100} depth={50} count={4000} factor={4} fade speed={0.5} />
-              <InteractiveSphere dark={dark} />
+              <Stars radius={100} depth={50} count={isMobile ? 1800 : 4000} factor={4} fade speed={0.5} />
+              <InteractiveSphere dark={dark} mobile={isMobile} />
             </Suspense>
-            <OrbitControls
-              enableZoom={false}
-              autoRotate
-              autoRotateSpeed={0.4}
-              enablePan={false}
-            />
+            {/* Not mounted on phones: OrbitControls would block page scrolling */}
+            {!isMobile && (
+              <OrbitControls
+                enableZoom={false}
+                autoRotate
+                autoRotateSpeed={0.4}
+                enablePan={false}
+              />
+            )}
           </Canvas>
         </div>
 
@@ -1494,7 +1631,7 @@ export default function Home() {
             initial="hidden"
             animate="visible"
             variants={stagger}
-            className="flex flex-col items-center gap-6"
+            className="flex flex-col items-center gap-5 sm:gap-6"
           >
             {/* Avatar */}
             <motion.div variants={scaleIn} className="relative animate-float">
@@ -1568,6 +1705,7 @@ export default function Home() {
             >
               <motion.a
                 href="#contact"
+                onClick={goTo("contact")}
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 className={cn(
@@ -1582,6 +1720,7 @@ export default function Home() {
               </motion.a>
               <motion.a
                 href="#projects"
+                onClick={goTo("projects")}
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 className={cn(
@@ -1599,10 +1738,7 @@ export default function Home() {
               variants={fadeUp}
               className="flex items-center gap-6 mt-2"
             >
-              {[
-                { href: "https://github.com/pavan55kumar", icon: <FaGithub />, label: "GitHub" },
-                { href: "https://www.linkedin.com/in/pavan-kumar-6864b2320", icon: <FaLinkedin />, label: "LinkedIn" },
-              ].map(({ href, icon, label }) => (
+              {socials.map(({ href, icon, label }) => (
                 <motion.a
                   key={label}
                   href={href}
@@ -1628,7 +1764,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2, duration: 1 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          className="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         >
           <span
             className={cn(
@@ -1640,7 +1776,7 @@ export default function Home() {
           </span>
           <div
             className={cn(
-              "w-px h-12 bg-gradient-to-b to-transparent animate-pulse",
+              "w-px h-10 sm:h-12 bg-gradient-to-b to-transparent animate-pulse",
               dark ? "from-cyan-400/60" : "from-[#8b1a1a]/50"
             )}
           />
@@ -1650,14 +1786,14 @@ export default function Home() {
       {/* ── ABOUT ── */}
       <motion.section
         id="about"
-        className="py-32 relative z-10"
+        className="py-16 sm:py-24 relative z-10"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={stagger}
       >
         <div className="max-w-5xl mx-auto px-6">
-          <motion.div variants={fadeUp} className="mb-16 text-center">
+          <motion.div variants={fadeUp} className="mb-10 sm:mb-14 text-center">
             <p
               className={cn(
                 "text-sm font-semibold tracking-widest uppercase mb-3",
@@ -1672,7 +1808,7 @@ export default function Home() {
             <Divider dark={dark} />
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-16 items-start">
+          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-start">
             <motion.div variants={fadeUp} className="space-y-6">
               <p
                 className={cn(
@@ -1775,14 +1911,14 @@ export default function Home() {
       {/* ── PROJECTS ── */}
       <motion.section
         id="projects"
-        className="py-32 relative z-10"
+        className="py-16 sm:py-24 relative z-10"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
         variants={stagger}
       >
-        <div className="max-w-6xl mx-auto px-6 mb-10">
-          <motion.div variants={fadeUp} className="mb-12">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.div variants={fadeUp} className="mb-8 sm:mb-10">
             <p
               className={cn(
                 "text-sm font-semibold tracking-widest uppercase mb-3",
@@ -1801,7 +1937,7 @@ export default function Home() {
         <motion.div
           ref={scrollRef}
           variants={stagger}
-          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-6"
+          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2"
           style={{
             paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
             paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
@@ -1894,13 +2030,12 @@ export default function Home() {
       {/* ── CERTIFICATIONS ── */}
       <motion.section
         id="certifications"
-        className="py-32 relative z-10 overflow-hidden"
+        className="py-16 sm:py-24 relative z-10 overflow-hidden"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
         variants={stagger}
       >
-        {/* Ambient glow */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div
             className="w-[700px] h-[320px] rounded-full"
@@ -1914,9 +2049,8 @@ export default function Home() {
           />
         </div>
 
-        {/* Heading */}
         <div className="max-w-6xl mx-auto px-6">
-          <motion.div variants={fadeUp} className="mb-14 text-center">
+          <motion.div variants={fadeUp} className="mb-8 sm:mb-10 text-center">
             <p
               className={cn(
                 "text-sm font-semibold tracking-widest uppercase mb-3",
@@ -1940,9 +2074,8 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {/* Horizontal scroll */}
         <div
-          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 pt-4"
+          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 pt-2"
           style={{
             paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
             paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
@@ -1977,7 +2110,6 @@ export default function Home() {
                       : "glass-card border-dashed border-[#8b1a1a]/14 hover:border-[#8b1a1a]/32"
                   )}
                 >
-                  {/* Colour accent bar */}
                   <div
                     className="h-1 w-full shrink-0"
                     style={{
@@ -1985,9 +2117,7 @@ export default function Home() {
                     }}
                   />
 
-                  {/* Preview area */}
                   <div className="relative flex-1 flex items-center justify-center overflow-hidden px-5">
-                    {/* Hover glow */}
                     <div
                       className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500"
                       style={{
@@ -1996,7 +2126,6 @@ export default function Home() {
                     />
 
                     {card.real ? (
-                      /* Stacked real certificate images */
                       <div className="relative w-full h-44 flex items-center justify-center">
                         {[
                           { rot: "-11deg", top: "6px",  scale: 0.86, z: 1 },
@@ -2024,7 +2153,6 @@ export default function Home() {
                         ))}
                       </div>
                     ) : (
-                      /* Placeholder */
                       <div className="flex flex-col items-center gap-3 opacity-35 group-hover:opacity-55 transition-opacity duration-400">
                         <span className="text-6xl select-none">{card.icon}</span>
                         <div
@@ -2041,7 +2169,6 @@ export default function Home() {
                     )}
                   </div>
 
-                  {/* Footer */}
                   <div
                     className={cn(
                       "p-5 border-t shrink-0",
@@ -2109,10 +2236,9 @@ export default function Home() {
           })}
         </div>
 
-        {/* Scroll hint */}
         <motion.div
           variants={fadeUp}
-          className="flex items-center justify-center gap-3 mt-10"
+          className="flex items-center justify-center gap-3 mt-4"
         >
           <div
             className={cn(
@@ -2234,13 +2360,12 @@ export default function Home() {
       {/* ── TESTIMONIALS ── */}
       <motion.section
         id="testimonials"
-        className="py-32 relative z-10 overflow-hidden"
+        className="py-16 sm:py-24 relative z-10 overflow-hidden"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.05 }}
         variants={stagger}
       >
-        {/* Ambient glow */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div
             className="w-[800px] h-[360px] rounded-full"
@@ -2254,9 +2379,8 @@ export default function Home() {
           />
         </div>
 
-        {/* Heading */}
         <div className="max-w-6xl mx-auto px-6">
-          <motion.div variants={fadeUp} className="mb-14 text-center">
+          <motion.div variants={fadeUp} className="mb-8 sm:mb-10 text-center">
             <p
               className={cn(
                 "text-sm font-semibold tracking-widest uppercase mb-3",
@@ -2292,16 +2416,15 @@ export default function Home() {
 
       {/* ── CONTACT ── */}
       <motion.section
-
         id="contact"
-        className="py-32 relative z-10"
+        className="py-16 sm:py-24 relative z-10"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={stagger}
       >
         <div className="max-w-2xl mx-auto px-6">
-          <motion.div variants={fadeUp} className="mb-12 text-center">
+          <motion.div variants={fadeUp} className="mb-8 sm:mb-10 text-center">
             <p
               className={cn(
                 "text-sm font-semibold tracking-widest uppercase mb-3",
@@ -2336,7 +2459,7 @@ export default function Home() {
       {/* ── FOOTER ── */}
       <footer
         className={cn(
-          "relative z-10 py-10 border-t",
+          "relative z-10 py-8 border-t",
           dark ? "border-white/6" : "border-[#8b1a1a]/10"
         )}
       >
@@ -2350,10 +2473,7 @@ export default function Home() {
             © {new Date().getFullYear()} Pavan Kumar · Crafted with React &amp; Three.js
           </p>
           <div className="flex items-center gap-5">
-            {[
-              { href: "https://github.com/pavan55kumar", icon: <FaGithub />, label: "GitHub" },
-              { href: "https://www.linkedin.com/in/pavan-kumar-6864b2320", icon: <FaLinkedin />, label: "LinkedIn" },
-            ].map(({ href, icon, label }) => (
+            {socials.map(({ href, icon, label }) => (
               <a
                 key={label}
                 href={href}

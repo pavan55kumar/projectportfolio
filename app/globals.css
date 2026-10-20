@@ -1,37 +1,68 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
+/* ── Theme tokens (switched by <html data-theme="dark|light">) ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #030712;
+  --foreground: #ffffff;
+
+  /* Engineering Lab tokens */
+  --lab-bg: #030712;
+  --lab-surface: #070b14;
+  --lab-fg: #ffffff;
+  --lab-accent: #67e8f9;
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  --background: #f5ede0;
+  --foreground: #2a1008;
+
+  --lab-bg: #f5ede0;
+  --lab-surface: #fbf5ea;
+  --lab-fg: #2a1008;
+  --lab-accent: #8b1a1a;
+  color-scheme: light;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-lab-bg: var(--lab-bg);
+  --color-lab-surface: var(--lab-surface);
+  --color-lab-fg: var(--lab-fg);
+  --color-lab-accent: var(--lab-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 html {
   scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
 }
 
-* {
-  cursor: none !important;
+/* Custom cursor only for mouse users — never on touch devices */
+@media (hover: hover) and (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
+
+  .engineering-lab,
+  .engineering-lab * {
+    cursor: auto !important;
+  }
+
+  .engineering-lab a,
+  .engineering-lab button {
+    cursor: pointer !important;
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'DM Sans', sans-serif;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 h1, h2, h3, h4 {
@@ -106,21 +137,12 @@ h1, h2, h3, h4 {
 
 ::selection { background: rgba(0,212,255,0.25); }
 
-.engineering-lab,
-.engineering-lab * {
-  cursor: auto !important;
-}
-
-.engineering-lab a,
-.engineering-lab button {
-  cursor: pointer !important;
-}
-
 .engineering-lab a:focus-visible {
-  outline: 2px solid rgba(103,232,249,0.8);
+  outline: 2px solid var(--lab-accent);
   outline-offset: 3px;
 }
 
+/* ── Engineering Lab project artwork (stays dark in both themes, like a photo) ── */
 .project-art {
   isolation: isolate;
   background-color: #080d18;
@@ -279,7 +301,7 @@ h1, h2, h3, h4 {
   }
 }
 
-/* ── Light mode overrides ── */
+/* ── Light mode overrides (main portfolio) ── */
 .light-mode .glass {
   background: rgba(255,245,230,0.55) !important;
   backdrop-filter: blur(20px);

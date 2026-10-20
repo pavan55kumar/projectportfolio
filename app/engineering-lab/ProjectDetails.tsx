@@ -15,7 +15,7 @@ function ProjectLink({
 }) {
   const internal = href.startsWith("/");
   const className =
-    "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-5 text-xs font-semibold text-white/80 transition hover:border-cyan-200/35 hover:bg-cyan-300/[0.06] hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-2 focus-visible:ring-offset-[#030712]";
+    "inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-lab-fg/15 bg-lab-fg/[0.04] px-5 text-xs font-semibold text-lab-fg/80 transition hover:border-lab-accent/40 hover:bg-lab-accent/[0.08] hover:text-lab-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lab-accent focus-visible:ring-offset-2 focus-visible:ring-offset-lab-bg";
 
   if (internal) {
     return <Link href={href} className={className}>{children}</Link>;
@@ -27,6 +27,9 @@ function ProjectLink({
     </a>
   );
 }
+
+const eyebrow = "text-[10px] font-semibold uppercase tracking-[0.18em] text-lab-accent/70";
+const muted = "text-[10px] font-semibold uppercase tracking-[0.18em] text-lab-fg/40";
 
 export default function ProjectDetails({
   project,
@@ -40,23 +43,23 @@ export default function ProjectDetails({
   );
 
   return (
-    <main className="engineering-lab min-h-screen overflow-hidden bg-[#030712] text-white">
+    <main className="engineering-lab min-h-screen overflow-hidden bg-lab-bg text-lab-fg transition-colors duration-500">
       <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-0 overflow-hidden">
-        <div className="absolute -left-64 top-24 h-[36rem] w-[36rem] rounded-full bg-cyan-500/[0.07] blur-[150px]" />
+        <div className="absolute -left-64 top-24 h-[36rem] w-[36rem] rounded-full bg-lab-accent/[0.07] blur-[150px]" />
         <div className="absolute -right-64 top-[35rem] h-[38rem] w-[38rem] rounded-full bg-violet-600/[0.08] blur-[150px]" />
       </div>
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
         <Link
           href="/connect"
-          className="inline-flex min-h-11 items-center gap-3 text-sm text-white/60 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-4 focus-visible:ring-offset-[#030712]"
+          className="inline-flex min-h-11 items-center gap-3 text-sm text-lab-fg/65 transition hover:text-lab-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lab-accent focus-visible:ring-offset-4 focus-visible:ring-offset-lab-bg"
         >
-          <FaArrowLeft aria-hidden="true" className="text-xs text-cyan-200" />
+          <FaArrowLeft aria-hidden="true" className="text-xs text-lab-accent" />
           Engineering Lab
         </Link>
         <Link
           href="/"
-          className="inline-flex min-h-11 items-center text-xs font-medium text-white/45 transition hover:text-cyan-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-200 focus-visible:ring-offset-4 focus-visible:ring-offset-[#030712]"
+          className="inline-flex min-h-11 items-center text-xs font-medium text-lab-fg/50 transition hover:text-lab-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lab-accent focus-visible:ring-offset-4 focus-visible:ring-offset-lab-bg"
         >
           Main portfolio
         </Link>
@@ -64,7 +67,7 @@ export default function ProjectDetails({
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 pb-20 sm:px-8 lg:px-12">
         <section className="pt-8 sm:pt-14">
-          <p className="mb-5 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-cyan-200/55">
+          <p className="mb-5 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-lab-accent/65">
             ENGINEERING LAB / PROJECT
           </p>
           <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
@@ -72,11 +75,11 @@ export default function ProjectDetails({
               <h1 className="text-5xl font-semibold tracking-[-0.06em] sm:text-7xl">
                 {project.title}
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-7 text-white/55 sm:text-lg">
+              <p className="mt-5 max-w-2xl text-base leading-7 text-lab-fg/60 sm:text-lg">
                 {project.description}
               </p>
               {project.status && (
-                <p className="mt-5 inline-flex rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/55">
+                <p className="mt-5 inline-flex rounded-full border border-lab-fg/10 bg-lab-fg/[0.03] px-3 py-1.5 text-xs text-lab-fg/60">
                   {project.status}
                 </p>
               )}
@@ -99,37 +102,37 @@ export default function ProjectDetails({
               )}
             </div>
           </div>
-          <div className="group mt-10 overflow-hidden rounded-3xl border border-white/10 bg-[#080d17]">
+          <div className="group mt-10 overflow-hidden rounded-3xl border border-lab-fg/10 bg-lab-surface">
             <ProjectVisual project={project} variant="hero" />
           </div>
         </section>
 
         {hasOverview && (
-          <section className="grid gap-8 border-b border-white/[0.08] py-12 sm:grid-cols-2 lg:grid-cols-4">
+          <section className="grid gap-8 border-b border-lab-fg/10 py-12 sm:grid-cols-2 lg:grid-cols-4">
             {project.overview && (
               <div className="sm:col-span-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">Overview</p>
-                <p className="mt-3 max-w-2xl text-sm leading-7 text-white/65">{project.overview}</p>
+                <p className={muted}>Overview</p>
+                <p className="mt-3 max-w-2xl text-sm leading-7 text-lab-fg/70">{project.overview}</p>
               </div>
             )}
             {project.intendedFor && (
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">Made for</p>
-                <p className="mt-3 text-sm leading-6 text-white/65">{project.intendedFor}</p>
+                <p className={muted}>Made for</p>
+                <p className="mt-3 text-sm leading-6 text-lab-fg/70">{project.intendedFor}</p>
               </div>
             )}
             {(project.role || project.duration) && (
               <div>
                 {project.role && (
                   <>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">Role</p>
-                    <p className="mt-3 text-sm leading-6 text-white/65">{project.role}</p>
+                    <p className={muted}>Role</p>
+                    <p className="mt-3 text-sm leading-6 text-lab-fg/70">{project.role}</p>
                   </>
                 )}
                 {project.duration && (
                   <>
-                    <p className="mt-5 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">Duration</p>
-                    <p className="mt-3 text-sm leading-6 text-white/65">{project.duration}</p>
+                    <p className={`mt-5 ${muted}`}>Duration</p>
+                    <p className="mt-3 text-sm leading-6 text-lab-fg/70">{project.duration}</p>
                   </>
                 )}
               </div>
@@ -138,15 +141,15 @@ export default function ProjectDetails({
         )}
 
         {project.features && project.features.length > 0 && (
-          <section className="grid gap-6 border-b border-white/[0.08] py-12 md:grid-cols-[0.7fr_1.3fr]">
+          <section className="grid gap-6 border-b border-lab-fg/10 py-12 md:grid-cols-[0.7fr_1.3fr]">
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/60">What it does</p>
+              <p className={eyebrow}>What it does</p>
               <h2 className="mt-3 text-2xl font-semibold tracking-tight">Built into the experience</h2>
             </div>
             <ul className="grid gap-3 sm:grid-cols-2">
               {project.features.map((feature, index) => (
-                <li key={feature} className="flex gap-3 rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 text-sm leading-6 text-white/65">
-                  <span className="font-mono text-[10px] text-cyan-200/55">0{index + 1}</span>
+                <li key={feature} className="flex gap-3 rounded-xl border border-lab-fg/10 bg-lab-fg/[0.025] p-4 text-sm leading-6 text-lab-fg/70">
+                  <span className="font-mono text-[10px] text-lab-accent/70">0{index + 1}</span>
                   {feature}
                 </li>
               ))}
@@ -155,12 +158,12 @@ export default function ProjectDetails({
         )}
 
         {project.technologies && project.technologies.length > 0 && (
-          <section className="border-b border-white/[0.08] py-12">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/60">Technology</p>
+          <section className="border-b border-lab-fg/10 py-12">
+            <p className={eyebrow}>Technology</p>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight">Tools behind the build</h2>
             <ul className="mt-5 flex flex-wrap gap-2">
               {project.technologies.map((technology) => (
-                <li key={technology} className="rounded-full border border-white/10 bg-white/[0.035] px-4 py-2 text-xs text-white/65">
+                <li key={technology} className="rounded-full border border-lab-fg/10 bg-lab-fg/[0.04] px-4 py-2 text-xs text-lab-fg/70">
                   {technology}
                 </li>
               ))}
@@ -169,12 +172,12 @@ export default function ProjectDetails({
         )}
 
         {project.screenshots && project.screenshots.length > 0 && (
-          <section className="border-b border-white/[0.08] py-12">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/60">In the product</p>
+          <section className="border-b border-lab-fg/10 py-12">
+            <p className={eyebrow}>In the product</p>
             <h2 className="mt-3 text-2xl font-semibold tracking-tight">A closer look</h2>
             <div className="mt-6 grid gap-5 md:grid-cols-2">
               {project.screenshots.map((screenshot) => (
-                <figure key={screenshot.src} className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.02]">
+                <figure key={screenshot.src} className="overflow-hidden rounded-2xl border border-lab-fg/10 bg-lab-fg/[0.02]">
                   <div className="group relative aspect-[1.55] overflow-hidden">
                     <Image
                       src={screenshot.src}
@@ -185,7 +188,7 @@ export default function ProjectDetails({
                     />
                   </div>
                   {screenshot.caption && (
-                    <figcaption className="px-4 py-3 text-xs leading-5 text-white/50">{screenshot.caption}</figcaption>
+                    <figcaption className="px-4 py-3 text-xs leading-5 text-lab-fg/55">{screenshot.caption}</figcaption>
                   )}
                 </figure>
               ))}
@@ -194,34 +197,34 @@ export default function ProjectDetails({
         )}
 
         {project.contributions && project.contributions.length > 0 && (
-          <section className="border-b border-white/[0.08] py-12">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/60">My contribution</p>
+          <section className="border-b border-lab-fg/10 py-12">
+            <p className={eyebrow}>My contribution</p>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
               {project.contributions.map((contribution) => (
-                <li key={contribution} className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-4 text-sm leading-6 text-white/65">{contribution}</li>
+                <li key={contribution} className="rounded-xl border border-lab-fg/10 bg-lab-fg/[0.025] p-4 text-sm leading-6 text-lab-fg/70">{contribution}</li>
               ))}
             </ul>
           </section>
         )}
 
         {project.team && project.team.length > 0 && (
-          <section className="border-b border-white/[0.08] py-12">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/60">The people behind it</p>
+          <section className="border-b border-lab-fg/10 py-12">
+            <p className={eyebrow}>The people behind it</p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {project.team.map((member) => (
-                <article key={`${member.name}-${member.role}`} className="flex gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5">
+                <article key={`${member.name}-${member.role}`} className="flex gap-4 rounded-2xl border border-lab-fg/10 bg-lab-fg/[0.03] p-5">
                   {member.photo ? (
-                    <Image src={member.photo} alt={member.name} width={52} height={52} className="h-13 w-13 rounded-full object-cover" />
+                    <Image src={member.photo} alt={member.name} width={52} height={52} className="h-13 w-13 shrink-0 rounded-full object-cover" />
                   ) : (
-                    <div aria-hidden="true" className="h-13 w-13 shrink-0 rounded-full border border-cyan-200/15 bg-gradient-to-br from-cyan-300/20 to-violet-400/20" />
+                    <div aria-hidden="true" className="h-13 w-13 shrink-0 rounded-full border border-lab-accent/20 bg-gradient-to-br from-cyan-300/20 to-violet-400/20" />
                   )}
                   <div>
                     <h3 className="text-sm font-semibold">{member.name}</h3>
-                    <p className="mt-1 text-xs text-cyan-100/55">{member.role}</p>
-                    <p className="mt-2 text-xs leading-5 text-white/45">{member.contribution}</p>
+                    <p className="mt-1 text-xs text-lab-accent/70">{member.role}</p>
+                    <p className="mt-2 text-xs leading-5 text-lab-fg/55">{member.contribution}</p>
                     <div className="mt-3 flex gap-3 text-[11px]">
-                      {member.linkedin && <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/45 hover:text-cyan-100">LinkedIn</a>}
-                      {member.github && <a href={member.github} target="_blank" rel="noopener noreferrer" className="text-white/45 hover:text-cyan-100">GitHub</a>}
+                      {member.linkedin && <a href={member.linkedin} target="_blank" rel="noopener noreferrer" className="text-lab-fg/55 hover:text-lab-accent">LinkedIn</a>}
+                      {member.github && <a href={member.github} target="_blank" rel="noopener noreferrer" className="text-lab-fg/55 hover:text-lab-accent">GitHub</a>}
                     </div>
                   </div>
                 </article>
@@ -234,10 +237,10 @@ export default function ProjectDetails({
           <section className="py-14">
             <div className="mb-6 flex items-end justify-between gap-4">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-cyan-200/60">Keep exploring</p>
+                <p className={eyebrow}>Keep exploring</p>
                 <h2 className="mt-3 text-2xl font-semibold tracking-tight">More from the lab</h2>
               </div>
-              <Link href="/connect" className="min-h-11 self-end text-xs text-white/45 transition hover:text-cyan-100">All projects →</Link>
+              <Link href="/connect" className="inline-flex min-h-11 items-center self-end text-xs text-lab-fg/55 transition hover:text-lab-accent">All projects →</Link>
             </div>
             <div className="grid gap-5 lg:grid-cols-2">
               {relatedProjects.map((related, index) => (
@@ -247,9 +250,9 @@ export default function ProjectDetails({
           </section>
         )}
 
-        <footer className="flex flex-col gap-4 border-t border-white/[0.08] pt-6 text-xs text-white/35 sm:flex-row sm:items-center sm:justify-between">
+        <footer className="flex flex-col gap-4 border-t border-lab-fg/10 pt-6 text-xs text-lab-fg/40 sm:flex-row sm:items-center sm:justify-between">
           <span>© {new Date().getFullYear()} Pavan Kumar</span>
-          <Link href="/" className="min-h-11 inline-flex items-center transition hover:text-cyan-100">Back to main portfolio →</Link>
+          <Link href="/" className="inline-flex min-h-11 items-center transition hover:text-lab-accent">Back to main portfolio →</Link>
         </footer>
       </div>
     </main>
