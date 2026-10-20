@@ -8,8 +8,7 @@ import React, {
   useCallback,
 } from "react";
 import Image from "next/image";
-import { useFrame } from "@react-three/fiber";
-import { Canvas } from "@react-three/fiber";
+import { useFrame, Canvas } from "@react-three/fiber";
 import {
   OrbitControls,
   Sphere,
@@ -23,7 +22,8 @@ import {
   Variants,
   AnimatePresence,
 } from "framer-motion";
-import { FaGithub, FaLinkedin, FaReact, FaJsSquare } from "react-icons/fa";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { FaGithub, FaGoogle, FaLinkedin, FaPenNib, FaReact, FaJsSquare, FaTimes } from "react-icons/fa";
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 const cn = (...classes: (string | boolean | undefined | null)[]) =>
@@ -189,30 +189,28 @@ function ContactForm({
     e.preventDefault();
     if (!fields.name || !fields.email || !fields.message) return;
 
+    setStatus("sending");
+    try {
+      const res = await fetch("https://formspree.io/f/xaqlpqpj", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(fields),
+      });
 
-
-  setStatus("sending");
-  try {
-    const res = await fetch("https://formspree.io/f/xaqlpqpj", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(fields),
-    });
-
-    if (res.ok) {
-      setStatus("success");
-      setFields({ name: "", email: "", message: "" });
-    } else {
+      if (res.ok) {
+        setStatus("success");
+        setFields({ name: "", email: "", message: "" });
+      } else {
+        setStatus("error");
+      }
+    } catch (err) {
+      console.error("Form submission error:", err);
       setStatus("error");
     }
-  } catch (err) {
-    console.error("Form submission error:", err);
-    setStatus("error");
-  }
-};
+  };
 
 
   const btnClass = cn(
@@ -269,6 +267,8 @@ function ContactForm({
   return (
     <motion.form
       onSubmit={handleSubmit}
+      initial="hidden"
+      animate="visible"
       variants={stagger}
       className="space-y-4"
       noValidate
@@ -369,6 +369,11 @@ const texts = {
     resume: "Résumé",
     name: "Pavan Kumar",
     heroRole: "Full-Stack Developer & AI Enthusiast",
+    whoIAm: "Who I Am",
+    skillsStack: "Skills & Stack",
+    whatIBuilt: "What I've Built",
+    credentials: "Credentials",
+    getInTouch: "Get in Touch",
     heroDesc:
       "2nd-year B.Tech student at NMAMIT, exploring web development, AI, and interactive projects that push the boundary of what's possible.",
     contactMe: "Contact Me",
@@ -427,6 +432,18 @@ const texts = {
       "A collection of my professional certifications. Click any card to view.",
     emailLabel: "Pavankumar.eng29@gmail.com",
     emailMe: "Send Message",
+    testimonials: "Testimonials",
+    whatOthersSay: "What Others Say",
+    leaveTestimonial: "Leave a Testimonial",
+    testimonialName: "Your Name",
+    testimonialRole: "Role / Title",
+    testimonialMessage: "Your Experience",
+    testimonialLinkedin: "LinkedIn URL (optional)",
+    testimonialSubmit: "Submit Testimonial",
+    testimonialSuccess: "Thank you so much!",
+    testimonialSuccessDesc: "Your testimonial has been received.",
+    testimonialSendAnother: "Leave another",
+    testimonialPlaceholderMsg: "Share your experience working with or knowing Pavan...",
   },
   jp: {
     home: "ホーム",
@@ -437,6 +454,11 @@ const texts = {
     resume: "履歴書",
     name: "パヴァン・クマール",
     heroRole: "フルスタック開発者 & AI愛好家",
+    whoIAm: "私は誰か",
+    skillsStack: "スキルとスタック",
+    whatIBuilt: "作ったもの",
+    credentials: "資格・認定",
+    getInTouch: "お問い合わせ",
     heroDesc:
       "NMAMITの2年生で、ウェブ開発、AI、インタラクティブなプロジェクトを探求しています。",
     contactMe: "お問い合わせ",
@@ -494,6 +516,18 @@ const texts = {
       "私の専門的な認定資格のコレクションです。カードをクリックしてご覧ください。",
     emailLabel: "Pavankumar.eng29@gmail.com",
     emailMe: "メールを送る",
+    testimonials: "推薦状",
+    whatOthersSay: "みんなの声",
+    leaveTestimonial: "推薦状を書く",
+    testimonialName: "お名前",
+    testimonialRole: "役職・肩書き",
+    testimonialMessage: "あなたの体験",
+    testimonialLinkedin: "LinkedIn URL（任意）",
+    testimonialSubmit: "送信する",
+    testimonialSuccess: "ありがとうございます！",
+    testimonialSuccessDesc: "推薦状を受け取りました。",
+    testimonialSendAnother: "もう一つ書く",
+    testimonialPlaceholderMsg: "パヴァンとの仕事や交流の経験を共有してください...",
   },
 };
 
@@ -570,6 +604,486 @@ const certCards = [
   },
 ];
 
+// ─── Testimonials ──────────────────────────────────────────────────────────────
+type Testimonial = {
+  id: string;
+  name: string;
+  role: string;
+  message: string;
+  linkedin?: string;
+  avatarImage?: string;
+  initials: string;
+  avatarColor: string;
+  date: string;
+  seed?: boolean;
+};
+
+const seedTestimonials: Testimonial[] = [
+  {
+    id: "s1",
+    name: "Priya Sharma",
+    role: "Peer, ISE'28 · NMAMIT",
+    message: "Pavan has an incredible passion for technology. Working with him on group projects showed me how quickly he grasps complex concepts and turns ideas into reality. His dedication is truly inspiring.",
+    linkedin: "https://linkedin.com",
+    initials: "PS",
+    avatarColor: "#0ea5e9",
+    date: "Oct 2024",
+    seed: true,
+  },
+  {
+    id: "s2",
+    name: "Rohan Kamath",
+    role: "Classmate · NMAMIT ISE'28",
+    message: "Pavan's eye for design combined with his coding skills makes him stand out. He built our project UI from scratch and it looked polished and professional — far beyond what we expected.",
+    linkedin: "https://linkedin.com",
+    initials: "RK",
+    avatarColor: "#7c3aed",
+    date: "Nov 2024",
+    seed: true,
+  },
+  {
+    id: "s3",
+    name: "Sneha Bhat",
+    role: "Project Partner · NMAMIT",
+    message: "Exceptional collaborator — always prepared, communicates clearly, and consistently goes above and beyond. Pavan's front-end work on our hackathon project was the reason we won first place.",
+    initials: "SB",
+    avatarColor: "#10b981",
+    date: "Dec 2024",
+    seed: true,
+  },
+];
+
+function TestimonialsSection({
+  dark,
+  lang,
+  t,
+  inputClass,
+}: {
+  dark: boolean;
+  lang: "en" | "jp";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  t: any;
+  inputClass: string;
+}) {
+  const { data: session, status: sessionStatus } = useSession();
+  const [testimonials, setTestimonials] = useState<Testimonial[]>(seedTestimonials);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({ role: "", message: "", linkedin: "" });
+  const [status, setStatus] = useState<"idle" | "success">("idle");
+  const authorName =
+    session?.user?.name?.trim() || session?.user?.email?.split("@")[0] || "";
+  const authorImage = session?.user?.image || undefined;
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("pavan_testimonials");
+      if (saved) {
+        const parsed: Testimonial[] = JSON.parse(saved);
+        setTestimonials([...seedTestimonials, ...parsed]);
+      }
+    } catch {}
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (
+      sessionStatus !== "authenticated" ||
+      !authorName ||
+      !form.role.trim() ||
+      !form.message.trim()
+    ) return;
+    const colors = ["#00d4ff", "#7c3aed", "#ec4899", "#f59e0b", "#10b981", "#0ea5e9"];
+    const newT: Testimonial = {
+      id: Date.now().toString(),
+      name: authorName,
+      role: form.role.trim(),
+      message: form.message.trim(),
+      linkedin: form.linkedin.trim() || undefined,
+      avatarImage: authorImage,
+      initials: authorName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
+      avatarColor: colors[Math.floor(Math.random() * colors.length)],
+      date: new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+    };
+    try {
+      const existing: Testimonial[] = JSON.parse(localStorage.getItem("pavan_testimonials") || "[]");
+      const updated = [...existing, newT];
+      localStorage.setItem("pavan_testimonials", JSON.stringify(updated));
+      setTestimonials([...seedTestimonials, ...updated]);
+    } catch {
+      setTestimonials((prev) => [...prev, newT]);
+    }
+    setStatus("success");
+    setForm({ role: "", message: "", linkedin: "" });
+  };
+
+  const accent = dark ? "#00d4ff" : "#8b1a1a";
+
+  return (
+    <>
+      {/* Cards grid */}
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {testimonials.map((item, i) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+              className={cn(
+                "relative rounded-2xl border p-6 flex flex-col gap-4 group overflow-hidden transition-all duration-500",
+                dark
+                  ? "glass-card border-white/8 hover:border-cyan-400/30 hover:shadow-[0_8px_40px_rgba(0,212,255,0.08)]"
+                  : "glass-card border-[#8b1a1a]/12 hover:border-[#8b1a1a]/35 shadow-[0_2px_20px_rgba(139,26,26,0.06)] hover:shadow-[0_8px_40px_rgba(139,26,26,0.12)]"
+              )}
+            >
+              {/* Decorative hover glow */}
+              <div
+                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                style={{
+                  background: `radial-gradient(ellipse at top left, ${item.avatarColor}10 0%, transparent 60%)`,
+                }}
+              />
+
+              {/* Giant quote mark */}
+              <span
+                className="absolute top-3 right-5 text-7xl font-serif leading-none select-none pointer-events-none"
+                style={{ color: item.avatarColor, opacity: dark ? 0.1 : 0.12 }}
+              >
+                ”
+              </span>
+
+              {/* Message */}
+              <p
+                className={cn(
+                  "text-sm leading-relaxed italic flex-1 relative z-10",
+                  dark ? "text-white/70" : "text-[#5a3020]/80"
+                )}
+              >
+                &ldquo;{item.message}&rdquo;
+              </p>
+
+              {/* Stars */}
+              <div className="flex gap-0.5">
+                {Array.from({ length: 5 }).map((_, si) => (
+                  <span key={si} className="text-amber-400 text-sm">★</span>
+                ))}
+              </div>
+
+              {/* Author row */}
+              <div className="flex items-center gap-3 pt-1 border-t relative z-10" style={{ borderColor: dark ? "rgba(255,255,255,0.06)" : "rgba(139,26,26,0.08)" }}>
+                {/* Avatar */}
+                <div
+                  className="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg overflow-hidden"
+                  style={{ background: `linear-gradient(135deg, ${item.avatarColor} 0%, ${item.avatarColor}99 100%)` }}
+                >
+                  {item.avatarImage ? (
+                    <Image
+                      src={item.avatarImage}
+                      alt={`${item.name}'s Google profile`}
+                      fill
+                      sizes="40px"
+                      className="object-cover"
+                    />
+                  ) : item.initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
+                    {item.name}
+                  </p>
+                  <p className={cn("text-xs truncate", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
+                    {item.role}
+                  </p>
+                </div>
+                {/* LinkedIn */}
+                {item.linkedin && (
+                  <motion.a
+                    href={item.linkedin}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${item.name} on LinkedIn`}
+                    whileHover={{ scale: 1.2, y: -2 }}
+                    className={cn(
+                      "w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 transition-all duration-200",
+                      dark
+                        ? "border-white/10 text-white/30 hover:border-[#0EA5E9]/60 hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
+                        : "border-[#8b1a1a]/15 text-[#8b1a1a]/40 hover:border-[#0077B5]/50 hover:text-[#0077B5] hover:bg-[#0077B5]/8"
+                    )}
+                  >
+                    <FaLinkedin className="text-sm" />
+                  </motion.a>
+                )}
+                <span className={cn("text-[10px] shrink-0", dark ? "text-white/20" : "text-[#8b1a1a]/30")}>
+                  {item.date}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Leave a testimonial toggle */}
+        <motion.div
+          className="mt-14 flex flex-col items-center gap-6"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.04, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => { setShowForm((v) => !v); setStatus("idle"); }}
+            aria-expanded={showForm}
+            className={cn(
+              "group relative inline-flex items-center gap-3 overflow-hidden rounded-xl border px-7 py-3 font-semibold text-sm transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+              dark
+                ? "border-cyan-300/25 bg-[#07121b]/80 text-cyan-100 shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:border-cyan-200/50 hover:shadow-[0_10px_38px_rgba(0,212,255,0.12)] focus-visible:ring-cyan-300 focus-visible:ring-offset-[#030712]"
+                : "border-[#8b1a1a]/20 bg-[#fffaf2]/80 text-[#6f1919] shadow-[0_8px_28px_rgba(139,26,26,0.08)] hover:border-[#8b1a1a]/45 hover:shadow-[0_10px_32px_rgba(139,26,26,0.14)] focus-visible:ring-[#8b1a1a] focus-visible:ring-offset-[#f5ede0]"
+            )}
+          >
+            <span
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-300",
+                dark
+                  ? "border-cyan-200/15 bg-cyan-300/[0.08] text-cyan-200 group-hover:border-cyan-200/30 group-hover:bg-cyan-300/[0.14]"
+                  : "border-[#8b1a1a]/10 bg-[#8b1a1a]/[0.05] text-[#8b1a1a] group-hover:border-[#8b1a1a]/20 group-hover:bg-[#8b1a1a]/[0.09]"
+              )}
+            >
+              {showForm ? <FaTimes className="text-xs" /> : <FaPenNib className="text-xs transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />}
+            </span>
+            <span>{showForm ? (lang === "jp" ? "閉じる" : "Close") : t.leaveTestimonial}</span>
+            <span className={cn(
+              "ml-1 h-1.5 w-1.5 rounded-full transition-colors duration-300",
+              showForm
+                ? dark ? "bg-white/35" : "bg-[#8b1a1a]/35"
+                : dark ? "bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.7)]" : "bg-[#8b1a1a]/60"
+            )} />
+          </motion.button>
+
+          {/* Form */}
+          <AnimatePresence>
+            {showForm && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, y: -10 }}
+                animate={{ opacity: 1, height: "auto", y: 0 }}
+                exit={{ opacity: 0, height: 0, y: -10 }}
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                className="w-full max-w-2xl overflow-hidden"
+              >
+                {sessionStatus === "loading" ? (
+                  <div className={cn(
+                    "rounded-2xl border p-8 text-center text-sm",
+                    dark ? "glass-card border-white/10 text-white/60" : "bg-[#f5ede0] border-[#8b1a1a]/15 text-[#7a4a35]"
+                  )}>
+                    {lang === "jp" ? "Googleログインを確認しています..." : "Checking your Google sign-in..."}
+                  </div>
+                ) : !session?.user || !authorName ? (
+                  <div className={cn(
+                    "rounded-2xl border p-8 text-center space-y-4",
+                    dark ? "glass-card border-white/10" : "bg-[#f5ede0]/80 border-[#8b1a1a]/15 shadow-[0_4px_32px_rgba(139,26,26,0.08)]"
+                  )}>
+                    <div className="space-y-1">
+                      <h3 className={cn("text-lg font-bold", dark ? "text-white" : "text-[#2a1008]")}>
+                        {lang === "jp" ? "Googleでログイン" : "Sign in to leave a testimonial"}
+                      </h3>
+                      <p className={cn("text-sm", dark ? "text-white/50" : "text-[#7a4a35]")}>
+                        {lang === "jp" ? "名前とプロフィール写真はGoogleアカウントから取得します。" : "Your name and profile photo will come from your Google account."}
+                      </p>
+                    </div>
+                    <motion.button
+                      type="button"
+                      whileHover={{ scale: 1.03, y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => void signIn("google")}
+                      className={cn(
+                        "inline-flex items-center justify-center gap-3 rounded-xl border px-6 py-3 font-semibold text-sm transition-colors",
+                        dark ? "border-white/15 bg-white text-[#202124] hover:bg-white/90" : "border-[#8b1a1a]/15 bg-white text-[#202124] hover:bg-white/90"
+                      )}
+                    >
+                      <FaGoogle className="text-base" />
+                      {lang === "jp" ? "Googleで続行" : "Continue with Google"}
+                    </motion.button>
+                  </div>
+                ) : status === "success" ? (
+                  <motion.div
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className={cn(
+                      "rounded-2xl border p-10 text-center space-y-3",
+                      dark ? "glass-card border-white/10" : "bg-[#f5ede0] border-[#8b1a1a]/15"
+                    )}
+                  >
+                    <div className="text-5xl">🙏</div>
+                    <h3 className={cn("text-xl font-bold", dark ? "text-white" : "text-[#2a1008]")}>
+                      {t.testimonialSuccess}
+                    </h3>
+                    <p className={cn("text-sm", dark ? "text-white/50" : "text-[#7a4a35]")}>
+                      {t.testimonialSuccessDesc}
+                    </p>
+                    <button
+                      onClick={() => { setStatus("idle"); setShowForm(false); }}
+                      className={cn("text-sm font-semibold underline underline-offset-4 mt-2", dark ? "text-cyan-300" : "text-[#8b1a1a]")}
+                    >
+                      {t.testimonialSendAnother}
+                    </button>
+                  </motion.div>
+                ) : (
+                  <motion.form
+                    onSubmit={handleSubmit}
+                    className={cn(
+                      "rounded-2xl border p-7 space-y-5",
+                      dark ? "glass-card border-white/10" : "bg-[#f5ede0]/80 border-[#8b1a1a]/15 shadow-[0_4px_32px_rgba(139,26,26,0.08)]"
+                    )}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    noValidate
+                  >
+                    {/* Header */}
+                    <div className="space-y-1">
+                      <h3 className={cn("text-lg font-bold", dark ? "text-white" : "text-[#2a1008]")}>
+                        {t.leaveTestimonial}
+                      </h3>
+                      <p className={cn("text-xs", dark ? "text-white/35" : "text-[#7a4a35]/70")}>
+                        {lang === "jp" ? "あなたの声がポートフォリオをより充実させます" : "Your words help visitors understand who I am as a collaborator"}
+                      </p>
+                    </div>
+
+                    {/* Info pills */}
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { icon: "🔒", text: lang === "jp" ? "ブラウザーに保存" : "Stored in this browser" },
+                        { icon: "✨", text: lang === "jp" ? "すぐに表示" : "Appears instantly" },
+                        { icon: "🌐", text: lang === "jp" ? "この端末で表示" : "Visible on this device" },
+                      ].map(({ icon, text }) => (
+                        <span
+                          key={text}
+                          className={cn(
+                            "inline-flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-full border",
+                            dark ? "border-white/8 text-white/35 bg-white/3" : "border-[#8b1a1a]/12 text-[#7a4a35]/70 bg-[#8b1a1a]/4"
+                          )}
+                        >
+                          <span>{icon}</span>{text}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className={cn(
+                      "flex items-center gap-3 rounded-xl border px-4 py-3",
+                      dark ? "border-white/10 bg-white/3" : "border-[#8b1a1a]/12 bg-white/40"
+                    )}>
+                      <div className="relative w-10 h-10 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-sm font-bold text-white"
+                        style={{ background: `linear-gradient(135deg, ${accent} 0%, ${accent}99 100%)` }}>
+                        {authorImage ? (
+                          <Image
+                            src={authorImage}
+                            alt={`${authorName}'s Google profile`}
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                          />
+                        ) : authorName.split(" ").map((word) => word[0]).join("").slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
+                          {authorName}
+                        </p>
+                        <p className={cn("text-xs", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
+                          {lang === "jp" ? "Googleアカウントで確認済み" : "Verified with Google"}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => void signOut()}
+                        className={cn("text-xs font-semibold underline underline-offset-4", dark ? "text-white/50 hover:text-white" : "text-[#8b1a1a]/70 hover:text-[#8b1a1a]")}
+                      >
+                        {lang === "jp" ? "ログアウト" : "Sign out"}
+                      </button>
+                    </div>
+
+                    {/* Fields */}
+                    <div className="space-y-1.5">
+                      <label className={cn("text-xs font-semibold tracking-wide uppercase", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
+                        {t.testimonialRole} *
+                      </label>
+                      <input
+                        type="text"
+                        name="role"
+                        value={form.role}
+                        onChange={handleChange}
+                        placeholder={lang === "jp" ? "エンジニア · NMAMIT" : "Peer · ISE'28 · NMAMIT"}
+                        required
+                        className={inputClass}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className={cn("text-xs font-semibold tracking-wide uppercase", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
+                        {t.testimonialMessage} *
+                      </label>
+                      <textarea
+                        name="message"
+                        value={form.message}
+                        onChange={handleChange}
+                        rows={4}
+                        placeholder={t.testimonialPlaceholderMsg}
+                        required
+                        style={{ resize: "none" }}
+                        className={inputClass}
+                      />
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <label className={cn("text-xs font-semibold tracking-wide uppercase", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
+                        {t.testimonialLinkedin}
+                      </label>
+                      <div className="relative">
+                        <FaLinkedin
+                          className={cn("absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none", dark ? "text-white/20" : "text-[#7a4a35]/30")}
+                        />
+                        <input
+                          type="url"
+                          name="linkedin"
+                          value={form.linkedin}
+                          onChange={handleChange}
+                          placeholder="https://linkedin.com/in/yourprofile"
+                          className={cn(inputClass, "pl-9")}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Submit */}
+                    <motion.button
+                      type="submit"
+                      whileHover={{ scale: 1.02, y: -1 }}
+                      whileTap={{ scale: 0.98 }}
+                      disabled={!form.role.trim() || !form.message.trim()}
+                      className={cn(
+                        "relative w-full overflow-hidden px-8 py-4 rounded-xl font-semibold text-sm text-white transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed",
+                        dark
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_30px_rgba(0,212,255,0.2)] hover:shadow-[0_0_50px_rgba(0,212,255,0.4)]"
+                          : "bg-gradient-to-r from-[#8b1a1a] to-[#c9956a] shadow-[0_4px_24px_rgba(139,26,26,0.3)] hover:shadow-[0_6px_40px_rgba(139,26,26,0.45)]"
+                      )}
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        <span>✍️</span> {t.testimonialSubmit}
+                      </span>
+                      <span className="absolute inset-0 animate-shimmer" />
+                    </motion.button>
+                  </motion.form>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+    </>
+  );
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Home() {
   const [showNav, setShowNav] = useState(true);
@@ -579,17 +1093,21 @@ export default function Home() {
   const [certIndex, setCertIndex] = useState(0);
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const pausedUntilRef = useRef<number>(0);
   const heroRef = useRef<HTMLElement>(null);
 
-  const { scrollYProgress } = useScroll({
+  const { scrollYProgress } = useScroll();
+  const progressScaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
+
+  const { scrollYProgress: heroScrollYProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const heroY = useTransform(heroScrollYProgress, [0, 1], ["0%", "30%"]);
+  const heroOpacity = useTransform(heroScrollYProgress, [0, 0.8], [1, 0]);
 
   const t = texts[lang];
 
@@ -605,6 +1123,23 @@ export default function Home() {
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Active section tracking
+  useEffect(() => {
+    const sectionIds = ["home", "about", "projects", "certifications", "testimonials", "contact"];
+    const observers: IntersectionObserver[] = [];
+    sectionIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const obs = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setActiveSection(id); },
+        { rootMargin: "-40% 0px -55% 0px" }
+      );
+      obs.observe(el);
+      observers.push(obs);
+    });
+    return () => observers.forEach((o) => o.disconnect());
   }, []);
 
   // Projects auto-scroll
@@ -672,7 +1207,9 @@ export default function Home() {
     { label: t.about, href: "#about" },
     { label: t.projects, href: "#projects" },
     { label: t.certifications, href: "#certifications" },
+    { label: t.testimonials, href: "#testimonials" },
     { label: t.contact, href: "#contact" },
+    { label: "Engineering Lab", href: "/connect" },
   ];
 
   return (
@@ -684,110 +1221,16 @@ export default function Home() {
           : "bg-[#f5ede0] text-[#2a1008] light-mode"
       )}
     >
-      {/* ── Global styles ── */}
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
-
-        * { cursor: none !important; }
-        body { font-family: 'DM Sans', sans-serif; }
-        h1, h2, h3, h4 { font-family: 'Syne', sans-serif; }
-
-        @keyframes gradientShift {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50%       { transform: translateY(-14px); }
-        }
-        @keyframes pulse-ring {
-          0%   { transform: scale(1);   opacity: 0.6; }
-          100% { transform: scale(1.8); opacity: 0; }
-        }
-        @keyframes shimmer {
-          0%   { background-position: -200% center; }
-          100% { background-position:  200% center; }
-        }
-        @keyframes borderGlow {
-          0%,100% { border-color: rgba(0,212,255,0.3); box-shadow: 0 0 15px rgba(0,212,255,0.1); }
-          50%      { border-color: rgba(0,212,255,0.7); box-shadow: 0 0 30px rgba(0,212,255,0.25); }
-        }
-
-        .animate-gradient { background-size: 300% 300%; animation: gradientShift 4s ease-in-out infinite; }
-        .animate-float    { animation: float 6s ease-in-out infinite; }
-        .animate-shimmer  {
-          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.08) 50%, transparent 100%);
-          background-size: 200% 100%;
-          animation: shimmer 2.4s infinite;
-        }
-        .glow-border { animation: borderGlow 3s ease-in-out infinite; }
-
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .glass {
-          background: rgba(255,255,255,0.03);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-        .glass-card {
-          background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-        }
-        .text-gradient {
-          background: linear-gradient(135deg, #00d4ff 0%, #7c3aed 50%, #00d4ff 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          animation: gradientShift 4s ease-in-out infinite;
-        }
-        .text-gradient-gold {
-          background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 50%, #d97706 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        ::selection { background: rgba(0,212,255,0.25); }
-
-        /* ── Light mode ── */
-        .light-mode .glass {
-          background: rgba(255,245,230,0.55) !important;
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-        .light-mode .glass-card {
-          background: linear-gradient(135deg,rgba(255,248,240,0.85) 0%,rgba(245,232,210,0.6) 100%) !important;
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-        }
-        .light-mode .text-gradient {
-          background: linear-gradient(135deg, #8b1a1a 0%, #c9956a 50%, #7b2d2d 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          animation: gradientShift 4s ease-in-out infinite;
-        }
-        .light-mode .text-gradient-gold {
-          background: linear-gradient(135deg, #8b1a1a 0%, #c9956a 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-        .light-mode .glow-border {
-          animation: none !important;
-          border-color: rgba(139,26,26,0.22) !important;
-          box-shadow: 0 2px 12px rgba(139,26,26,0.07);
-        }
-        .light-mode .glow-border:hover {
-          border-color: rgba(139,26,26,0.45) !important;
-          box-shadow: 0 4px 24px rgba(139,26,26,0.15) !important;
-        }
-      `}</style>
+      {/* ── Scroll progress bar ── */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[3px] z-[9998] origin-left"
+        style={{
+          scaleX: progressScaleX,
+          background: dark
+            ? "linear-gradient(90deg, #00d4ff, #7c3aed)"
+            : "linear-gradient(90deg, #8b1a1a, #c9956a)",
+        }}
+      />
 
       <CursorGlow dark={dark} />
       <GrainOverlay />
@@ -842,6 +1285,7 @@ export default function Home() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Toggle Dark Mode"
+          title={dark ? "Switch to Light Mode" : "Switch to Dark Mode"}
           onClick={() => setDark(!dark)}
           className={cn(
             "w-12 h-12 rounded-full flex items-center justify-center text-lg shadow-xl transition-all duration-300",
@@ -856,6 +1300,7 @@ export default function Home() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           aria-label="Toggle Language"
+          title={lang === "en" ? "Switch to Japanese" : "Switch to English"}
           onClick={() => setLang(lang === "en" ? "jp" : "en")}
           className={cn(
             "w-12 h-12 rounded-full flex items-center justify-center text-xs font-bold shadow-xl transition-all duration-300",
@@ -894,20 +1339,28 @@ export default function Home() {
 
           {/* Desktop */}
           <div className="hidden sm:flex items-center gap-1">
-            {navLinks.map(({ label, href }) => (
-              <a
-                key={href}
-                href={href}
-                className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                  dark
-                    ? "text-white/60 hover:text-white hover:bg-white/6"
-                    : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8"
-                )}
-              >
-                {label}
-              </a>
-            ))}
+            {navLinks.map(({ label, href }) => {
+              const sectionId = href.replace("#", "");
+              const isActive = activeSection === sectionId;
+              return (
+                <a
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? dark
+                        ? "text-cyan-300 bg-cyan-400/10"
+                        : "text-[#8b1a1a] bg-[#8b1a1a]/10 font-semibold"
+                      : dark
+                      ? "text-white/60 hover:text-white hover:bg-white/6"
+                      : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8"
+                  )}
+                >
+                  {label}
+                </a>
+              );
+            })}
             <a
               href="/resume.pdf"
               download
@@ -924,8 +1377,12 @@ export default function Home() {
 
           {/* Hamburger */}
           <button
-            className="sm:hidden flex flex-col justify-center items-center w-10 h-10 rounded-xl gap-1.5"
+            className={cn(
+              "sm:hidden flex flex-col justify-center items-center w-10 h-10 rounded-xl gap-1.5 transition-colors duration-200",
+              dark ? "hover:bg-white/8" : "hover:bg-[#8b1a1a]/8"
+            )}
             aria-label="Toggle mobile menu"
+            aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen((o) => !o)}
           >
             {[
@@ -1207,7 +1664,7 @@ export default function Home() {
                 dark ? "text-cyan-400" : "text-[#8b1a1a]"
               )}
             >
-              Who I Am
+              {t.whoIAm}
             </p>
             <h2 className="text-4xl sm:text-5xl font-extrabold text-gradient">
               {t.aboutMeTitle}
@@ -1288,7 +1745,7 @@ export default function Home() {
                   dark ? "text-white/40" : "text-[#7a4a35]/60"
                 )}
               >
-                Skills & Stack
+                {t.skillsStack}
               </h3>
               <div className="flex flex-wrap gap-3">
                 {skills.map(({ label, icon }, i) => (
@@ -1332,7 +1789,7 @@ export default function Home() {
                 dark ? "text-cyan-400" : "text-[#8b1a1a]"
               )}
             >
-              What I've Built
+              {t.whatIBuilt}
             </p>
             <h2 className="text-4xl sm:text-5xl font-extrabold text-gradient">
               {t.projectsTitle}
@@ -1466,7 +1923,7 @@ export default function Home() {
                 dark ? "text-cyan-400" : "text-[#8b1a1a]"
               )}
             >
-              Credentials
+              {t.credentials}
             </p>
             <h2 className="text-4xl sm:text-5xl font-extrabold text-gradient">
               {t.certificationsTitle}
@@ -1485,7 +1942,7 @@ export default function Home() {
 
         {/* Horizontal scroll */}
         <div
-          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8"
+          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-8 pt-4"
           style={{
             paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
             paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
@@ -1505,7 +1962,7 @@ export default function Home() {
                   delay: i * 0.13,
                   ease: [0.22, 1, 0.36, 1],
                 }}
-                whileHover={{ y: -12, scale: 1.04 }}
+                whileHover={{ y: -4 }}
                 style={{ perspective: 900 }}
               >
                 <div
@@ -1705,6 +2162,16 @@ export default function Home() {
                   : "bg-[#f5ede0] border border-[#8b1a1a]/20 shadow-2xl"
               )}
               onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => {
+                const startX = e.touches[0].clientX;
+                const onEnd = (ev: TouchEvent) => {
+                  const dx = ev.changedTouches[0].clientX - startX;
+                  if (dx < -50) showNext();
+                  else if (dx > 50) showPrev();
+                  document.removeEventListener("touchend", onEnd);
+                };
+                document.addEventListener("touchend", onEnd);
+              }}
             >
               <button
                 onClick={closeCert}
@@ -1764,8 +2231,68 @@ export default function Home() {
         )}
       </AnimatePresence>
 
+      {/* ── TESTIMONIALS ── */}
+      <motion.section
+        id="testimonials"
+        className="py-32 relative z-10 overflow-hidden"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.05 }}
+        variants={stagger}
+      >
+        {/* Ambient glow */}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <div
+            className="w-[800px] h-[360px] rounded-full"
+            style={{
+              background: dark
+                ? "radial-gradient(ellipse, #7c3aed 0%, transparent 70%)"
+                : "radial-gradient(ellipse, #c9956a 0%, transparent 70%)",
+              filter: "blur(100px)",
+              opacity: 0.07,
+            }}
+          />
+        </div>
+
+        {/* Heading */}
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.div variants={fadeUp} className="mb-14 text-center">
+            <p
+              className={cn(
+                "text-sm font-semibold tracking-widest uppercase mb-3",
+                dark ? "text-cyan-400" : "text-[#8b1a1a]"
+              )}
+            >
+              {t.whatOthersSay}
+            </p>
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-gradient">
+              {t.testimonials}
+            </h2>
+            <Divider dark={dark} />
+            <p
+              className={cn(
+                "text-sm mt-4",
+                dark ? "text-white/40" : "text-[#7a4a35]/70"
+              )}
+            >
+              {lang === "jp"
+                ? "共に働いた仲間や知人からの声"
+                : "Kind words from peers, collaborators & the people I've worked with"}
+            </p>
+          </motion.div>
+        </div>
+
+        <TestimonialsSection
+          dark={dark}
+          lang={lang}
+          t={t}
+          inputClass={inputClass}
+        />
+      </motion.section>
+
       {/* ── CONTACT ── */}
       <motion.section
+
         id="contact"
         className="py-32 relative z-10"
         initial="hidden"
@@ -1781,7 +2308,7 @@ export default function Home() {
                 dark ? "text-cyan-400" : "text-[#8b1a1a]"
               )}
             >
-              Get in Touch
+              {t.getInTouch}
             </p>
             <h2 className="text-4xl sm:text-5xl font-extrabold text-gradient">
               {t.contact}
@@ -1809,19 +2336,40 @@ export default function Home() {
       {/* ── FOOTER ── */}
       <footer
         className={cn(
-          "relative z-10 py-10 text-center border-t",
+          "relative z-10 py-10 border-t",
           dark ? "border-white/6" : "border-[#8b1a1a]/10"
         )}
       >
-        <p
-          className={cn(
-            "text-xs tracking-wide",
-            dark ? "text-white/20" : "text-[#7a4a35]/45"
-          )}
-        >
-          © {new Date().getFullYear()} Pavan Kumar · Crafted with React &
-          Three.js
-        </p>
+        <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p
+            className={cn(
+              "text-xs tracking-wide",
+              dark ? "text-white/25" : "text-[#7a4a35]/50"
+            )}
+          >
+            © {new Date().getFullYear()} Pavan Kumar · Crafted with React &amp; Three.js
+          </p>
+          <div className="flex items-center gap-5">
+            {[
+              { href: "https://github.com/pavan55kumar", icon: <FaGithub />, label: "GitHub" },
+              { href: "https://www.linkedin.com/in/pavan-kumar-6864b2320", icon: <FaLinkedin />, label: "LinkedIn" },
+            ].map(({ href, icon, label }) => (
+              <a
+                key={label}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={label}
+                className={cn(
+                  "text-lg transition-all duration-200",
+                  dark ? "text-white/25 hover:text-cyan-400" : "text-[#7a4a35]/40 hover:text-[#8b1a1a]"
+                )}
+              >
+                {icon}
+              </a>
+            ))}
+          </div>
+        </div>
       </footer>
     </div>
   );

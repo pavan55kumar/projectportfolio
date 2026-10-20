@@ -1,3 +1,8 @@
+/**
+ * Hero3D.tsx — Standalone demo component (not used in main page.tsx).
+ * The main page renders its own InteractiveSphere + Canvas inline.
+ * This file can be used as a starting point for a separate route or experiment.
+ */
 "use client";
 
 import { Canvas } from "@react-three/fiber";
