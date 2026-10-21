@@ -5,6 +5,8 @@ import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 import type { EngineeringProject } from "@/data/engineeringProjects";
 import ProjectCard from "./ProjectCard";
 import ProjectVisual from "./ProjectVisual";
+import SankatSaathiLiveDemo from "./SankatSaathiLiveDemo";
+import AtlasLiveDemo from "./AtlasLiveDemo";
 
 function ProjectLink({
   href,
@@ -137,6 +139,23 @@ export default function ProjectDetails({
                 )}
               </div>
             )}
+          </section>
+        )}
+
+        {/* Interactive Live Demo */}
+        {project.slug === "sankat-saathi" && (
+          <section className="border-b border-lab-fg/10 py-12">
+            <p className={eyebrow}>Live System Simulation</p>
+            <h2 className="mt-3 mb-8 text-2xl font-semibold tracking-tight">Interactive Emergency Coordination Engine</h2>
+            <SankatSaathiLiveDemo />
+          </section>
+        )}
+
+        {project.slug === "atlas" && (
+          <section className="border-b border-lab-fg/10 py-12">
+            <p className={eyebrow}>Interactive Life OS</p>
+            <h2 className="mt-3 mb-8 text-2xl font-semibold tracking-tight">Explore the Productivity Engines</h2>
+            <AtlasLiveDemo />
           </section>
         )}
 

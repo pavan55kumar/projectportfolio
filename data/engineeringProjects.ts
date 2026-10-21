@@ -37,15 +37,119 @@ export type EngineeringProject = {
   icon: "portfolio" | "atlas" | "relief";
 };
 
-// Add images under public/projects/<slug>/ and teammates under public/team/.
-// Keep optional URLs, dates, and contributor details empty until they are verified.
 export const engineeringProjects: EngineeringProject[] = [
+  {
+    id: "sankat-saathi",
+    slug: "sankat-saathi",
+    title: "Sankat Saathi",
+    description: "AI-Powered Flood Relief & Humanitarian Supply Allocation Platform built for the IBM Z Datathon 2026.",
+    icon: "relief",
+    status: "IBM Z Datathon 2026 Finalist Project",
+    coverImage: "/projects/sankat-saathi/cover.png",
+    bannerImage: "/projects/sankat-saathi/banner.jpg",
+    overview:
+      "Sankat Saathi (संकट साथी) is an AI-powered disaster management and humanitarian logistics platform engineered for flood-prone regions. Backed by IBM Z and Supabase, it automates citizen SOS requests, detects duplicates, scores urgency using explainable AI models, calculates Haversine geospatial proximity to relief centers, and dynamically coordinates warehouse inventories to dispatch life-saving supplies.",
+    intendedFor:
+      "Disaster response teams, state relief commissioners, field NGOs, and flood-affected citizens.",
+    role: "Full-Stack & Systems Architecture, React + Tailwind Frontend, AI Recommendation Engine, Supabase Schema & Workflows.",
+    duration: "October 2026 · IBM Z Datathon",
+    technologies: [
+      "React 18",
+      "Vite",
+      "Tailwind CSS",
+      "Supabase (PostgreSQL & RLS)",
+      "IBM Z / LinuxONE",
+      "FastAPI",
+      "Haversine Geospatial Algorithm",
+      "Explainable AI Ranking",
+      "Lucide Icons",
+    ],
+    features: [
+      "Citizen Emergency SOS Portal with automated GPS geocoding and special needs categorization (Water, Food, Medical, Rescue).",
+      "Explainable AI Urgency Scoring weighing incident severity (+55), logarithmic population impact, and wait times.",
+      "Haversine Geospatial Allocation mapping requests to the closest relief depots in Mysuru.",
+      "Multi-stage dispatch pipeline: Approved → Preparing → In transit → Delivered.",
+      "Shelter & Relief Camp Directory with real-time capacity and occupancy metrics.",
+      "Enterprise PostgreSQL RLS security isolating citizen, NGO, and command operational views.",
+    ],
+    contributions: [
+      "Designed and developed the complete frontend command center and citizen portal in React & Tailwind CSS.",
+      "Implemented the explainable AI scoring algorithm and priority categorization engine.",
+      "Engineered Haversine distance calculations for transit optimization between relief camps and victims.",
+      "Created modular Supabase database schemas and stored procedures for request-to-delivery lifecycle.",
+    ],
+    team: [
+      {
+        name: "Pavan Kumar",
+        role: "Lead Full-Stack & Algorithm Engineer",
+        contribution: "Frontend architecture, recommendation algorithms, and Supabase integration.",
+        github: "https://github.com/pavan55kumar",
+        linkedin: "https://www.linkedin.com/in/pavan-kumar-6864b2320",
+      },
+    ],
+    githubUrl: "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
+    liveDemoUrl: "/engineering-lab/sankat-saathi#demo",
+    relatedProjectIds: ["atlas", "portfolio-3d"],
+  },
+  {
+    id: "atlas",
+    slug: "atlas",
+    title: "Atlas",
+    description: "Personal Life Operating System & Intelligent Student Workspace.",
+    icon: "atlas",
+    status: "Active Production PWA",
+    coverImage: "/projects/atlas/cover.png",
+    bannerImage: "/projects/atlas/banner.png",
+    overview:
+      "Atlas is an all-in-one personal life operating system and cognitive student workspace. Unifying academic management, daily habits, deep work, and financial control with an AI assistant, attendance bunk calculator, CGPA grade planner, time-blocking calendar, and cashflow ledger, Atlas helps students and builders plan less and achieve more.",
+    intendedFor:
+      "University students, engineers, and ambitious knowledge workers.",
+    role: "Creator & Lead Developer",
+    duration: "July 2026 – Present",
+    technologies: [
+      "React 18",
+      "Vite",
+      "Tailwind CSS",
+      "Framer Motion",
+      "Supabase",
+      "PWA / Service Workers",
+      "Web Speech API (Voice AI)",
+      "Lucide Icons",
+    ],
+    features: [
+      "College Attendance Tracker with Bunk Margin Simulator ('Safe to miss 2 classes' or 'Must attend 3 to keep 75%').",
+      "Academic CGPA / SGPA Forecaster with university grade-weighting and target prediction.",
+      "Pomodoro Deep-Work Focus Engine with ambient sound generator and interval tracking.",
+      "Daily Habit Streaks & Eisenhower Priority Task Board with multi-week consistency graphs.",
+      "AI Assistant with voice-enabled chat, smart daily morning briefings, and automated study scheduler.",
+      "Student Cashflow & Expense Ledger with category-level burn rate analytics.",
+    ],
+    contributions: [
+      "Designed and built the full application from ground up using React, Vite, Tailwind CSS, and Framer Motion.",
+      "Engineered academic algorithms for university attendance percentages, bunk thresholds, and CGPA projections.",
+      "Implemented Progressive Web App (PWA) capabilities with offline persistence and app shell.",
+      "Integrated Supabase backend for real-time cloud data sync and user authentication.",
+    ],
+    team: [
+      {
+        name: "Pavan Kumar",
+        role: "Solo Creator & Architect",
+        contribution: "UI/UX design, frontend engineering, academic logic, and backend architecture.",
+        github: "https://github.com/pavan55kumar",
+        linkedin: "https://www.linkedin.com/in/pavan-kumar-6864b2320",
+      },
+    ],
+    githubUrl: "https://github.com/pavan55kumar/atlas",
+    liveDemoUrl: "/engineering-lab/atlas#demo",
+    relatedProjectIds: ["sankat-saathi", "portfolio-3d"],
+  },
   {
     id: "portfolio-3d",
     slug: "portfolio-3d",
     title: "3D Portfolio",
     description: "An interactive personal portfolio built around a live 3D experience.",
     icon: "portfolio",
+    status: "Live Experience",
     overview:
       "A personal portfolio bringing together an interactive 3D hero, selected projects, certifications, testimonials, and contact information.",
     intendedFor: "Visitors exploring my work and background.",
@@ -61,29 +165,13 @@ export const engineeringProjects: EngineeringProject[] = [
       "NextAuth",
     ],
     features: [
-      "Interactive 3D hero scene",
-      "Responsive project and certification sections",
-      "Theme and language controls",
-      "Google sign-in for testimonials",
+      "Interactive 3D hero scene with Three.js shaders",
+      "Responsive project and certification showcase",
+      "Theme and language controls with instant reactivity",
+      "LinkedIn OAuth authentication for verified testimonials",
     ],
     liveDemoUrl: "/",
-    relatedProjectIds: ["atlas", "sankat-saathi"],
-  },
-  {
-    id: "atlas",
-    slug: "atlas",
-    title: "Atlas",
-    description: "A productivity and student dashboard application.",
-    icon: "atlas",
-    relatedProjectIds: ["portfolio-3d", "sankat-saathi"],
-  },
-  {
-    id: "sankat-saathi",
-    slug: "sankat-saathi",
-    title: "Sankat Saathi",
-    description: "A disaster-relief coordination platform.",
-    icon: "relief",
-    relatedProjectIds: ["portfolio-3d", "atlas"],
+    relatedProjectIds: ["sankat-saathi", "atlas"],
   },
 ];
 

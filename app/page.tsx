@@ -420,11 +420,28 @@ const texts = {
     projectsTitle: "Projects",
     projectsList: [
       {
-        title: "Note Saver App",
-        tech: "Python · Flask · Jinja2 · HTML · CSS · JavaScript",
-        desc: "A simple Flask web app with Python backend and dynamic HTML/CSS/JS frontend using Jinja2 templates.",
-        github: "https://github.com/pavan55kumar/FLASK-note-saver",
-        emoji: "📝",
+        title: "Sankat Saathi (संकट साथी)",
+        tech: "React 18 · Vite · Tailwind · Supabase · IBM Z · Haversine AI",
+        desc: "AI-powered humanitarian flood relief platform that optimizes emergency citizen SOS requests, explains urgency scores, and coordinates warehouse supply dispatches.",
+        github: "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
+        labUrl: "/engineering-lab/sankat-saathi",
+        emoji: "🌊",
+      },
+      {
+        title: "Atlas Life OS",
+        tech: "React · Vite · Tailwind · Framer Motion · Supabase · PWA",
+        desc: "Personal life operating system featuring an intelligent college attendance & bunk margin simulator, CGPA planner, Pomodoro focus engine, and cognitive AI morning brief.",
+        github: "https://github.com/pavan55kumar/atlas",
+        labUrl: "/engineering-lab/atlas",
+        emoji: "🧭",
+      },
+      {
+        title: "Interactive 3D Portfolio",
+        tech: "Next.js · React · Three.js · React Three Fiber · Drei · NextAuth",
+        desc: "Modern personal portfolio with interactive 3D WebGL hero sphere, LinkedIn OAuth testimonials, and dedicated Engineering Lab deep-dives.",
+        github: "https://github.com/pavan55kumar/projectportfolio",
+        labUrl: "/engineering-lab/portfolio-3d",
+        emoji: "✨",
       },
       {
         title: "Spam Detection",
@@ -434,25 +451,11 @@ const texts = {
         emoji: "🛡️",
       },
       {
-        title: "Weather App",
-        tech: "React · OpenWeather API · Tailwind CSS",
-        desc: "Responsive weather app fetching real-time data and forecasts from the OpenWeather API.",
-        github: "https://github.com/pavan55kumar/weather-app",
-        emoji: "🌤️",
-      },
-      {
-        title: "Todo Manager",
-        tech: "React · Redux · TypeScript",
-        desc: "Modern todo app with full Redux state management, TypeScript types, and drag-and-drop support.",
-        github: "https://github.com/pavan55kumar/todo-manager",
-        emoji: "✅",
-      },
-      {
-        title: "Chatbot Assistant",
-        tech: "Python · Flask · Transformers · Streamlit",
-        desc: "AI-powered chatbot using HuggingFace Transformers with an elegant Streamlit web interface.",
-        github: "https://github.com/pavan55kumar/chatbot-assistant",
-        emoji: "🤖",
+        title: "Note Saver App",
+        tech: "Python · Flask · Jinja2 · HTML · CSS · JavaScript",
+        desc: "A simple Flask web app with Python backend and dynamic HTML/CSS/JS frontend using Jinja2 templates.",
+        github: "https://github.com/pavan55kumar/FLASK-note-saver",
+        emoji: "📝",
       },
     ],
     certificationsTitle: "Certifications",
@@ -508,11 +511,28 @@ const texts = {
     projectsTitle: "プロジェクト",
     projectsList: [
       {
-        title: "ノート保存アプリ",
-        tech: "Python · Flask · Jinja2 · HTML · CSS · JavaScript",
-        desc: "PythonバックエンドとJinja2テンプレートを使用したFlaskウェブアプリ。",
-        github: "https://github.com/pavan55kumar/FLASK-note-saver",
-        emoji: "📝",
+        title: "サンカット・サーティ (Sankat Saathi)",
+        tech: "React 18 · Vite · Tailwind · Supabase · IBM Z · ハバーサインAI",
+        desc: "IBM Z Datathon 2026向けに構築されたAI洪水救援プラットフォーム。緊急SOSの優先順位付けと物資配分を自動化します。",
+        github: "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
+        labUrl: "/engineering-lab/sankat-saathi",
+        emoji: "🌊",
+      },
+      {
+        title: "Atlas ライフOS",
+        tech: "React · Vite · Tailwind · Framer Motion · Supabase · PWA",
+        desc: "大学の出席欠席シミュレーター、CGPA計画、ポモドーロ集中タイマー、習慣ストリーク、AIブリーフィングを備えた統合学生ワークスペース。",
+        github: "https://github.com/pavan55kumar/atlas",
+        labUrl: "/engineering-lab/atlas",
+        emoji: "🧭",
+      },
+      {
+        title: "3Dインタラクティブポートフォリオ",
+        tech: "Next.js · React · Three.js · React Three Fiber · Drei · NextAuth",
+        desc: "Three.jsによるインタラクティブな3D WebGLシーンとLinkedIn認証の推薦状システムを備えた個人ポートフォリオ。",
+        github: "https://github.com/pavan55kumar/projectportfolio",
+        labUrl: "/engineering-lab/portfolio-3d",
+        emoji: "✨",
       },
       {
         title: "スパム検出",
@@ -522,25 +542,11 @@ const texts = {
         emoji: "🛡️",
       },
       {
-        title: "天気アプリ",
-        tech: "React · OpenWeather API · Tailwind CSS",
-        desc: "OpenWeather APIからリアルタイムデータを取得するレスポンシブな天気アプリ。",
-        github: "https://github.com/pavan55kumar/weather-app",
-        emoji: "🌤️",
-      },
-      {
-        title: "Todoマネージャー",
-        tech: "React · Redux · TypeScript",
-        desc: "Reduxによる完全な状態管理とTypeScript型を備えたモダンなTodoアプリ。",
-        github: "https://github.com/pavan55kumar/todo-manager",
-        emoji: "✅",
-      },
-      {
-        title: "チャットボット",
-        tech: "Python · Flask · Transformers · Streamlit",
-        desc: "HuggingFace TransformersとStreamlitを使用したAIチャットボット。",
-        github: "https://github.com/pavan55kumar/chatbot-assistant",
-        emoji: "🤖",
+        title: "ノート保存アプリ",
+        tech: "Python · Flask · Jinja2 · HTML · CSS · JavaScript",
+        desc: "PythonバックエンドとJinja2テンプレートを使用したFlaskウェブアプリ。",
+        github: "https://github.com/pavan55kumar/FLASK-note-saver",
+        emoji: "📝",
       },
     ],
     certificationsTitle: "認定資格",
@@ -2070,7 +2076,7 @@ export default function Home() {
             paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
           }}
         >
-          {t.projectsList.map(({ title, tech, desc, github, emoji }, i) => (
+          {t.projectsList.map(({ title, tech, desc, github, emoji, labUrl }: any, i: number) => (
             <motion.div
               key={i}
               variants={fadeUp}
@@ -2128,27 +2134,39 @@ export default function Home() {
                   {desc}
                 </p>
               </div>
-              {github && (
-                <a
-                  href={github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    "mt-auto inline-flex items-center gap-2 text-sm font-semibold transition-colors duration-200 group/link",
-                    dark
-                      ? "text-cyan-300 hover:text-white"
-                      : "text-[#8b1a1a] hover:text-[#2a1008]"
-                  )}
-                >
-                  <FaGithub />
-                  <span className="group-hover/link:underline">
-                    View on GitHub
-                  </span>
-                  <span className="opacity-0 group-hover/link:opacity-100 transition-opacity">
-                    →
-                  </span>
-                </a>
-              )}
+              <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
+                {labUrl && (
+                  <Link
+                    href={labUrl}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all",
+                      dark
+                        ? "border-cyan-400/30 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20"
+                        : "border-[#8b1a1a]/20 bg-[#8b1a1a]/5 text-[#8b1a1a] hover:bg-[#8b1a1a]/10"
+                    )}
+                  >
+                    <span>🧪</span> {lang === "jp" ? "ラボで体験" : "Live Demo & Lab"} →
+                  </Link>
+                )}
+                {github && (
+                  <a
+                    href={github}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "inline-flex items-center gap-1.5 text-xs font-semibold transition-colors duration-200 group/link py-1.5 px-2",
+                      dark
+                        ? "text-white/60 hover:text-white"
+                        : "text-[#7a4a35] hover:text-[#2a1008]"
+                    )}
+                  >
+                    <FaGithub />
+                    <span className="group-hover/link:underline">
+                      GitHub
+                    </span>
+                  </a>
+                )}
+              </div>
             </motion.div>
           ))}
         </motion.div>
