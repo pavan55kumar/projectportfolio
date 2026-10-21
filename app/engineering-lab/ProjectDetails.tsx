@@ -233,9 +233,17 @@ export default function ProjectDetails({
               {project.team.map((member) => (
                 <article key={`${member.name}-${member.role}`} className="flex gap-4 rounded-2xl border border-lab-fg/10 bg-lab-fg/[0.03] p-5">
                   {member.photo ? (
-                    <Image src={member.photo} alt={member.name} width={52} height={52} className="h-13 w-13 shrink-0 rounded-full object-cover" />
+                    <div className="relative h-[52px] w-[52px] shrink-0 overflow-hidden rounded-full border-2 border-lab-accent/40 shadow-sm">
+                      <Image
+                        src={member.photo}
+                        alt={member.name}
+                        width={52}
+                        height={52}
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
                   ) : (
-                    <div aria-hidden="true" className="h-13 w-13 shrink-0 rounded-full border border-lab-accent/20 bg-gradient-to-br from-cyan-300/20 to-violet-400/20" />
+                    <div aria-hidden="true" className="h-[52px] w-[52px] shrink-0 rounded-full border border-lab-accent/20 bg-gradient-to-br from-cyan-300/20 to-violet-400/20" />
                   )}
                   <div>
                     <h3 className="text-sm font-semibold">{member.name}</h3>

@@ -68,26 +68,96 @@ const scaleIn: Variants = {
   },
 };
 
-// ─── 3-D Sphere ───────────────────────────────────────────────────────────────
-// Scales with the screen width so it stays a tasteful orb on phones.
-// To tweak on mobile: change `0.5` (size) and `0.55` (height) below.
-function InteractiveSphere({ dark, mobile }: { dark: boolean; mobile: boolean }) {
+// ─── 3-D Touch & Motion Controller ───────────────────────────────────────────
+type TouchControllerState = {
+  rotX: number;
+  rotY: number;
+  velX: number;
+  velY: number;
+  ambientRotX: number;
+  ambientRotY: number;
+  tiltX: number;
+  tiltY: number;
+};
+
+// Moving Starfield with orbital drift and reactive parallax
+function MovingStars({
+  mobile,
+  touchRef,
+}: {
+  mobile: boolean;
+  touchRef: React.MutableRefObject<TouchControllerState>;
+}) {
+  const groupRef = useRef<any>(null);
+
+  useFrame((_, delta) => {
+    if (!groupRef.current) return;
+    // Continuous galactic orbital drift across 3D space
+    groupRef.current.rotation.y += delta * 0.045;
+    groupRef.current.rotation.x += delta * 0.018;
+
+    // Smooth parallax response to touch drag & device gyroscope tilt
+    const targetParallaxX = touchRef.current.rotX * 0.12 + touchRef.current.tiltY * 0.25;
+    const targetParallaxY = touchRef.current.rotY * 0.12 + touchRef.current.tiltX * 0.25;
+
+    groupRef.current.rotation.x += (targetParallaxX - groupRef.current.rotation.x) * 0.06;
+    groupRef.current.rotation.y += (targetParallaxY - groupRef.current.rotation.y) * 0.06;
+  });
+
+  return (
+    <group ref={groupRef}>
+      <Stars
+        radius={100}
+        depth={50}
+        count={mobile ? 2200 : 4500}
+        factor={4}
+        fade
+        speed={1.5}
+      />
+    </group>
+  );
+}
+
+// ─── 3-D Interactive Sphere (Touch + Gyroscope + Mouse) ──────────────────────
+function InteractiveSphere({
+  dark,
+  mobile,
+  touchRef,
+}: {
+  dark: boolean;
+  mobile: boolean;
+  touchRef: React.MutableRefObject<TouchControllerState>;
+}) {
   const mesh = useRef<any>(null);
   const width = useThree((s) => s.size.width);
-  const scale = width < 480 ? 0.5 : width < 768 ? 0.65 : width < 1024 ? 0.85 : 1;
+  const scale = width < 480 ? 0.52 : width < 768 ? 0.65 : width < 1024 ? 0.85 : 1;
 
   useFrame(({ mouse }, delta) => {
     if (!mesh.current) return;
+
+    // Apply inertia and friction from touch flicks
+    touchRef.current.rotY += touchRef.current.velX;
+    touchRef.current.rotX += touchRef.current.velY;
+    touchRef.current.velX *= 0.94;
+    touchRef.current.velY *= 0.94;
+
+    // Ambient self-rotation
+    touchRef.current.ambientRotY += delta * 0.22;
+    touchRef.current.ambientRotX += delta * 0.06;
+
     if (mobile) {
-      // no mouse on touch screens → gentle self-rotation instead
-      mesh.current.rotation.y += delta * 0.25;
-      mesh.current.rotation.x += delta * 0.08;
-      return;
+      // Mobile: interactive touch drag + inertia + phone gyroscope tilt + ambient breathing
+      const targetY = touchRef.current.ambientRotY + touchRef.current.rotY + touchRef.current.tiltX * 0.8;
+      const targetX = touchRef.current.ambientRotX + touchRef.current.rotX + touchRef.current.tiltY * 0.8;
+      mesh.current.rotation.y += (targetY - mesh.current.rotation.y) * 0.12;
+      mesh.current.rotation.x += (targetX - mesh.current.rotation.x) * 0.12;
+    } else {
+      // Desktop: mouse tracking + touch drag + ambient spin
+      const targetX = (mouse.y * 0.45) + touchRef.current.rotX;
+      const targetY = (mouse.x * 0.45) + touchRef.current.ambientRotY + touchRef.current.rotY;
+      mesh.current.rotation.x += (targetX - mesh.current.rotation.x) * 0.06;
+      mesh.current.rotation.y += (targetY - mesh.current.rotation.y) * 0.06;
     }
-    mesh.current.rotation.x +=
-      (mouse.y * 0.4 - mesh.current.rotation.x) * 0.05;
-    mesh.current.rotation.y +=
-      (mouse.x * 0.4 - mesh.current.rotation.y) * 0.05;
   });
 
   return (
@@ -99,8 +169,8 @@ function InteractiveSphere({ dark, mobile }: { dark: boolean; mobile: boolean })
     >
       <MeshDistortMaterial
         color={dark ? "#00d4ff" : "#8b1a1a"}
-        distort={mobile ? 0.32 : 0.42}
-        speed={2.2}
+        distort={mobile ? 0.36 : 0.42}
+        speed={2.4}
         roughness={0.08}
         metalness={0.6}
       />
@@ -425,6 +495,7 @@ const texts = {
         desc: "AI-powered humanitarian flood relief platform that optimizes emergency citizen SOS requests, explains urgency scores, and coordinates warehouse supply dispatches.",
         github: "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
         labUrl: "/engineering-lab/sankat-saathi",
+        logo: "/projects/sankat-saathi/cover.png",
         emoji: "🌊",
       },
       {
@@ -433,6 +504,7 @@ const texts = {
         desc: "Personal life operating system featuring an intelligent college attendance & bunk margin simulator, CGPA planner, Pomodoro focus engine, and cognitive AI morning brief.",
         github: "https://github.com/pavan55kumar/atlas",
         labUrl: "/engineering-lab/atlas",
+        logo: "/projects/atlas/cover.png",
         emoji: "🧭",
       },
       {
@@ -441,6 +513,7 @@ const texts = {
         desc: "Modern personal portfolio with interactive 3D WebGL hero sphere, LinkedIn OAuth testimonials, and dedicated Engineering Lab deep-dives.",
         github: "https://github.com/pavan55kumar/projectportfolio",
         labUrl: "/engineering-lab/portfolio-3d",
+        logo: "/projects/portfolio-3d/cover.png",
         emoji: "✨",
       },
       {
@@ -516,6 +589,7 @@ const texts = {
         desc: "IBM Z Datathon 2026向けに構築されたAI洪水救援プラットフォーム。緊急SOSの優先順位付けと物資配分を自動化します。",
         github: "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
         labUrl: "/engineering-lab/sankat-saathi",
+        logo: "/projects/sankat-saathi/cover.png",
         emoji: "🌊",
       },
       {
@@ -524,6 +598,7 @@ const texts = {
         desc: "大学の出席欠席シミュレーター、CGPA計画、ポモドーロ集中タイマー、習慣ストリーク、AIブリーフィングを備えた統合学生ワークスペース。",
         github: "https://github.com/pavan55kumar/atlas",
         labUrl: "/engineering-lab/atlas",
+        logo: "/projects/atlas/cover.png",
         emoji: "🧭",
       },
       {
@@ -532,6 +607,7 @@ const texts = {
         desc: "Three.jsによるインタラクティブな3D WebGLシーンとLinkedIn認証の推薦状システムを備えた個人ポートフォリオ。",
         github: "https://github.com/pavan55kumar/projectportfolio",
         labUrl: "/engineering-lab/portfolio-3d",
+        logo: "/projects/portfolio-3d/cover.png",
         emoji: "✨",
       },
       {
@@ -1248,6 +1324,88 @@ export default function Home() {
   const pausedUntilRef = useRef<number>(0);
   const heroRef = useRef<HTMLElement>(null);
 
+  // 3D scene mobile touch & gyroscope orientation state
+  const touchState = useRef<TouchControllerState>({
+    rotX: 0,
+    rotY: 0,
+    velX: 0,
+    velY: 0,
+    ambientRotX: 0,
+    ambientRotY: 0,
+    tiltX: 0,
+    tiltY: 0,
+  });
+
+  // Mobile touch drag & gyroscope tilt listener (non-blocking for smooth scrolling)
+  useEffect(() => {
+    let lastTouchX = 0;
+    let lastTouchY = 0;
+    let isTouching = false;
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        isTouching = true;
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+        touchState.current.velX = 0;
+        touchState.current.velY = 0;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!isTouching || e.touches.length !== 1) return;
+      const clientX = e.touches[0].clientX;
+      const clientY = e.touches[0].clientY;
+      const dx = clientX - lastTouchX;
+      const dy = clientY - lastTouchY;
+
+      // Only engage if user is interacting within hero region
+      if (window.scrollY < window.innerHeight * 1.2) {
+        touchState.current.rotY += dx * 0.007;
+        touchState.current.rotX += dy * 0.007;
+        touchState.current.velX = dx * 0.004;
+        touchState.current.velY = dy * 0.004;
+      }
+
+      lastTouchX = clientX;
+      lastTouchY = clientY;
+    };
+
+    const onTouchEnd = () => {
+      isTouching = false;
+    };
+
+    // Mobile gyroscope tilt reaction
+    const onDeviceOrientation = (e: DeviceOrientationEvent) => {
+      if (window.scrollY > window.innerHeight) return;
+      if (e.gamma !== null && e.beta !== null) {
+        const normGamma = Math.max(-45, Math.min(45, e.gamma));
+        const normBeta = Math.max(-45, Math.min(45, e.beta - 40));
+        touchState.current.tiltX = (normGamma / 45) * 0.45;
+        touchState.current.tiltY = (normBeta / 45) * 0.45;
+      }
+    };
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", onTouchEnd, { passive: true });
+
+    if (typeof window !== "undefined" && "DeviceOrientationEvent" in window) {
+      window.addEventListener("deviceorientation", onDeviceOrientation, { passive: true });
+    }
+
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
+      if (typeof window !== "undefined" && "DeviceOrientationEvent" in window) {
+        window.removeEventListener("deviceorientation", onDeviceOrientation);
+      }
+    };
+  }, []);
+
   const { scrollYProgress } = useScroll();
   const progressScaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
@@ -1741,8 +1899,8 @@ export default function Home() {
               intensity={0.6}
             />
             <Suspense fallback={null}>
-              <Stars radius={100} depth={50} count={isMobile ? 1800 : 4000} factor={4} fade speed={0.5} />
-              <InteractiveSphere dark={dark} mobile={isMobile} />
+              <MovingStars mobile={isMobile} touchRef={touchState} />
+              <InteractiveSphere dark={dark} mobile={isMobile} touchRef={touchState} />
             </Suspense>
             {/* Not mounted on phones: OrbitControls would block page scrolling */}
             {!isMobile && (
@@ -1758,7 +1916,7 @@ export default function Home() {
 
         <motion.div
           style={{ y: heroY, opacity: heroOpacity }}
-          className="relative z-10 text-center px-6 max-w-4xl mx-auto"
+          className="relative z-10 text-center px-6 max-w-4xl mx-auto pointer-events-none"
         >
           <motion.div
             initial="hidden"
@@ -1767,7 +1925,7 @@ export default function Home() {
             className="flex flex-col items-center gap-5 sm:gap-6"
           >
             {/* Avatar */}
-            <motion.div variants={scaleIn} className="relative animate-float">
+            <motion.div variants={scaleIn} className="relative animate-float pointer-events-auto">
               <div
                 className={cn(
                   "w-28 h-28 rounded-full overflow-hidden border-2 shadow-lg",
@@ -1796,7 +1954,7 @@ export default function Home() {
             </motion.div>
 
             {/* Badge */}
-            <motion.div variants={fadeUp}>
+            <motion.div variants={fadeUp} className="pointer-events-auto">
               <span
                 className={cn(
                   "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border glass",
@@ -1834,7 +1992,7 @@ export default function Home() {
 
             <motion.div
               variants={fadeUp}
-              className="flex flex-wrap items-center justify-center gap-4 mt-2"
+              className="flex flex-wrap items-center justify-center gap-4 mt-2 pointer-events-auto"
             >
               <motion.a
                 href="#contact"
@@ -1869,7 +2027,7 @@ export default function Home() {
 
             <motion.div
               variants={fadeUp}
-              className="flex items-center gap-6 mt-2"
+              className="flex items-center gap-6 mt-2 pointer-events-auto"
             >
               {socials.map(({ href, icon, label }) => (
                 <motion.a
@@ -2076,7 +2234,7 @@ export default function Home() {
             paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
           }}
         >
-          {t.projectsList.map(({ title, tech, desc, github, emoji, labUrl }: any, i: number) => (
+          {t.projectsList.map(({ title, tech, desc, github, emoji, logo, labUrl }: any, i: number) => (
             <motion.div
               key={i}
               variants={fadeUp}
@@ -2093,7 +2251,26 @@ export default function Home() {
               }}
             >
               <div className="flex items-start justify-between">
-                <span className="text-4xl">{emoji}</span>
+                {logo ? (
+                  <div
+                    className={cn(
+                      "relative w-12 h-12 rounded-xl overflow-hidden border p-1 shadow-md transition-transform duration-300 group-hover:scale-105 flex items-center justify-center shrink-0",
+                      dark
+                        ? "border-cyan-400/30 bg-cyan-950/40 shadow-[0_0_15px_rgba(0,212,255,0.15)]"
+                        : "border-[#8b1a1a]/20 bg-[#fbf5ea] shadow-[0_2px_12px_rgba(139,26,26,0.08)]"
+                    )}
+                  >
+                    <Image
+                      src={logo}
+                      alt={title}
+                      width={44}
+                      height={44}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  </div>
+                ) : (
+                  <span className="text-4xl">{emoji}</span>
+                )}
                 <div
                   className={cn(
                     "w-8 h-8 rounded-full border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300",
