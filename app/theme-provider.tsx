@@ -4,14 +4,27 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
-  useState,
+  useSyncExternalStore,
 } from "react";
 import { usePathname } from "next/navigation";
 
 export type Theme = "dark" | "light";
 export const THEME_KEY = "pavan_theme";
+const THEME_CHANGE_EVENT = "pavan-theme-change";
+
+function subscribeToTheme(callback: () => void) {
+  window.addEventListener(THEME_CHANGE_EVENT, callback);
+  return () => window.removeEventListener(THEME_CHANGE_EVENT, callback);
+}
+
+function getThemeSnapshot(): Theme {
+  return document.documentElement.dataset.theme === "light" ? "light" : "dark";
+}
+
+function getServerThemeSnapshot(): Theme {
+  return "dark";
+}
 
 type ThemeCtx = {
   theme: Theme;
@@ -49,29 +62,23 @@ function FloatingThemeToggle() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("dark");
-
-  // The inline script in layout.tsx already set data-theme before paint;
-  // here we just read it so React state matches.
-  useEffect(() => {
-    setThemeState(
-      document.documentElement.dataset.theme === "light" ? "light" : "dark"
-    );
-  }, []);
+  const theme = useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getServerThemeSnapshot
+  );
 
   const setTheme = useCallback((t: Theme) => {
-    setThemeState(t);
     document.documentElement.dataset.theme = t;
     try {
       localStorage.setItem(THEME_KEY, t);
     } catch {}
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT));
   }, []);
 
   const toggle = useCallback(() => {
-    const next: Theme =
-      document.documentElement.dataset.theme === "light" ? "dark" : "light";
-    setTheme(next);
-  }, [setTheme]);
+    setTheme(theme === "light" ? "dark" : "light");
+  }, [setTheme, theme]);
 
   const value = useMemo(
     () => ({ theme, dark: theme === "dark", toggle, setTheme }),

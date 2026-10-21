@@ -472,6 +472,9 @@ const texts = {
     testimonialSuccessDesc: "Your testimonial has been received.",
     testimonialSendAnother: "Leave another",
     testimonialPlaceholderMsg: "Share your experience working with or knowing Pavan...",
+    noTestimonialsYet: "No testimonials yet",
+    noTestimonialsDesc: "Be the first peer, colleague, or collaborator to share your experience working with Pavan! Sign in with your LinkedIn account to leave a verified recommendation.",
+    leaveFirstTestimonial: "Leave the First Testimonial",
     engineeringLab: "Engineering Lab",
   },
   jp: {
@@ -557,6 +560,9 @@ const texts = {
     testimonialSuccessDesc: "推薦状を受け取りました。",
     testimonialSendAnother: "もう一つ書く",
     testimonialPlaceholderMsg: "パヴァンとの仕事や交流の経験を共有してください...",
+    noTestimonialsYet: "推薦状はまだありません",
+    noTestimonialsDesc: "パヴァンとの協業やプロジェクトの体験を最初にシェアしませんか？LinkedInアカウントでサインインして、認証された推薦状を投稿できます。",
+    leaveFirstTestimonial: "最初の推薦状を書く",
     engineeringLab: "エンジニアリングラボ",
   },
 };
@@ -639,43 +645,9 @@ type Testimonial = {
   initials: string;
   avatarColor: string;
   date: string;
+  provider?: string;
   seed?: boolean;
 };
-
-const seedTestimonials: Testimonial[] = [
-  {
-    id: "s1",
-    name: "Priya Sharma",
-    role: "Peer, ISE'28 · NMAMIT",
-    message: "Pavan has an incredible passion for technology. Working with him on group projects showed me how quickly he grasps complex concepts and turns ideas into reality. His dedication is truly inspiring.",
-    linkedin: "https://linkedin.com",
-    initials: "PS",
-    avatarColor: "#0ea5e9",
-    date: "Oct 2024",
-    seed: true,
-  },
-  {
-    id: "s2",
-    name: "Rohan Kamath",
-    role: "Classmate · NMAMIT ISE'28",
-    message: "Pavan's eye for design combined with his coding skills makes him stand out. He built our project UI from scratch and it looked polished and professional — far beyond what we expected.",
-    linkedin: "https://linkedin.com",
-    initials: "RK",
-    avatarColor: "#7c3aed",
-    date: "Nov 2024",
-    seed: true,
-  },
-  {
-    id: "s3",
-    name: "Sneha Bhat",
-    role: "Project Partner · NMAMIT",
-    message: "Exceptional collaborator — always prepared, communicates clearly, and consistently goes above and beyond. Pavan's front-end work on our hackathon project was the reason we won first place.",
-    initials: "SB",
-    avatarColor: "#10b981",
-    date: "Dec 2024",
-    seed: true,
-  },
-];
 
 function TestimonialsSection({
   dark,
@@ -690,28 +662,54 @@ function TestimonialsSection({
   inputClass: string;
 }) {
   const { data: session, status: sessionStatus } = useSession();
-  const [testimonials, setTestimonials] = useState<Testimonial[]>(seedTestimonials);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ role: "", message: "", linkedin: "" });
   const [status, setStatus] = useState<"idle" | "success">("idle");
   const authorName =
     session?.user?.name?.trim() || session?.user?.email?.split("@")[0] || "";
   const authorImage = session?.user?.image || undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const userProvider = (session?.user as any)?.provider || (authorImage?.includes("licdn") ? "linkedin" : "google");
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("pavan_testimonials");
-      if (saved) {
-        const parsed: Testimonial[] = JSON.parse(saved);
-        setTestimonials([...seedTestimonials, ...parsed]);
+    let isMounted = true;
+    const fetchTestimonials = async () => {
+      try {
+        const res = await fetch("/api/testimonials");
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && isMounted) {
+            const realOnes = data.filter((item: Testimonial) => !item.seed && !item.id?.startsWith("s"));
+            setTestimonials(realOnes);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch {
+        // Fallback to client localStorage if server route fails
       }
-    } catch {}
+
+      try {
+        const saved = localStorage.getItem("pavan_testimonials");
+        if (saved && isMounted) {
+          const parsed: Testimonial[] = JSON.parse(saved);
+          const realOnes = parsed.filter((item: Testimonial) => !item.seed && !item.id?.startsWith("s"));
+          setTestimonials(realOnes);
+        }
+      } catch {}
+      if (isMounted) setLoading(false);
+    };
+
+    fetchTestimonials();
+    return () => { isMounted = false; };
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       sessionStatus !== "authenticated" ||
@@ -719,7 +717,8 @@ function TestimonialsSection({
       !form.role.trim() ||
       !form.message.trim()
     ) return;
-    const colors = ["#00d4ff", "#7c3aed", "#ec4899", "#f59e0b", "#10b981", "#0ea5e9"];
+
+    const colors = ["#0A66C2", "#00d4ff", "#7c3aed", "#ec4899", "#f59e0b", "#10b981"];
     const newT: Testimonial = {
       id: Date.now().toString(),
       name: authorName,
@@ -730,15 +729,31 @@ function TestimonialsSection({
       initials: authorName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase(),
       avatarColor: colors[Math.floor(Math.random() * colors.length)],
       date: new Date().toLocaleDateString("en-US", { month: "short", year: "numeric" }),
+      provider: userProvider,
     };
+
+    // Save to persistent server API
     try {
-      const existing: Testimonial[] = JSON.parse(localStorage.getItem("pavan_testimonials") || "[]");
-      const updated = [...existing, newT];
-      localStorage.setItem("pavan_testimonials", JSON.stringify(updated));
-      setTestimonials([...seedTestimonials, ...updated]);
-    } catch {
-      setTestimonials((prev) => [...prev, newT]);
+      await fetch("/api/testimonials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newT),
+      });
+    } catch (err) {
+      console.warn("Failed to save testimonial to server:", err);
     }
+
+    // Update local storage and UI state
+    try {
+      const existing: Testimonial[] = JSON.parse(localStorage.getItem("pavan_testimonials") || "[]")
+        .filter((item: Testimonial) => !item.seed && !item.id?.startsWith("s"));
+      const updated = [newT, ...existing];
+      localStorage.setItem("pavan_testimonials", JSON.stringify(updated));
+      setTestimonials(updated);
+    } catch {
+      setTestimonials((prev) => [newT, ...prev]);
+    }
+
     setStatus("success");
     setForm({ role: "", message: "", linkedin: "" });
   };
@@ -747,99 +762,178 @@ function TestimonialsSection({
 
   return (
     <>
-      {/* Cards grid */}
       <div className="max-w-6xl mx-auto px-6">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testimonials.map((item, i) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-              className={cn(
-                "relative rounded-2xl border p-6 flex flex-col gap-4 group overflow-hidden transition-all duration-500",
-                dark
-                  ? "glass-card border-white/8 hover:border-cyan-400/30 hover:shadow-[0_8px_40px_rgba(0,212,255,0.08)]"
-                  : "glass-card border-[#8b1a1a]/12 hover:border-[#8b1a1a]/35 shadow-[0_2px_20px_rgba(139,26,26,0.06)] hover:shadow-[0_8px_40px_rgba(139,26,26,0.12)]"
-              )}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
+          </div>
+        ) : testimonials.length === 0 ? (
+          /* Empty state: No fake seed testimonials — clean invite for real ones */
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className={cn(
+              "max-w-xl mx-auto rounded-3xl border p-10 text-center space-y-6 overflow-hidden relative",
+              dark
+                ? "glass-card border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+                : "bg-[#fffaf2]/80 border-[#8b1a1a]/15 shadow-[0_8px_32px_rgba(139,26,26,0.08)]"
+            )}
+          >
+            <div
+              className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg border"
+              style={{
+                backgroundColor: "rgba(10, 102, 194, 0.12)",
+                borderColor: "rgba(10, 102, 194, 0.25)",
+                color: "#0A66C2",
+              }}
             >
-              <div
-                className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-                style={{
-                  background: `radial-gradient(ellipse at top left, ${item.avatarColor}10 0%, transparent 60%)`,
-                }}
-              />
+              <FaLinkedin />
+            </div>
 
-              <span
-                className="absolute top-3 right-5 text-7xl font-serif leading-none select-none pointer-events-none"
-                style={{ color: item.avatarColor, opacity: dark ? 0.1 : 0.12 }}
-              >
-                ”
-              </span>
-
-              <p
-                className={cn(
-                  "text-sm leading-relaxed italic flex-1 relative z-10",
-                  dark ? "text-white/70" : "text-[#5a3020]/80"
-                )}
-              >
-                &ldquo;{item.message}&rdquo;
+            <div className="space-y-2">
+              <h3 className={cn("text-2xl font-bold tracking-tight", dark ? "text-white" : "text-[#2a1008]")}>
+                {t.noTestimonialsYet || (lang === "jp" ? "推薦状はまだありません" : "No Testimonials Yet")}
+              </h3>
+              <p className={cn("text-sm leading-relaxed max-w-md mx-auto", dark ? "text-white/60" : "text-[#7a4a35]/80")}>
+                {t.noTestimonialsDesc || (lang === "jp"
+                  ? "パヴァンとの協業やプロジェクトの体験を最初にシェアしませんか？LinkedInアカウントでサインインして、認証された推薦状を投稿できます。"
+                  : "Be the first peer, colleague, or collaborator to share your experience working with Pavan! Sign in with your LinkedIn account to leave a verified recommendation.")}
               </p>
+            </div>
 
-              <div className="flex gap-0.5">
-                {Array.from({ length: 5 }).map((_, si) => (
-                  <span key={si} className="text-amber-400 text-sm">★</span>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-3 pt-1 border-t relative z-10" style={{ borderColor: dark ? "rgba(255,255,255,0.06)" : "rgba(139,26,26,0.08)" }}>
-                <div
-                  className="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg overflow-hidden"
-                  style={{ background: `linear-gradient(135deg, ${item.avatarColor} 0%, ${item.avatarColor}99 100%)` }}
+            <div className="flex flex-wrap justify-center gap-2 pt-1">
+              {[
+                { icon: <FaLinkedin className="text-xs text-[#0A66C2]" />, text: lang === "jp" ? "LinkedIn連携" : "LinkedIn Verified" },
+                { icon: "✨", text: lang === "jp" ? "本物の推薦状のみ" : "100% Real Testimonials" },
+                { icon: "🚀", text: lang === "jp" ? "リアルタイム反映" : "Live Showcase" },
+              ].map(({ icon, text }, idx) => (
+                <span
+                  key={idx}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border",
+                    dark ? "border-white/10 text-white/50 bg-white/5" : "border-[#8b1a1a]/12 text-[#7a4a35]/80 bg-[#8b1a1a]/5"
+                  )}
                 >
-                  {item.avatarImage ? (
-                    <Image
-                      src={item.avatarImage}
-                      alt={`${item.name}'s Google profile`}
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                    />
-                  ) : item.initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
-                    {item.name}
-                  </p>
-                  <p className={cn("text-xs truncate", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
-                    {item.role}
-                  </p>
-                </div>
-                {item.linkedin && (
-                  <motion.a
-                    href={item.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`${item.name} on LinkedIn`}
-                    whileHover={{ scale: 1.2, y: -2 }}
-                    className={cn(
-                      "w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 transition-all duration-200",
-                      dark
-                        ? "border-white/10 text-white/30 hover:border-[#0EA5E9]/60 hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
-                        : "border-[#8b1a1a]/15 text-[#8b1a1a]/40 hover:border-[#0077B5]/50 hover:text-[#0077B5] hover:bg-[#0077B5]/8"
-                    )}
-                  >
-                    <FaLinkedin className="text-sm" />
-                  </motion.a>
-                )}
-                <span className={cn("text-[10px] shrink-0", dark ? "text-white/20" : "text-[#8b1a1a]/30")}>
-                  {item.date}
+                  <span>{icon}</span>{text}
                 </span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              ))}
+            </div>
+
+            {!showForm && (
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.04, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => { setShowForm(true); setStatus("idle"); }}
+                className="inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 font-semibold text-sm bg-[#0A66C2] hover:bg-[#004182] text-white shadow-lg shadow-[#0A66C2]/30 transition-all duration-300"
+              >
+                <FaPenNib className="text-xs" />
+                <span>{t.leaveFirstTestimonial || (lang === "jp" ? "最初の推薦状を書く" : "Leave the First Testimonial")}</span>
+              </motion.button>
+            )}
+          </motion.div>
+        ) : (
+          /* Cards grid: Only real testimonials */
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {testimonials.map((item, i) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className={cn(
+                  "relative rounded-2xl border p-6 flex flex-col gap-4 group overflow-hidden transition-all duration-500",
+                  dark
+                    ? "glass-card border-white/8 hover:border-cyan-400/30 hover:shadow-[0_8px_40px_rgba(0,212,255,0.08)]"
+                    : "glass-card border-[#8b1a1a]/12 hover:border-[#8b1a1a]/35 shadow-[0_2px_20px_rgba(139,26,26,0.06)] hover:shadow-[0_8px_40px_rgba(139,26,26,0.12)]"
+                )}
+              >
+                <div
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+                  style={{
+                    background: `radial-gradient(ellipse at top left, ${item.avatarColor}10 0%, transparent 60%)`,
+                  }}
+                />
+
+                <span
+                  className="absolute top-3 right-5 text-7xl font-serif leading-none select-none pointer-events-none"
+                  style={{ color: item.avatarColor, opacity: dark ? 0.1 : 0.12 }}
+                >
+                  ”
+                </span>
+
+                <p
+                  className={cn(
+                    "text-sm leading-relaxed italic flex-1 relative z-10",
+                    dark ? "text-white/70" : "text-[#5a3020]/80"
+                  )}
+                >
+                  &ldquo;{item.message}&rdquo;
+                </p>
+
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, si) => (
+                    <span key={si} className="text-amber-400 text-sm">★</span>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-3 pt-1 border-t relative z-10" style={{ borderColor: dark ? "rgba(255,255,255,0.06)" : "rgba(139,26,26,0.08)" }}>
+                  <div
+                    className="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg overflow-hidden"
+                    style={{ background: `linear-gradient(135deg, ${item.avatarColor} 0%, ${item.avatarColor}99 100%)` }}
+                  >
+                    {item.avatarImage ? (
+                      <Image
+                        src={item.avatarImage}
+                        alt={`${item.name}'s profile photo`}
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                      />
+                    ) : item.initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
+                        {item.name}
+                      </p>
+                      {(item.provider === "linkedin" || item.avatarImage?.includes("licdn") || item.linkedin) && (
+                        <span title="LinkedIn Verified Profile" className="text-[#0A66C2] text-xs shrink-0">
+                          <FaLinkedin />
+                        </span>
+                      )}
+                    </div>
+                    <p className={cn("text-xs truncate", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
+                      {item.role}
+                    </p>
+                  </div>
+                  {item.linkedin && (
+                    <motion.a
+                      href={item.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${item.name} on LinkedIn`}
+                      whileHover={{ scale: 1.2, y: -2 }}
+                      className={cn(
+                        "w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 transition-all duration-200",
+                        dark
+                          ? "border-white/10 text-white/30 hover:border-[#0EA5E9]/60 hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
+                          : "border-[#8b1a1a]/15 text-[#8b1a1a]/40 hover:border-[#0077B5]/50 hover:text-[#0077B5] hover:bg-[#0077B5]/8"
+                      )}
+                    >
+                      <FaLinkedin className="text-sm" />
+                    </motion.a>
+                  )}
+                  <span className={cn("text-[10px] shrink-0", dark ? "text-white/20" : "text-[#8b1a1a]/30")}>
+                    {item.date}
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Leave a testimonial toggle */}
         <motion.div
@@ -895,34 +989,60 @@ function TestimonialsSection({
                     "rounded-2xl border p-8 text-center text-sm",
                     dark ? "glass-card border-white/10 text-white/60" : "bg-[#f5ede0] border-[#8b1a1a]/15 text-[#7a4a35]"
                   )}>
-                    {lang === "jp" ? "Googleログインを確認しています..." : "Checking your Google sign-in..."}
+                    {lang === "jp" ? "認証状態を確認しています..." : "Checking authentication..."}
                   </div>
                 ) : !session?.user || !authorName ? (
                   <div className={cn(
-                    "rounded-2xl border p-8 text-center space-y-4",
+                    "rounded-2xl border p-8 text-center space-y-5",
                     dark ? "glass-card border-white/10" : "bg-[#f5ede0]/80 border-[#8b1a1a]/15 shadow-[0_4px_32px_rgba(139,26,26,0.08)]"
                   )}>
-                    <div className="space-y-1">
-                      <h3 className={cn("text-lg font-bold", dark ? "text-white" : "text-[#2a1008]")}>
-                        {lang === "jp" ? "Googleでログイン" : "Sign in to leave a testimonial"}
+                    <div
+                      className="mx-auto w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-md border"
+                      style={{
+                        backgroundColor: "rgba(10, 102, 194, 0.12)",
+                        borderColor: "rgba(10, 102, 194, 0.25)",
+                        color: "#0A66C2",
+                      }}
+                    >
+                      <FaLinkedin />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className={cn("text-xl font-bold", dark ? "text-white" : "text-[#2a1008]")}>
+                        {lang === "jp" ? "LinkedInでログイン" : "Sign in with LinkedIn"}
                       </h3>
-                      <p className={cn("text-sm", dark ? "text-white/50" : "text-[#7a4a35]")}>
-                        {lang === "jp" ? "名前とプロフィール写真はGoogleアカウントから取得します。" : "Your name and profile photo will come from your Google account."}
+                      <p className={cn("text-sm max-w-md mx-auto", dark ? "text-white/60" : "text-[#7a4a35]")}>
+                        {lang === "jp"
+                          ? "お名前とプロフィール写真はLinkedInアカウントから直接取得されます。"
+                          : "Your name and profile photo will be fetched directly from your LinkedIn profile."}
                       </p>
                     </div>
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.03, y: -1 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => void signIn("google")}
-                      className={cn(
-                        "inline-flex items-center justify-center gap-3 rounded-xl border px-6 py-3 font-semibold text-sm transition-colors",
-                        dark ? "border-white/15 bg-white text-[#202124] hover:bg-white/90" : "border-[#8b1a1a]/15 bg-white text-[#202124] hover:bg-white/90"
-                      )}
-                    >
-                      <FaGoogle className="text-base" />
-                      {lang === "jp" ? "Googleで続行" : "Continue with Google"}
-                    </motion.button>
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.03, y: -1 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => void signIn("linkedin")}
+                        className="inline-flex items-center justify-center gap-2.5 rounded-xl px-7 py-3.5 font-semibold text-sm bg-[#0A66C2] hover:bg-[#004182] text-white shadow-lg shadow-[#0A66C2]/25 transition-all w-full sm:w-auto"
+                      >
+                        <FaLinkedin className="text-base" />
+                        {lang === "jp" ? "LinkedInで続行" : "Continue with LinkedIn"}
+                      </motion.button>
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.03, y: -1 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => void signIn("google")}
+                        className={cn(
+                          "inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3 font-medium text-xs transition-colors w-full sm:w-auto",
+                          dark
+                            ? "border-white/15 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
+                            : "border-[#8b1a1a]/15 bg-white/70 text-[#202124] hover:bg-white"
+                        )}
+                      >
+                        <FaGoogle className="text-xs" />
+                        {lang === "jp" ? "またはGoogleでログイン" : "or sign in with Google"}
+                      </motion.button>
+                    </div>
                   </div>
                 ) : status === "success" ? (
                   <motion.div
@@ -969,15 +1089,15 @@ function TestimonialsSection({
 
                     <div className="flex flex-wrap gap-2">
                       {[
-                        { icon: "🔒", text: lang === "jp" ? "ブラウザーに保存" : "Stored in this browser" },
-                        { icon: "✨", text: lang === "jp" ? "すぐに表示" : "Appears instantly" },
-                        { icon: "🌐", text: lang === "jp" ? "この端末で表示" : "Visible on this device" },
-                      ].map(({ icon, text }) => (
+                        { icon: <FaLinkedin className="text-xs text-[#0A66C2]" />, text: lang === "jp" ? "LinkedIn連携" : "LinkedIn Verified" },
+                        { icon: "✨", text: lang === "jp" ? "リアル推薦状" : "Real Testimonial" },
+                        { icon: "🌐", text: lang === "jp" ? "リアルタイム反映" : "Live Showcase" },
+                      ].map(({ icon, text }, idx) => (
                         <span
-                          key={text}
+                          key={idx}
                           className={cn(
                             "inline-flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-full border",
-                            dark ? "border-white/8 text-white/35 bg-white/3" : "border-[#8b1a1a]/12 text-[#7a4a35]/70 bg-[#8b1a1a]/4"
+                            dark ? "border-white/8 text-white/50 bg-white/3" : "border-[#8b1a1a]/12 text-[#7a4a35]/80 bg-[#8b1a1a]/4"
                           )}
                         >
                           <span>{icon}</span>{text}
@@ -989,24 +1109,31 @@ function TestimonialsSection({
                       "flex items-center gap-3 rounded-xl border px-4 py-3",
                       dark ? "border-white/10 bg-white/3" : "border-[#8b1a1a]/12 bg-white/40"
                     )}>
-                      <div className="relative w-10 h-10 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-sm font-bold text-white"
+                      <div className="relative w-11 h-11 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-sm font-bold text-white shadow"
                         style={{ background: `linear-gradient(135deg, ${accent} 0%, ${accent}99 100%)` }}>
                         {authorImage ? (
                           <Image
                             src={authorImage}
-                            alt={`${authorName}'s Google profile`}
+                            alt={`${authorName}'s profile photo`}
                             fill
-                            sizes="40px"
+                            sizes="44px"
                             className="object-cover"
                           />
                         ) : authorName.split(" ").map((word) => word[0]).join("").slice(0, 2).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
-                          {authorName}
-                        </p>
+                        <div className="flex items-center gap-1.5">
+                          <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
+                            {authorName}
+                          </p>
+                          <span className="text-[#0A66C2] text-xs shrink-0" title="LinkedIn Profile">
+                            <FaLinkedin />
+                          </span>
+                        </div>
                         <p className={cn("text-xs", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
-                          {lang === "jp" ? "Googleアカウントで確認済み" : "Verified with Google"}
+                          {(userProvider === "linkedin" || authorImage?.includes("licdn"))
+                            ? (lang === "jp" ? "LinkedInアカウントから取得済み" : "Profile fetched from LinkedIn")
+                            : (lang === "jp" ? "アカウント確認済み" : "Verified Account")}
                         </p>
                       </div>
                       <button
@@ -1076,8 +1203,8 @@ function TestimonialsSection({
                       className={cn(
                         "relative w-full overflow-hidden px-8 py-4 rounded-xl font-semibold text-sm text-white transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed",
                         dark
-                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_30px_rgba(0,212,255,0.2)] hover:shadow-[0_0_50px_rgba(0,212,255,0.4)]"
-                          : "bg-gradient-to-r from-[#8b1a1a] to-[#c9956a] shadow-[0_4px_24px_rgba(139,26,26,0.3)] hover:shadow-[0_6px_40px_rgba(139,26,26,0.45)]"
+                          ? "bg-gradient-to-r from-[#0A66C2] via-cyan-500 to-blue-600 shadow-[0_0_30px_rgba(10,102,194,0.3)] hover:shadow-[0_0_50px_rgba(0,212,255,0.4)]"
+                          : "bg-gradient-to-r from-[#0A66C2] to-[#8b1a1a] shadow-[0_4px_24px_rgba(10,102,194,0.3)] hover:shadow-[0_6px_40px_rgba(139,26,26,0.45)]"
                       )}
                     >
                       <span className="relative z-10 flex items-center justify-center gap-2">
