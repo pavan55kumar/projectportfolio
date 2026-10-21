@@ -542,14 +542,14 @@ const texts = {
     testimonialName: "Your Name",
     testimonialRole: "Role / Title",
     testimonialMessage: "Your Experience",
-    testimonialLinkedin: "LinkedIn URL (optional)",
+    testimonialLinkedin: "LinkedIn Profile URL",
     testimonialSubmit: "Submit Testimonial",
     testimonialSuccess: "Thank you so much!",
     testimonialSuccessDesc: "Your testimonial has been received.",
     testimonialSendAnother: "Leave another",
     testimonialPlaceholderMsg: "Share your experience working with or knowing Pavan...",
     noTestimonialsYet: "No testimonials yet",
-    noTestimonialsDesc: "Be the first peer, colleague, or collaborator to share your experience working with Pavan! Sign in with your LinkedIn account to leave a verified recommendation.",
+    noTestimonialsDesc: "Be the first peer, colleague, or collaborator to share your experience working with Pavan! Sign in with your Google account to leave a testimonial, and paste your LinkedIn profile link.",
     leaveFirstTestimonial: "Leave the First Testimonial",
     engineeringLab: "Engineering Lab",
   },
@@ -636,14 +636,14 @@ const texts = {
     testimonialName: "お名前",
     testimonialRole: "役職・肩書き",
     testimonialMessage: "あなたの体験",
-    testimonialLinkedin: "LinkedIn URL（任意）",
+    testimonialLinkedin: "LinkedIn プロフィールURL",
     testimonialSubmit: "送信する",
     testimonialSuccess: "ありがとうございます！",
     testimonialSuccessDesc: "推薦状を受け取りました。",
     testimonialSendAnother: "もう一つ書く",
     testimonialPlaceholderMsg: "パヴァンとの仕事や交流の経験を共有してください...",
     noTestimonialsYet: "推薦状はまだありません",
-    noTestimonialsDesc: "パヴァンとの協業やプロジェクトの体験を最初にシェアしませんか？LinkedInアカウントでサインインして、認証された推薦状を投稿できます。",
+    noTestimonialsDesc: "パヴァンとの協業やプロジェクトの体験を最初にシェアしませんか？Googleアカウントでサインインして、LinkedInプロフィールのリンクを添えて推薦状を投稿できます。",
     leaveFirstTestimonial: "最初の推薦状を書く",
     engineeringLab: "エンジニアリングラボ",
   },
@@ -752,8 +752,7 @@ function TestimonialsSection({
   const authorName =
     session?.user?.name?.trim() || session?.user?.email?.split("@")[0] || "";
   const authorImage = session?.user?.image || undefined;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userProvider = (session?.user as any)?.provider || (authorImage?.includes("licdn") ? "linkedin" : "google");
+  const userProvider = "google";
 
   useEffect(() => {
     let isMounted = true;
@@ -850,7 +849,7 @@ function TestimonialsSection({
             <div className="w-8 h-8 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
           </div>
         ) : testimonials.length === 0 ? (
-          /* Empty state: No fake seed testimonials — clean invite for real ones */
+          /* Empty state: Clean invite for real testimonials with Google sign-in */
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -865,12 +864,12 @@ function TestimonialsSection({
             <div
               className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg border"
               style={{
-                backgroundColor: "rgba(10, 102, 194, 0.12)",
-                borderColor: "rgba(10, 102, 194, 0.25)",
-                color: "#0A66C2",
+                backgroundColor: dark ? "rgba(0, 212, 255, 0.1)" : "rgba(139, 26, 26, 0.08)",
+                borderColor: dark ? "rgba(0, 212, 255, 0.25)" : "rgba(139, 26, 26, 0.2)",
+                color: dark ? "#00d4ff" : "#8b1a1a",
               }}
             >
-              <FaLinkedin />
+              💬
             </div>
 
             <div className="space-y-2">
@@ -879,16 +878,16 @@ function TestimonialsSection({
               </h3>
               <p className={cn("text-sm leading-relaxed max-w-md mx-auto", dark ? "text-white/60" : "text-[#7a4a35]/80")}>
                 {t.noTestimonialsDesc || (lang === "jp"
-                  ? "パヴァンとの協業やプロジェクトの体験を最初にシェアしませんか？LinkedInアカウントでサインインして、認証された推薦状を投稿できます。"
-                  : "Be the first peer, colleague, or collaborator to share your experience working with Pavan! Sign in with your LinkedIn account to leave a verified recommendation.")}
+                  ? "パヴァンとの協業やプロジェクトの体験を最初にシェアしませんか？Googleアカウントでサインインして、LinkedInプロフィールのリンクを添えて推薦状を投稿できます。"
+                  : "Be the first peer, colleague, or collaborator to share your experience working with Pavan! Sign in with your Google account to leave a recommendation, and paste your LinkedIn profile link.")}
               </p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-2 pt-1">
               {[
-                { icon: <FaLinkedin className="text-xs text-[#0A66C2]" />, text: lang === "jp" ? "LinkedIn連携" : "LinkedIn Verified" },
+                { icon: <FaGoogle className="text-xs text-[#EA4335]" />, text: lang === "jp" ? "Googleログイン" : "Google Sign-In" },
+                { icon: <FaLinkedin className="text-xs text-[#0A66C2]" />, text: lang === "jp" ? "LinkedIn連携" : "LinkedIn Profile Badge" },
                 { icon: "✨", text: lang === "jp" ? "本物の推薦状のみ" : "100% Real Testimonials" },
-                { icon: "🚀", text: lang === "jp" ? "リアルタイム反映" : "Live Showcase" },
               ].map(({ icon, text }, idx) => (
                 <span
                   key={idx}
@@ -908,7 +907,12 @@ function TestimonialsSection({
                 whileHover={{ scale: 1.04, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => { setShowForm(true); setStatus("idle"); }}
-                className="inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 font-semibold text-sm bg-[#0A66C2] hover:bg-[#004182] text-white shadow-lg shadow-[#0A66C2]/30 transition-all duration-300"
+                className={cn(
+                  "inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 font-semibold text-sm text-white shadow-lg transition-all duration-300",
+                  dark
+                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_25px_rgba(0,212,255,0.3)] hover:shadow-[0_0_35px_rgba(0,212,255,0.5)]"
+                    : "bg-gradient-to-r from-[#8b1a1a] to-[#c9956a] shadow-[0_4px_20px_rgba(139,26,26,0.3)] hover:shadow-[0_6px_30px_rgba(139,26,26,0.45)]"
+                )}
               >
                 <FaPenNib className="text-xs" />
                 <span>{t.leaveFirstTestimonial || (lang === "jp" ? "最初の推薦状を書く" : "Leave the First Testimonial")}</span>
@@ -961,9 +965,9 @@ function TestimonialsSection({
                   ))}
                 </div>
 
-                <div className="flex items-center gap-3 pt-1 border-t relative z-10" style={{ borderColor: dark ? "rgba(255,255,255,0.06)" : "rgba(139,26,26,0.08)" }}>
+                <div className="flex items-center gap-3 pt-2 border-t relative z-10" style={{ borderColor: dark ? "rgba(255,255,255,0.06)" : "rgba(139,26,26,0.08)" }}>
                   <div
-                    className="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg overflow-hidden"
+                    className="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg overflow-hidden border border-white/15"
                     style={{ background: `linear-gradient(135deg, ${item.avatarColor} 0%, ${item.avatarColor}99 100%)` }}
                   >
                     {item.avatarImage ? (
@@ -981,10 +985,16 @@ function TestimonialsSection({
                       <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
                         {item.name}
                       </p>
-                      {(item.provider === "linkedin" || item.avatarImage?.includes("licdn") || item.linkedin) && (
-                        <span title="LinkedIn Verified Profile" className="text-[#0A66C2] text-xs shrink-0">
-                          <FaLinkedin />
-                        </span>
+                      {item.linkedin && (
+                        <a
+                          href={item.linkedin.startsWith("http") ? item.linkedin : `https://${item.linkedin}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="View LinkedIn Profile"
+                          className="text-[#0A66C2] hover:scale-110 transition-transform shrink-0"
+                        >
+                          <FaLinkedin className="text-sm" />
+                        </a>
                       )}
                     </div>
                     <p className={cn("text-xs truncate", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
@@ -993,19 +1003,16 @@ function TestimonialsSection({
                   </div>
                   {item.linkedin && (
                     <motion.a
-                      href={item.linkedin}
+                      href={item.linkedin.startsWith("http") ? item.linkedin : `https://${item.linkedin}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`${item.name} on LinkedIn`}
-                      whileHover={{ scale: 1.2, y: -2 }}
-                      className={cn(
-                        "w-8 h-8 rounded-lg border flex items-center justify-center shrink-0 transition-all duration-200",
-                        dark
-                          ? "border-white/10 text-white/30 hover:border-[#0EA5E9]/60 hover:text-[#0EA5E9] hover:bg-[#0EA5E9]/10"
-                          : "border-[#8b1a1a]/15 text-[#8b1a1a]/40 hover:border-[#0077B5]/50 hover:text-[#0077B5] hover:bg-[#0077B5]/8"
-                      )}
+                      aria-label={`${item.name}'s LinkedIn Profile`}
+                      whileHover={{ scale: 1.05, y: -1 }}
+                      whileTap={{ scale: 0.96 }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0A66C2]/10 border border-[#0A66C2]/30 text-[#0A66C2] hover:bg-[#0A66C2] hover:text-white transition-all duration-200 shrink-0 shadow-sm"
                     >
-                      <FaLinkedin className="text-sm" />
+                      <FaLinkedin className="text-xs" />
+                      <span>LinkedIn</span>
                     </motion.a>
                   )}
                   <span className={cn("text-[10px] shrink-0", dark ? "text-white/20" : "text-[#8b1a1a]/30")}>
@@ -1081,48 +1088,33 @@ function TestimonialsSection({
                     <div
                       className="mx-auto w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-md border"
                       style={{
-                        backgroundColor: "rgba(10, 102, 194, 0.12)",
-                        borderColor: "rgba(10, 102, 194, 0.25)",
-                        color: "#0A66C2",
+                        backgroundColor: "rgba(234, 67, 53, 0.1)",
+                        borderColor: "rgba(234, 67, 53, 0.25)",
+                        color: "#EA4335",
                       }}
                     >
-                      <FaLinkedin />
+                      <FaGoogle />
                     </div>
                     <div className="space-y-1.5">
                       <h3 className={cn("text-xl font-bold", dark ? "text-white" : "text-[#2a1008]")}>
-                        {lang === "jp" ? "LinkedInでログイン" : "Sign in with LinkedIn"}
+                        {lang === "jp" ? "Googleでサインイン" : "Sign in with Google"}
                       </h3>
                       <p className={cn("text-sm max-w-md mx-auto", dark ? "text-white/60" : "text-[#7a4a35]")}>
                         {lang === "jp"
-                          ? "お名前とプロフィール写真はLinkedInアカウントから直接取得されます。"
-                          : "Your name and profile photo will be fetched directly from your LinkedIn profile."}
+                          ? "Googleアカウントでログインすると、お名前とプロフィール写真が自動的に使用されます。その後、LinkedInプロフィールのリンクを貼ることができます。"
+                          : "Sign in with your Google account to automatically use your name & profile photo. You can then paste your LinkedIn link so your LinkedIn profile appears on your testimonial!"}
                       </p>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-                      <motion.button
-                        type="button"
-                        whileHover={{ scale: 1.03, y: -1 }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => void signIn("linkedin")}
-                        className="inline-flex items-center justify-center gap-2.5 rounded-xl px-7 py-3.5 font-semibold text-sm bg-[#0A66C2] hover:bg-[#004182] text-white shadow-lg shadow-[#0A66C2]/25 transition-all w-full sm:w-auto"
-                      >
-                        <FaLinkedin className="text-base" />
-                        {lang === "jp" ? "LinkedInで続行" : "Continue with LinkedIn"}
-                      </motion.button>
+                    <div className="flex items-center justify-center pt-2">
                       <motion.button
                         type="button"
                         whileHover={{ scale: 1.03, y: -1 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => void signIn("google")}
-                        className={cn(
-                          "inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-3 font-medium text-xs transition-colors w-full sm:w-auto",
-                          dark
-                            ? "border-white/15 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white"
-                            : "border-[#8b1a1a]/15 bg-white/70 text-[#202124] hover:bg-white"
-                        )}
+                        className="inline-flex items-center justify-center gap-3 rounded-xl px-8 py-3.5 font-semibold text-sm bg-white hover:bg-neutral-100 text-[#202124] shadow-lg shadow-black/10 border border-neutral-300 transition-all duration-200"
                       >
-                        <FaGoogle className="text-xs" />
-                        {lang === "jp" ? "またはGoogleでログイン" : "or sign in with Google"}
+                        <FaGoogle className="text-base text-[#EA4335]" />
+                        <span>{lang === "jp" ? "Googleで続行" : "Continue with Google"}</span>
                       </motion.button>
                     </div>
                   </div>
@@ -1171,9 +1163,9 @@ function TestimonialsSection({
 
                     <div className="flex flex-wrap gap-2">
                       {[
-                        { icon: <FaLinkedin className="text-xs text-[#0A66C2]" />, text: lang === "jp" ? "LinkedIn連携" : "LinkedIn Verified" },
+                        { icon: <FaGoogle className="text-xs text-[#EA4335]" />, text: lang === "jp" ? "Google認証済み" : "Google Signed-In" },
+                        { icon: <FaLinkedin className="text-xs text-[#0A66C2]" />, text: lang === "jp" ? "LinkedIn連携可能" : "LinkedIn Profile Badge" },
                         { icon: "✨", text: lang === "jp" ? "リアル推薦状" : "Real Testimonial" },
-                        { icon: "🌐", text: lang === "jp" ? "リアルタイム反映" : "Live Showcase" },
                       ].map(({ icon, text }, idx) => (
                         <span
                           key={idx}
@@ -1191,7 +1183,7 @@ function TestimonialsSection({
                       "flex items-center gap-3 rounded-xl border px-4 py-3",
                       dark ? "border-white/10 bg-white/3" : "border-[#8b1a1a]/12 bg-white/40"
                     )}>
-                      <div className="relative w-11 h-11 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-sm font-bold text-white shadow"
+                      <div className="relative w-11 h-11 rounded-full shrink-0 overflow-hidden flex items-center justify-center text-sm font-bold text-white shadow border border-white/20"
                         style={{ background: `linear-gradient(135deg, ${accent} 0%, ${accent}99 100%)` }}>
                         {authorImage ? (
                           <Image
@@ -1204,18 +1196,12 @@ function TestimonialsSection({
                         ) : authorName.split(" ").map((word) => word[0]).join("").slice(0, 2).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
-                            {authorName}
-                          </p>
-                          <span className="text-[#0A66C2] text-xs shrink-0" title="LinkedIn Profile">
-                            <FaLinkedin />
-                          </span>
-                        </div>
-                        <p className={cn("text-xs", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
-                          {(userProvider === "linkedin" || authorImage?.includes("licdn"))
-                            ? (lang === "jp" ? "LinkedInアカウントから取得済み" : "Profile fetched from LinkedIn")
-                            : (lang === "jp" ? "アカウント確認済み" : "Verified Account")}
+                        <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
+                          {authorName}
+                        </p>
+                        <p className={cn("text-xs flex items-center gap-1.5", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
+                          <FaGoogle className="text-[10px] text-[#EA4335]" />
+                          <span>{lang === "jp" ? "Googleアカウントでログイン中" : "Signed in with Google"}</span>
                         </p>
                       </div>
                       <button
@@ -1259,12 +1245,22 @@ function TestimonialsSection({
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className={cn("text-xs font-semibold tracking-wide uppercase", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
-                        {t.testimonialLinkedin}
-                      </label>
+                      <div className="flex items-center justify-between">
+                        <label className={cn("text-xs font-semibold tracking-wide uppercase", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
+                          {t.testimonialLinkedin}
+                        </label>
+                        <span className={cn("text-[11px] font-medium", dark ? "text-cyan-300/80" : "text-[#8b1a1a]/80")}>
+                          {lang === "jp" ? "カードに表示されます" : "Displayed on your testimonial"}
+                        </span>
+                      </div>
+                      <p className={cn("text-xs leading-normal", dark ? "text-white/45" : "text-[#7a4a35]/75")}>
+                        {lang === "jp"
+                          ? "あなたのLinkedInプロフィールのリンクを貼り付けてください。推薦状にあなたのLinkedInリンクが表示されます。"
+                          : "Paste your LinkedIn profile link (e.g. https://linkedin.com/in/username) so visitors can view and verify your LinkedIn profile."}
+                      </p>
                       <div className="relative">
                         <FaLinkedin
-                          className={cn("absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none", dark ? "text-white/20" : "text-[#7a4a35]/30")}
+                          className={cn("absolute left-3.5 top-1/2 -translate-y-1/2 text-sm pointer-events-none text-[#0A66C2]")}
                         />
                         <input
                           type="url"
@@ -1272,9 +1268,18 @@ function TestimonialsSection({
                           value={form.linkedin}
                           onChange={handleChange}
                           placeholder="https://linkedin.com/in/yourprofile"
-                          className={cn(inputClass, "pl-9")}
+                          className={cn(inputClass, "pl-10")}
                         />
                       </div>
+                      {form.linkedin.trim() && (
+                        <div className="flex items-center gap-1.5 text-xs text-[#0A66C2] font-medium pt-1">
+                          <FaLinkedin className="text-xs" />
+                          <span className="truncate">
+                            {lang === "jp" ? "リンクされたプロフィール: " : "LinkedIn profile linked: "}
+                            {form.linkedin.trim()}
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <motion.button
@@ -1285,8 +1290,8 @@ function TestimonialsSection({
                       className={cn(
                         "relative w-full overflow-hidden px-8 py-4 rounded-xl font-semibold text-sm text-white transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed",
                         dark
-                          ? "bg-gradient-to-r from-[#0A66C2] via-cyan-500 to-blue-600 shadow-[0_0_30px_rgba(10,102,194,0.3)] hover:shadow-[0_0_50px_rgba(0,212,255,0.4)]"
-                          : "bg-gradient-to-r from-[#0A66C2] to-[#8b1a1a] shadow-[0_4px_24px_rgba(10,102,194,0.3)] hover:shadow-[0_6px_40px_rgba(139,26,26,0.45)]"
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_30px_rgba(0,212,255,0.3)] hover:shadow-[0_0_50px_rgba(0,212,255,0.4)]"
+                          : "bg-gradient-to-r from-[#8b1a1a] to-[#c9956a] shadow-[0_4px_24px_rgba(139,26,26,0.3)] hover:shadow-[0_6px_40px_rgba(139,26,26,0.45)]"
                       )}
                     >
                       <span className="relative z-10 flex items-center justify-center gap-2">
