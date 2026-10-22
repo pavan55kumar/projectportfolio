@@ -45,8 +45,8 @@ export const engineeringProjects: EngineeringProject[] = [
     description: "AI-Powered Flood Relief & Humanitarian Supply Allocation Platform built for the IBM Z Datathon 2026.",
     icon: "relief",
     status: "IBM Z Datathon 2026 Finalist Project",
-    coverImage: "/projects/sankat-saathi/cover.png",
-    bannerImage: "/projects/sankat-saathi/banner.jpg",
+    coverImage: "/projects/sankat-saathi/banner.jpg",
+    bannerImage: "/projects/sankat-saathi/cover.png",
     overview:
       "Sankat Saathi (संकट साथी) is an AI-powered disaster management and humanitarian logistics platform engineered for flood-prone regions. Backed by IBM Z and Supabase, it automates citizen SOS requests, detects duplicates, scores urgency using explainable AI models, calculates Haversine geospatial proximity to relief centers, and dynamically coordinates warehouse inventories to dispatch life-saving supplies.",
     intendedFor:

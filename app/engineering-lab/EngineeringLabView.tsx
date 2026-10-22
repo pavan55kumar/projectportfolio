@@ -1,10 +1,8 @@
 "use client";
 
-import { useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FaArrowRight } from "react-icons/fa6";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { useTheme } from "../theme-provider";
 import { engineeringProjects } from "@/data/engineeringProjects";
 import ProjectCard from "./ProjectCard";
@@ -12,20 +10,6 @@ import HeroArtwork from "./HeroArtwork";
 
 export default function EngineeringLabView() {
   const { dark, toggle } = useTheme();
-  const projectsListRef = useRef<HTMLDivElement>(null);
-
-  const handleScrollToProjects = (direction: "prev" | "next") => {
-    if (projectsListRef.current) {
-      const cards = projectsListRef.current.querySelectorAll("article");
-      if (cards.length > 0) {
-        if (direction === "next") {
-          cards[Math.min(1, cards.length - 1)]?.scrollIntoView({ behavior: "smooth", block: "center" });
-        } else {
-          cards[0]?.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      }
-    }
-  };
 
   return (
     <main
@@ -194,47 +178,18 @@ export default function EngineeringLabView() {
               }`}
             />
 
-            {/* Right controls: 03 PROJECTS & Navigation buttons */}
-            <div className="flex items-center gap-3">
-              <span
-                className={`font-mono text-xs font-semibold tracking-wider ${
-                  dark ? "text-white/45" : "text-[#7a4a35]"
-                }`}
-              >
-                {String(engineeringProjects.length).padStart(2, "0")} PROJECTS
-              </span>
-
-              <div className="flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleScrollToProjects("prev")}
-                  aria-label="Previous project"
-                  className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 ${
-                    dark
-                      ? "border-white/10 text-white/60 hover:text-white hover:border-cyan-400/40 hover:bg-white/[0.05] focus-visible:ring-cyan-400"
-                      : "border-[#8b1a1a]/20 text-[#7a4a35] hover:text-[#2a1008] hover:border-[#8b1a1a]/40 hover:bg-[#8b1a1a]/5 focus-visible:ring-[#8b1a1a]"
-                  }`}
-                >
-                  <FiChevronLeft className="text-sm" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleScrollToProjects("next")}
-                  aria-label="Next project"
-                  className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all focus-visible:outline-none focus-visible:ring-2 ${
-                    dark
-                      ? "border-white/10 text-white/60 hover:text-white hover:border-cyan-400/40 hover:bg-white/[0.05] focus-visible:ring-cyan-400"
-                      : "border-[#8b1a1a]/20 text-[#7a4a35] hover:text-[#2a1008] hover:border-[#8b1a1a]/40 hover:bg-[#8b1a1a]/5 focus-visible:ring-[#8b1a1a]"
-                  }`}
-                >
-                  <FiChevronRight className="text-sm" />
-                </button>
-              </div>
-            </div>
+            {/* Right: 03 PROJECTS */}
+            <span
+              className={`font-mono text-xs font-semibold tracking-wider ${
+                dark ? "text-white/45" : "text-[#7a4a35]"
+              }`}
+            >
+              {String(engineeringProjects.length).padStart(2, "0")} PROJECTS
+            </span>
           </div>
 
           {/* ── Project Cards Vertical Stack ── */}
-          <div ref={projectsListRef} className="flex flex-col gap-6 sm:gap-8">
+          <div className="flex flex-col gap-6 sm:gap-8">
             {engineeringProjects.map((project, index) => (
               <ProjectCard
                 key={project.id}

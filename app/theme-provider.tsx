@@ -47,7 +47,7 @@ export const useTheme = () => useContext(ThemeContext);
 function FloatingThemeToggle() {
   const pathname = usePathname();
   const { dark, toggle } = useTheme();
-  if (pathname === "/") return null;
+  if (pathname === "/" || pathname === "/engineering-lab" || pathname === "/connect" || pathname.startsWith("/engineering-lab")) return null;
   return (
     <button
       type="button"

@@ -63,6 +63,18 @@ export default function ProjectCard({
   const projectNumber = String(index + 1).padStart(2, "0");
   const totalCount = String(totalProjects).padStart(2, "0");
 
+  const featuredTechMap: Record<string, string[]> = {
+    "sankat-saathi": ["React 18", "Vite", "Tailwind CSS", "Supabase (PostgreSQL & RLS)", "IBM Z / LinuxONE", "FastAPI"],
+    atlas: ["React 18", "Vite", "Tailwind CSS", "Framer Motion"],
+    "portfolio-3d": ["React 18", "Tailwind CSS", "Open-Meteo API", "Express.js", "Node.js", "Vercel", "PWA"],
+  };
+
+  const displayedTech =
+    featuredTechMap[project.slug] ||
+    featuredTechMap[project.id] ||
+    project.technologies?.slice(0, 6) ||
+    [];
+
   // Determine status badge icon and label
   const renderStatusBadge = () => {
     if (project.slug === "sankat-saathi" || project.id === "sankat-saathi") {
@@ -157,26 +169,6 @@ export default function ProjectCard({
             >
               {projectNumber} / {totalCount}
             </span>
-          </div>
-
-          {/* Bottom Right: < > image navigation carousel controls */}
-          <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={handlePrevImage}
-              aria-label="Previous screenshot"
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white/80 hover:text-white hover:bg-black/80 flex items-center justify-center transition-all shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <FiChevronLeft className="text-sm" />
-            </button>
-            <button
-              type="button"
-              onClick={handleNextImage}
-              aria-label="Next screenshot"
-              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white/80 hover:text-white hover:bg-black/80 flex items-center justify-center transition-all shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
-            >
-              <FiChevronRight className="text-sm" />
-            </button>
           </div>
         </div>
 
@@ -293,9 +285,9 @@ export default function ProjectCard({
           </p>
 
           {/* Technologies Tag Pills */}
-          {project.technologies && project.technologies.length > 0 && (
+          {displayedTech.length > 0 && (
             <div className="mt-5 flex flex-wrap gap-2">
-              {project.technologies.map((tech) => (
+              {displayedTech.map((tech) => (
                 <span
                   key={tech}
                   className={`px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
