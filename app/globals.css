@@ -1,5 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap');
 
 /* ── Theme tokens (switched by <html data-theme="dark|light">) ── */
 :root {
@@ -9,8 +9,12 @@
   /* Engineering Lab tokens */
   --lab-bg: #030712;
   --lab-surface: #070b14;
+  --lab-card-bg: rgba(9, 15, 28, 0.85);
+  --lab-card-border: rgba(255, 255, 255, 0.08);
   --lab-fg: #ffffff;
-  --lab-accent: #67e8f9;
+  --lab-muted: rgba(255, 255, 255, 0.62);
+  --lab-accent: #38bdf8;
+  --lab-accent-light: #67e8f9;
   color-scheme: dark;
 }
 
@@ -20,9 +24,17 @@ html[data-theme="light"] {
 
   --lab-bg: #f5ede0;
   --lab-surface: #fbf5ea;
+  --lab-card-bg: #fbf5ea;
+  --lab-card-border: rgba(139, 26, 26, 0.14);
   --lab-fg: #2a1008;
+  --lab-muted: #7a4a35;
   --lab-accent: #8b1a1a;
+  --lab-accent-light: #c9956a;
   color-scheme: light;
+}
+
+.font-handwriting {
+  font-family: 'Caveat', cursive, sans-serif;
 }
 
 @theme inline {
@@ -30,7 +42,10 @@ html[data-theme="light"] {
   --color-foreground: var(--foreground);
   --color-lab-bg: var(--lab-bg);
   --color-lab-surface: var(--lab-surface);
+  --color-lab-card-bg: var(--lab-card-bg);
+  --color-lab-card-border: var(--lab-card-border);
   --color-lab-fg: var(--lab-fg);
+  --color-lab-muted: var(--lab-muted);
   --color-lab-accent: var(--lab-accent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);

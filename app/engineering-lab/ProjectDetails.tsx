@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import { FaArrowLeft, FaGithub, FaPlay } from "react-icons/fa";
 import { FaArrowUpRightFromSquare } from "react-icons/fa6";
+import { useTheme } from "../theme-provider";
 import type { EngineeringProject } from "@/data/engineeringProjects";
 import ProjectCard from "./ProjectCard";
 import ProjectVisual from "./ProjectVisual";
@@ -40,6 +43,7 @@ export default function ProjectDetails({
   project: EngineeringProject;
   relatedProjects: EngineeringProject[];
 }) {
+  const { dark, toggle } = useTheme();
   const hasOverview = Boolean(
     project.overview || project.intendedFor || project.role || project.duration,
   );
@@ -53,18 +57,29 @@ export default function ProjectDetails({
 
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
         <Link
-          href="/connect"
+          href="/engineering-lab"
           className="inline-flex min-h-11 items-center gap-3 text-sm text-lab-fg/65 transition hover:text-lab-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lab-accent focus-visible:ring-offset-4 focus-visible:ring-offset-lab-bg"
         >
           <FaArrowLeft aria-hidden="true" className="text-xs text-lab-accent" />
           Engineering Lab
         </Link>
-        <Link
-          href="/"
-          className="inline-flex min-h-11 items-center text-xs font-medium text-lab-fg/50 transition hover:text-lab-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lab-accent focus-visible:ring-offset-4 focus-visible:ring-offset-lab-bg"
-        >
-          Main portfolio
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={toggle}
+            aria-label={dark ? "Switch to Day Mode" : "Switch to Night Mode"}
+            title={dark ? "Switch to Day Mode" : "Switch to Night Mode"}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-lab-fg/15 bg-lab-fg/[0.04] text-sm shadow-sm transition hover:border-lab-accent/40"
+          >
+            {dark ? "☀️" : "🌙"}
+          </button>
+          <Link
+            href="/"
+            className="inline-flex min-h-11 items-center text-xs font-medium text-lab-fg/50 transition hover:text-lab-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lab-accent focus-visible:ring-offset-4 focus-visible:ring-offset-lab-bg"
+          >
+            Main portfolio
+          </Link>
+        </div>
       </header>
 
       <div className="relative z-10 mx-auto max-w-7xl px-5 pb-20 sm:px-8 lg:px-12">
@@ -267,11 +282,17 @@ export default function ProjectDetails({
                 <p className={eyebrow}>Keep exploring</p>
                 <h2 className="mt-3 text-2xl font-semibold tracking-tight">More from the lab</h2>
               </div>
-              <Link href="/connect" className="inline-flex min-h-11 items-center self-end text-xs text-lab-fg/55 transition hover:text-lab-accent">All projects →</Link>
+              <Link href="/engineering-lab" className="inline-flex min-h-11 items-center self-end text-xs text-lab-fg/55 transition hover:text-lab-accent">All projects →</Link>
             </div>
-            <div className="grid gap-5 lg:grid-cols-2">
+            <div className="flex flex-col gap-6">
               {relatedProjects.map((related, index) => (
-                <ProjectCard key={related.id} project={related} index={index} />
+                <ProjectCard
+                  key={related.id}
+                  project={related}
+                  index={index}
+                  totalProjects={relatedProjects.length}
+                  dark={dark}
+                />
               ))}
             </div>
           </section>

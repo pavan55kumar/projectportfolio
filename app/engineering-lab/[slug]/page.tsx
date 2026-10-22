@@ -11,7 +11,9 @@ type ProjectPageProps = {
 };
 
 export function generateStaticParams() {
-  return engineeringProjects.map(({ slug }) => ({ slug }));
+  const slugs = engineeringProjects.map(({ slug }) => ({ slug }));
+  slugs.push({ slug: "project-orbital" });
+  return slugs;
 }
 
 export async function generateMetadata({

@@ -1,72 +1,344 @@
 "use client";
 
+import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import { FaArrowUpRightFromSquare } from "react-icons/fa6";
+import { motion, AnimatePresence } from "framer-motion";
+import { FaArrowUpRightFromSquare, FaArrowRight, FaTrophy } from "react-icons/fa6";
+import { FiChevronLeft, FiChevronRight, FiMoreHorizontal, FiExternalLink, FiGithub, FiCopy, FiCheck } from "react-icons/fi";
+import { IoTriangle } from "react-icons/io5";
 import type { EngineeringProject } from "@/data/engineeringProjects";
-import ProjectVisual from "./ProjectVisual";
 
 export default function ProjectCard({
   project,
-  featured = false,
   index,
+  totalProjects = 3,
+  dark = true,
 }: {
   project: EngineeringProject;
-  featured?: boolean;
   index: number;
+  totalProjects?: number;
+  dark?: boolean;
 }) {
-  const reduceMotion = useReducedMotion();
+  // Collect images for image carousel
+  const images: string[] = [];
+  if (project.coverImage) images.push(project.coverImage);
+  if (project.bannerImage && project.bannerImage !== project.coverImage) {
+    images.push(project.bannerImage);
+  }
+  if (images.length === 0) {
+    images.push("/projects/portfolio-3d/cover.png");
+  }
+
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveImageIdx((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setActiveImageIdx((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+  };
+
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (typeof window !== "undefined") {
+      const url = `${window.location.origin}/engineering-lab/${project.slug}`;
+      navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+        setMenuOpen(false);
+      }, 1500);
+    }
+  };
+
+  const projectNumber = String(index + 1).padStart(2, "0");
+  const totalCount = String(totalProjects).padStart(2, "0");
+
+  // Determine status badge icon and label
+  const renderStatusBadge = () => {
+    if (project.slug === "sankat-saathi" || project.id === "sankat-saathi") {
+      return (
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            dark
+              ? "bg-[#0b2238] text-cyan-300 border border-cyan-500/30"
+              : "bg-[#faeedd] text-[#8b1a1a] border border-[#8b1a1a]/25"
+          }`}
+        >
+          <FaTrophy className="text-[10px] shrink-0" />
+          {project.status || "IBM Z Datathon 2026 Finalist Project"}
+        </span>
+      );
+    }
+
+    if (project.slug === "atlas" || project.id === "atlas") {
+      return (
+        <span
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+            dark
+              ? "bg-[#062018] text-emerald-300 border border-emerald-500/30"
+              : "bg-[#ecfdf5] text-emerald-800 border border-emerald-600/25"
+          }`}
+        >
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+          {project.status || "Active Production PWA"}
+        </span>
+      );
+    }
+
+    // Project Orbital / default
+    return (
+      <span
+        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+          dark
+            ? "bg-[#1f1035] text-purple-300 border border-purple-500/30"
+            : "bg-[#f5eefc] text-purple-800 border border-purple-500/25"
+        }`}
+      >
+        <IoTriangle className="text-[9px] shrink-0 transform rotate-90" />
+        {project.status || "Live on Vercel"}
+      </span>
+    );
+  };
+
+  // Live demo URL or internal link
+  const exploreUrl = project.liveDemoUrl || `/engineering-lab/${project.slug}#demo`;
 
   return (
     <motion.article
-      initial={reduceMotion ? false : { opacity: 0, y: 22 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.12 }}
-      transition={{ duration: 0.55, delay: reduceMotion ? 0 : index * 0.07, ease: [0.22, 1, 0.36, 1] }}
-      className={`project-card group overflow-hidden rounded-3xl border border-lab-fg/10 bg-lab-surface/90 text-lab-fg transition duration-500 hover:-translate-y-1.5 hover:border-lab-accent/30 hover:shadow-[0_25px_80px_-20px_rgba(0,0,0,0.35)] ${
-        featured ? "lg:col-span-2 lg:grid lg:grid-cols-[1.35fr_0.65fr]" : ""
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+      className={`group relative rounded-3xl border transition-all duration-500 overflow-hidden ${
+        dark
+          ? "bg-[#070d18]/90 border-white/[0.08] hover:border-cyan-400/35 hover:shadow-[0_20px_60px_rgba(0,0,0,0.6)]"
+          : "bg-[#fbf5ea] border-[#8b1a1a]/15 hover:border-[#8b1a1a]/40 hover:shadow-[0_16px_45px_rgba(139,26,26,0.08)]"
       }`}
     >
-      <Link
-        href={`/engineering-lab/${project.slug}`}
-        className="block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-lab-accent"
-        aria-label={`Explore ${project.title}`}
-      >
-        <ProjectVisual project={project} variant={featured ? "hero" : "card"} />
-      </Link>
-      <div className={`flex flex-col p-5 sm:p-7 ${featured ? "lg:justify-center lg:p-9" : ""}`}>
-        <div className="flex items-center justify-between gap-4">
-          <p className="font-mono text-[10px] font-medium uppercase tracking-[0.2em] text-lab-accent/70">
-            SELECTED PROJECT / 0{index + 1}
-          </p>
-          {project.status && (
-            <span className="rounded-full border border-lab-fg/10 px-3 py-1 text-[10px] text-lab-fg/55">
-              {project.status}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.25fr] gap-6 sm:gap-8 p-4 sm:p-5 lg:p-6 items-center">
+        {/* ── Left Column: Project Visual ── */}
+        <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden group/image select-none">
+          <Link
+            href={`/engineering-lab/${project.slug}`}
+            className="block w-full h-full relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
+            aria-label={`View deep-dive for ${project.title}`}
+          >
+            <Image
+              src={images[activeImageIdx]}
+              alt={`${project.title} preview`}
+              fill
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover transition-transform duration-700 ease-out group-hover/image:scale-[1.04]"
+              priority={index === 0}
+            />
+
+            {/* Subtle overlay gradient on bottom */}
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
+          </Link>
+
+          {/* Bottom Left: 01 / 03 index pill badge */}
+          <div className="absolute bottom-3 left-3 z-10 pointer-events-none">
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-full font-mono text-[11px] sm:text-xs font-semibold backdrop-blur-md shadow-lg ${
+                dark
+                  ? "bg-black/65 text-white/95 border border-white/20"
+                  : "bg-[#2a1008]/75 text-white border border-white/25"
+              }`}
+            >
+              {projectNumber} / {totalCount}
             </span>
-          )}
+          </div>
+
+          {/* Bottom Right: < > image navigation carousel controls */}
+          <div className="absolute bottom-3 right-3 z-10 flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={handlePrevImage}
+              aria-label="Previous screenshot"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white/80 hover:text-white hover:bg-black/80 flex items-center justify-center transition-all shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              <FiChevronLeft className="text-sm" />
+            </button>
+            <button
+              type="button"
+              onClick={handleNextImage}
+              aria-label="Next screenshot"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white/80 hover:text-white hover:bg-black/80 flex items-center justify-center transition-all shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              <FiChevronRight className="text-sm" />
+            </button>
+          </div>
         </div>
-        <h2 className={`mt-3 font-semibold tracking-[-0.045em] text-lab-fg ${featured ? "text-3xl sm:text-4xl" : "text-2xl"}`}>
-          {project.title}
-        </h2>
-        <p className="mt-2 max-w-xl text-sm leading-6 text-lab-fg/60">{project.description}</p>
 
-        {project.technologies && project.technologies.length > 0 && (
-          <ul className="mt-5 flex flex-wrap gap-2" aria-label={`${project.title} technologies`}>
-            {project.technologies.slice(0, featured ? 6 : 4).map((technology) => (
-              <li key={technology} className="rounded-full border border-lab-fg/10 bg-lab-fg/[0.03] px-3 py-1.5 text-[10px] text-lab-fg/65">
-                {technology}
-              </li>
-            ))}
-          </ul>
-        )}
+        {/* ── Right Column: Project Details ── */}
+        <div className="flex flex-col justify-center">
+          {/* Top Row: Status badge & Menu action */}
+          <div className="relative flex items-center justify-between gap-3">
+            {renderStatusBadge()}
 
-        <Link
-          href={`/engineering-lab/${project.slug}`}
-          className="mt-7 inline-flex min-h-11 w-fit items-center gap-2 text-xs font-semibold text-lab-accent transition hover:gap-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lab-accent focus-visible:ring-offset-4 focus-visible:ring-offset-lab-surface"
-        >
-          Explore Project
-          <FaArrowUpRightFromSquare aria-hidden="true" className="text-[10px]" />
-        </Link>
+            {/* Three Dots Menu Button */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setMenuOpen(!menuOpen)}
+                aria-label="More options"
+                className={`p-1.5 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 ${
+                  dark
+                    ? "text-white/45 hover:text-white hover:bg-white/10 focus-visible:ring-cyan-400"
+                    : "text-[#2a1008]/45 hover:text-[#2a1008] hover:bg-[#8b1a1a]/10 focus-visible:ring-[#8b1a1a]"
+                }`}
+              >
+                <FiMoreHorizontal className="text-lg" />
+              </button>
+
+              {/* Popup Dropdown */}
+              <AnimatePresence>
+                {menuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                    transition={{ duration: 0.15 }}
+                    className={`absolute right-0 top-8 z-30 w-48 rounded-xl p-1.5 shadow-xl border backdrop-blur-xl ${
+                      dark
+                        ? "bg-[#0c1424]/95 border-white/15 text-white"
+                        : "bg-[#fffaf2]/95 border-[#8b1a1a]/20 text-[#2a1008]"
+                    }`}
+                  >
+                    <Link
+                      href={`/engineering-lab/${project.slug}`}
+                      onClick={() => setMenuOpen(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                        dark ? "hover:bg-white/10 text-white/85" : "hover:bg-[#8b1a1a]/10 text-[#2a1008]"
+                      }`}
+                    >
+                      <FaArrowRight className="text-[10px]" /> View Case Study
+                    </Link>
+
+                    {project.liveDemoUrl && (
+                      <Link
+                        href={project.liveDemoUrl}
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                          dark ? "hover:bg-white/10 text-white/85" : "hover:bg-[#8b1a1a]/10 text-[#2a1008]"
+                        }`}
+                      >
+                        <FiExternalLink className="text-xs" /> Open Live Demo
+                      </Link>
+                    )}
+
+                    {project.githubUrl && (
+                      <a
+                        href={project.githubUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => setMenuOpen(false)}
+                        className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                          dark ? "hover:bg-white/10 text-white/85" : "hover:bg-[#8b1a1a]/10 text-[#2a1008]"
+                        }`}
+                      >
+                        <FiGithub className="text-xs" /> GitHub Repository
+                      </a>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                        dark ? "hover:bg-white/10 text-white/85" : "hover:bg-[#8b1a1a]/10 text-[#2a1008]"
+                      }`}
+                    >
+                      {copied ? (
+                        <>
+                          <FiCheck className="text-xs text-emerald-400" /> Copied!
+                        </>
+                      ) : (
+                        <>
+                          <FiCopy className="text-xs" /> Copy Project Link
+                        </>
+                      )}
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Project Title */}
+          <h2
+            className={`mt-3 sm:mt-4 text-2xl sm:text-3xl font-bold tracking-tight transition-colors ${
+              dark ? "text-white" : "text-[#2a1008]"
+            }`}
+          >
+            {project.title}
+          </h2>
+
+          {/* Project Description */}
+          <p
+            className={`mt-2 text-sm sm:text-[14px] leading-relaxed transition-colors ${
+              dark ? "text-white/65" : "text-[#7a4a35]"
+            }`}
+          >
+            {project.description}
+          </p>
+
+          {/* Technologies Tag Pills */}
+          {project.technologies && project.technologies.length > 0 && (
+            <div className="mt-5 flex flex-wrap gap-2">
+              {project.technologies.map((tech) => (
+                <span
+                  key={tech}
+                  className={`px-3 py-1 rounded-full text-[11px] font-medium transition-colors ${
+                    dark
+                      ? "bg-white/[0.04] border border-white/10 text-white/75 hover:border-cyan-400/40"
+                      : "bg-[#8b1a1a]/[0.05] border border-[#8b1a1a]/15 text-[#7a4a35] hover:border-[#8b1a1a]/30"
+                  }`}
+                >
+                  {tech}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Bottom Action Row */}
+          <div className="mt-6 sm:mt-7 flex items-center justify-between gap-4 pt-1">
+            {/* Primary Button: Explore Project ↗ */}
+            <Link
+              href={exploreUrl}
+              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98] ${
+                dark
+                  ? "bg-[#38bdf8] text-[#030712] shadow-lg shadow-cyan-500/25 hover:bg-[#7dd3fc] hover:shadow-cyan-400/35 focus-visible:ring-cyan-300"
+                  : "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/25 hover:bg-[#721515] hover:shadow-[#8b1a1a]/40 focus-visible:ring-[#8b1a1a]"
+              }`}
+            >
+              Explore Project
+              <FaArrowUpRightFromSquare className="text-[10px]" />
+            </Link>
+
+            {/* Secondary CTA: View Details → */}
+            <Link
+              href={`/engineering-lab/${project.slug}`}
+              className={`inline-flex items-center gap-1.5 text-xs sm:text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 rounded-lg px-2 py-1 ${
+                dark
+                  ? "text-white/60 hover:text-white focus-visible:ring-cyan-400"
+                  : "text-[#7a4a35] hover:text-[#2a1008] focus-visible:ring-[#8b1a1a]"
+              }`}
+            >
+              View Details
+              <FaArrowRight className="text-[10px] transition-transform group-hover:translate-x-1" />
+            </Link>
+          </div>
+        </div>
       </div>
     </motion.article>
   );

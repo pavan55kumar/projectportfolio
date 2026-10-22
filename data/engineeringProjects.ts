@@ -148,46 +148,49 @@ export const engineeringProjects: EngineeringProject[] = [
   {
     id: "portfolio-3d",
     slug: "portfolio-3d",
-    title: "3D Portfolio",
-    description: "An interactive personal portfolio built around a live 3D experience.",
+    title: "Project Orbital",
+    description: "Modern Weather Dashboard with Real-time Data, Interactive Maps and Beautiful Visualizations.",
     icon: "portfolio",
-    status: "Live Experience",
+    status: "Live on Vercel",
     coverImage: "/projects/portfolio-3d/cover.png",
     overview:
-      "A personal portfolio bringing together an interactive 3D hero, selected projects, certifications, testimonials, and contact information.",
-    intendedFor: "Visitors exploring my work and background.",
-    role: "Personal portfolio project",
+      "Project Orbital is a modern weather dashboard and geospatial visualization platform delivering real-time atmospheric data, interactive maps, forecast telemetry, and beautiful dynamic UI transitions backed by Open-Meteo APIs.",
+    intendedFor: "Developers, meteorology enthusiasts, and visitors exploring modern data dashboards.",
+    role: "Full-Stack Engineer & UI Architect",
     technologies: [
-      "Next.js",
-      "React",
-      "TypeScript",
-      "React Three Fiber",
-      "Drei",
-      "Framer Motion",
+      "React 18",
       "Tailwind CSS",
-      "NextAuth",
+      "Open-Meteo API",
+      "Express.js",
+      "Node.js",
+      "Vercel",
+      "PWA",
     ],
     features: [
-      "Interactive 3D hero scene with Three.js shaders",
-      "Responsive project and certification showcase",
-      "Theme and language controls with instant reactivity",
-      "LinkedIn OAuth authentication for verified testimonials",
+      "Live weather telemetry and multi-day micro-forecasts via Open-Meteo API",
+      "Interactive 3D weather radar & geospatial map layers",
+      "Dynamic weather condition themes with day and night responsiveness",
+      "Progressive Web App support with offline caching and instantaneous load times",
     ],
     team: [
       {
         name: "Pavan Kumar",
-        role: "Creator & 3D Web Engineer",
-        contribution: "Interactive 3D WebGL scenes, Next.js architecture, shader animations, and UI/UX design.",
+        role: "Lead Frontend & Systems Developer",
+        contribution: "Interactive dashboard UI, real-time API integrations, and PWA configuration.",
         github: "https://github.com/pavan55kumar",
         linkedin: "https://www.linkedin.com/in/pavan-kumar-6864b2320",
         photo: "/pavan.jpeg",
       },
     ],
-    liveDemoUrl: "/",
+    liveDemoUrl: "https://github.com/pavan55kumar/projectportfolio",
     relatedProjectIds: ["sankat-saathi", "atlas"],
   },
 ];
 
 export function getEngineeringProject(slug: string) {
-  return engineeringProjects.find((project) => project.slug === slug);
+  return engineeringProjects.find(
+    (project) =>
+      project.slug === slug ||
+      (slug === "project-orbital" && project.slug === "portfolio-3d")
+  );
 }
