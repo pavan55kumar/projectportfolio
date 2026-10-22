@@ -44,7 +44,7 @@ export const engineeringProjects: EngineeringProject[] = [
     title: "Sankat Saathi",
     description: "AI-Powered Flood Relief & Humanitarian Supply Allocation Platform built for the IBM Z Datathon 2026.",
     icon: "relief",
-    status: "IBM Z Datathon 2026 Finalist Project",
+    status: "IBM Z Datathon Project",
     coverImage: "/projects/sankat-saathi/banner.jpg",
     bannerImage: "/projects/sankat-saathi/cover.png",
     overview:

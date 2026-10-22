@@ -87,7 +87,7 @@ export default function ProjectCard({
           }`}
         >
           <FaTrophy className="text-[10px] shrink-0" />
-          {project.status || "IBM Z Datathon 2026 Finalist Project"}
+          {project.status || "IBM Z Datathon Project"}
         </span>
       );
     }

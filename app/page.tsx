@@ -1322,6 +1322,24 @@ export default function Home() {
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
+  const [dynamicProjects, setDynamicProjects] = useState<any[] | null>(null);
+  const [dynamicCertificates, setDynamicCertificates] = useState<any[] | null>(null);
+
+  useEffect(() => {
+    fetch("/api/projects")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) setDynamicProjects(data);
+      })
+      .catch(() => {});
+
+    fetch("/api/certificates")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) setDynamicCertificates(data);
+      })
+      .catch(() => {});
+  }, []);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
 
@@ -2239,7 +2257,7 @@ export default function Home() {
             paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
           }}
         >
-          {t.projectsList.map(({ title, tech, desc, github, emoji, logo, labUrl }: any, i: number) => (
+          {(dynamicProjects || t.projectsList).map(({ title, tech, desc, github, emoji, logo, labUrl }: any, i: number) => (
             <motion.div
               key={i}
               variants={fadeUp}
@@ -2408,8 +2426,10 @@ export default function Home() {
             paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
           }}
         >
-          {certCards.map((card, i) => {
-            const color = dark ? card.colorDark : card.colorLight;
+          {(dynamicCertificates || certCards).map((card: any, i: number) => {
+            const color = dark ? (card.colorDark || card.color_dark || "#0ea5e9") : (card.colorLight || card.color_light || "#c9956a");
+            const cardImg = card.imageUrl || card.image_url;
+            const isReal = card.real !== false && (card.real === true || !!cardImg);
             return (
               <motion.div
                 key={i}
@@ -2428,7 +2448,7 @@ export default function Home() {
                 <div
                   className={cn(
                     "relative h-[340px] rounded-2xl overflow-hidden border flex flex-col group transition-all duration-500",
-                    card.real
+                    isReal
                       ? dark
                         ? "glass-card border-white/12 hover:border-cyan-400/50 shadow-[0_8px_40px_rgba(0,0,0,0.5)]"
                         : "glass-card border-[#8b1a1a]/18 hover:border-[#8b1a1a]/50 shadow-[0_8px_40px_rgba(139,26,26,0.14)]"
@@ -2452,7 +2472,28 @@ export default function Home() {
                       }}
                     />
 
-                    {card.real ? (
+                    {cardImg ? (
+                      <div className="relative w-full h-44 flex items-center justify-center">
+                        <div
+                          onClick={() => {
+                            if (cardImg.startsWith("http") || cardImg.startsWith("/")) {
+                              window.open(cardImg, "_blank");
+                            } else {
+                              openCert(0);
+                            }
+                          }}
+                          className="relative w-48 h-32 rounded-xl overflow-hidden shadow-2xl cursor-pointer transition-all duration-300 hover:scale-105"
+                          style={{ border: "1px solid rgba(255,255,255,0.18)" }}
+                        >
+                          <Image
+                            src={cardImg}
+                            alt={card.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      </div>
+                    ) : isReal ? (
                       <div className="relative w-full h-44 flex items-center justify-center">
                         {[
                           { rot: "-11deg", top: "6px",  scale: 0.86, z: 1 },
@@ -2508,7 +2549,7 @@ export default function Home() {
                           className={cn(
                             "font-bold text-sm truncate",
                             dark ? "text-white" : "text-[#2a1008]",
-                            !card.real && "opacity-45"
+                            !isReal && "opacity-45"
                           )}
                         >
                           {card.title}
@@ -2517,7 +2558,7 @@ export default function Home() {
                           className={cn(
                             "text-xs mt-0.5 line-clamp-1",
                             dark ? "text-white/35" : "text-[#7a4a35]/60",
-                            !card.real && "opacity-55"
+                            !isReal && "opacity-55"
                           )}
                         >
                           {card.subtitle}
@@ -2534,9 +2575,15 @@ export default function Home() {
                       </span>
                     </div>
 
-                    {card.real ? (
+                    {isReal ? (
                       <button
-                        onClick={() => openCert(0)}
+                        onClick={() => {
+                          if (cardImg) {
+                            window.open(cardImg, "_blank");
+                          } else {
+                            openCert(0);
+                          }
+                        }}
                         className={cn(
                           "text-xs font-semibold transition-colors duration-200",
                           dark
@@ -2544,7 +2591,7 @@ export default function Home() {
                             : "text-[#8b1a1a] hover:text-[#2a1008]"
                         )}
                       >
-                        View all certificates →
+                        {cardImg ? "View Certificate ↗" : "View all certificates →"}
                       </button>
                     ) : (
                       <p
@@ -2797,7 +2844,14 @@ export default function Home() {
               dark ? "text-white/25" : "text-[#7a4a35]/50"
             )}
           >
-            © {new Date().getFullYear()} Pavan Kumar · Crafted with React &amp; Three.js
+            © {new Date().getFullYear()} Pavan Kumar · Crafted with React &amp; Three.js ·{" "}
+            <Link
+              href="/admin"
+              className="opacity-40 hover:opacity-100 hover:underline transition-opacity"
+              title="Admin Portal"
+            >
+              Admin
+            </Link>
           </p>
           <div className="flex items-center gap-5">
             {socials.map(({ href, icon, label }) => (
