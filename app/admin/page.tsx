@@ -26,6 +26,45 @@ import {
 const cn = (...classes: (string | boolean | undefined | null)[]) =>
   classes.filter(Boolean).join(" ");
 
+function parseCertificateImages(imageUrl?: unknown, images?: unknown): string[] {
+  if (Array.isArray(images) && images.length > 0) {
+    return images.map((s) => String(s).trim()).filter(Boolean);
+  }
+  if (Array.isArray(imageUrl) && imageUrl.length > 0) {
+    return imageUrl.map((s) => String(s).trim()).filter(Boolean);
+  }
+  if (typeof images === "string" && images.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(images.trim());
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((s) => String(s).trim()).filter(Boolean);
+      }
+    } catch {}
+  }
+  if (typeof imageUrl === "string" && imageUrl.trim()) {
+    const trimmed = imageUrl.trim();
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((s) => String(s).trim()).filter(Boolean);
+        }
+      } catch {}
+    }
+    if (trimmed.startsWith("data:")) {
+      return [trimmed];
+    }
+    if (trimmed.includes(",")) {
+      return trimmed
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+    return [trimmed];
+  }
+  return [];
+}
+
 type Project = {
   id: string;
   title: string;
@@ -361,9 +400,13 @@ CREATE TABLE IF NOT EXISTS public.certificates (
     color_dark TEXT DEFAULT '#0ea5e9',
     color_light TEXT DEFAULT '#c9956a',
     image_url TEXT,
+    images JSONB DEFAULT '[]'::jsonb,
     order_index INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration for existing certificates table (enables native multi-image support):
+ALTER TABLE public.certificates ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb;
 
 ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
@@ -399,6 +442,7 @@ export default function AdminPage() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
+  const [copiedMigration, setCopiedMigration] = useState(false);
 
   // Project modal state (handles both Add and Edit)
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -592,12 +636,7 @@ export default function AdminPage() {
 
   const openEditCert = (cert: Certificate) => {
     setEditingCert(cert);
-    const imgs =
-      cert.images && cert.images.length > 0
-        ? cert.images
-        : cert.imageUrl
-        ? cert.imageUrl.split(",").map((s) => s.trim()).filter(Boolean)
-        : [];
+    const imgs = parseCertificateImages(cert.imageUrl, cert.images);
     setCertForm({
       title: cert.title,
       subtitle: cert.subtitle || "",
@@ -606,7 +645,7 @@ export default function AdminPage() {
       icon: cert.icon || "🏅",
       colorDark: cert.colorDark || "#0ea5e9",
       colorLight: cert.colorLight || "#c9956a",
-      imageUrl: cert.imageUrl || imgs.join(","),
+      imageUrl: cert.imageUrl || (imgs[0] || ""),
       images: imgs,
     });
     setShowCertModal(true);
@@ -618,7 +657,7 @@ export default function AdminPage() {
       const imgs = certForm.images || [];
       const payload = {
         ...certForm,
-        imageUrl: imgs.join(",") || certForm.imageUrl || "",
+        imageUrl: imgs[0] || (imgs.length > 0 ? JSON.stringify(imgs) : certForm.imageUrl || ""),
         images: imgs,
       };
       if (editingCert) {
@@ -1191,6 +1230,41 @@ export default function AdminPage() {
               </ol>
             </div>
 
+            {/* Quick Migration Box for Certificates Multi-Image Support */}
+            <div className="p-5 rounded-2xl border-2 border-emerald-600/30 bg-emerald-500/10 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-bold text-emerald-950 flex items-center gap-2">
+                  <FiDatabase className="text-emerald-700" />
+                  Database Query for Certificates (Multi-Image Support)
+                </h4>
+                <p className="text-xs text-emerald-800 mt-1">
+                  Run this single query in your Supabase SQL Editor to enable native multi-image support for certificates:
+                </p>
+                <code className="inline-block mt-2 font-mono text-xs px-3 py-1.5 rounded-lg bg-[#2a1008] text-emerald-300">
+                  ALTER TABLE public.certificates ADD COLUMN IF NOT EXISTS images JSONB DEFAULT &apos;[]&apos;::jsonb;
+                </code>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText("ALTER TABLE public.certificates ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb;");
+                  setCopiedMigration(true);
+                  setTimeout(() => setCopiedMigration(false), 2000);
+                }}
+                className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+              >
+                {copiedMigration ? (
+                  <>
+                    <FiCheck /> Copied!
+                  </>
+                ) : (
+                  <>
+                    <FiCopy /> Copy Query
+                  </>
+                )}
+              </button>
+            </div>
+
             {/* SQL Copy Box */}
             <div className="relative rounded-2xl overflow-hidden border border-[#8b1a1a]/20 shadow-sm">
               <div className="flex items-center justify-between px-4 py-2.5 bg-[#faeedd] border-b border-[#8b1a1a]/15 text-xs font-mono text-[#8b1a1a]">
@@ -1453,12 +1527,12 @@ export default function AdminPage() {
                 </div>
 
                 <MultiCertificateImagesInput
-                  images={certForm.images || (certForm.imageUrl ? certForm.imageUrl.split(",").map((s) => s.trim()).filter(Boolean) : [])}
+                  images={parseCertificateImages(certForm.imageUrl, certForm.images)}
                   onChange={(images) =>
                     setCertForm({
                       ...certForm,
                       images,
-                      imageUrl: images.join(","),
+                      imageUrl: images[0] || (images.length > 0 ? JSON.stringify(images) : ""),
                     })
                   }
                 />

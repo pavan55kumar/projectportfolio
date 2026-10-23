@@ -662,27 +662,40 @@ const skills = [
   { label: "GSAP" },
 ];
 
-function getCardImages(card: any): string[] {
-  if (Array.isArray(card.images) && card.images.length > 0) {
-    return card.images.map((s: any) => String(s).trim()).filter(Boolean);
+function parseCertificateImages(imageUrl?: unknown, images?: unknown): string[] {
+  if (Array.isArray(images) && images.length > 0) {
+    return images.map((s) => String(s).trim()).filter(Boolean);
   }
-  const raw = card.imageUrl || card.image_url;
-  if (!raw) {
-    if (card.title?.toLowerCase().includes("microsoft") || card.id === "microsoft-azure") {
-      return ["/certificates/az1.jpeg", "/certificates/az2.jpeg", "/certificates/az3.jpeg"];
-    }
-    return [];
+  if (Array.isArray(imageUrl) && imageUrl.length > 0) {
+    return imageUrl.map((s) => String(s).trim()).filter(Boolean);
   }
-  if (typeof raw === "string") {
-    const trimmed = raw.trim();
+  if (typeof images === "string" && images.trim().startsWith("[")) {
+    try {
+      const parsed = JSON.parse(images.trim());
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((s) => String(s).trim()).filter(Boolean);
+      }
+    } catch {}
+  }
+  if (typeof imageUrl === "string" && imageUrl.trim()) {
+    const trimmed = imageUrl.trim();
     if (trimmed.startsWith("[")) {
       try {
         const parsed = JSON.parse(trimmed);
-        if (Array.isArray(parsed)) return parsed.map((s: any) => String(s).trim()).filter(Boolean);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((s) => String(s).trim()).filter(Boolean);
+        }
       } catch {}
     }
+    // Single data URL (never split on comma because base64 has ;base64,)
+    if (trimmed.startsWith("data:")) {
+      return [trimmed];
+    }
     if (trimmed.includes(",")) {
-      return trimmed.split(",").map((s: string) => s.trim()).filter(Boolean);
+      return trimmed
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
     }
     return [trimmed];
   }
@@ -690,6 +703,15 @@ function getCardImages(card: any): string[] {
 }
 
 const defaultCertFiles = ["/certificates/az1.jpeg", "/certificates/az2.jpeg", "/certificates/az3.jpeg"];
+
+function getCardImages(card: any): string[] {
+  const imgs = parseCertificateImages(card.imageUrl || card.image_url, card.images);
+  if (imgs.length > 0) return imgs;
+  if (card.title?.toLowerCase().includes("microsoft") || card.id === "microsoft-azure") {
+    return defaultCertFiles;
+  }
+  return [];
+}
 
 const certCards = [
   {

@@ -19,22 +19,58 @@ export type PortfolioCertificate = {
 
 const DATA_FILE = path.join(process.cwd(), "data", "certificates.json");
 
-function parseCertificateImages(imageUrl?: string, images?: string[]): string[] {
+function parseCertificateImages(imageUrl?: unknown, images?: unknown): string[] {
+  // 1. If images is already an array:
   if (Array.isArray(images) && images.length > 0) {
     return images.map((s) => String(s).trim()).filter(Boolean);
   }
-  if (!imageUrl || typeof imageUrl !== "string") return [];
-  const trimmed = imageUrl.trim();
-  if (trimmed.startsWith("[")) {
+
+  // 2. If imageUrl is an array:
+  if (Array.isArray(imageUrl) && imageUrl.length > 0) {
+    return imageUrl.map((s) => String(s).trim()).filter(Boolean);
+  }
+
+  // 3. If images is a stringified JSON array:
+  if (typeof images === "string" && images.trim().startsWith("[")) {
     try {
-      const parsed = JSON.parse(trimmed);
-      if (Array.isArray(parsed)) return parsed.map((s) => String(s).trim()).filter(Boolean);
+      const parsed = JSON.parse(images.trim());
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed.map((s) => String(s).trim()).filter(Boolean);
+      }
     } catch {}
   }
-  if (trimmed.includes(",")) {
-    return trimmed.split(",").map((s) => s.trim()).filter(Boolean);
+
+  // 4. If imageUrl is provided:
+  if (typeof imageUrl === "string" && imageUrl.trim()) {
+    const trimmed = imageUrl.trim();
+
+    // 4a. Check if it's a JSON array string:
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map((s) => String(s).trim()).filter(Boolean);
+        }
+      } catch {}
+    }
+
+    // 4b. Single data: URL (CRITICAL: NEVER split on comma, base64 headers contain ;base64,)
+    if (trimmed.startsWith("data:")) {
+      return [trimmed];
+    }
+
+    // 4c. Comma-separated regular file paths or URLs
+    if (trimmed.includes(",")) {
+      return trimmed
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+
+    return [trimmed];
   }
-  return trimmed ? [trimmed] : [];
+
+  return [];
 }
 
 // Fallback default certificates
@@ -48,7 +84,7 @@ const defaultCertificates: PortfolioCertificate[] = [
     icon: "🏅",
     colorDark: "#0ea5e9",
     colorLight: "#c9956a",
-    imageUrl: "/certificates/az1.jpeg,/certificates/az2.jpeg,/certificates/az3.jpeg",
+    imageUrl: "/certificates/az1.jpeg",
     images: [
       "/certificates/az1.jpeg",
       "/certificates/az2.jpeg",
@@ -81,7 +117,7 @@ async function readLocalCertificates(): Promise<PortfolioCertificate[]> {
         return {
           ...c,
           images: imgs,
-          imageUrl: c.imageUrl || imgs.join(","),
+          imageUrl: imgs[0] || c.imageUrl || "",
           real: c.real !== undefined ? Boolean(c.real) : imgs.length > 0,
         };
       });
@@ -112,7 +148,7 @@ export async function GET() {
 
       if (!error && data && data.length > 0) {
         const mapped: PortfolioCertificate[] = data.map((c) => {
-          const imgs = parseCertificateImages(c.image_url);
+          const imgs = parseCertificateImages(c.image_url, c.images);
           return {
             id: c.id,
             title: c.title,
@@ -122,7 +158,7 @@ export async function GET() {
             icon: c.icon || "🏅",
             colorDark: c.color_dark || "#0ea5e9",
             colorLight: c.color_light || "#c9956a",
-            imageUrl: c.image_url || imgs.join(","),
+            imageUrl: imgs[0] || c.image_url || "",
             images: imgs,
             real: imgs.length > 0,
           };
@@ -150,7 +186,8 @@ export async function POST(req: Request) {
     const id = body.id || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || Date.now().toString();
 
     const certImages = parseCertificateImages(imageUrl, images);
-    const finalImageUrl = certImages.join(",") || (imageUrl ? String(imageUrl) : "");
+    const primaryImage = certImages[0] || (typeof imageUrl === "string" ? imageUrl : "");
+    const serializedImages = JSON.stringify(certImages);
 
     const newCert: PortfolioCertificate = {
       id,
@@ -161,7 +198,7 @@ export async function POST(req: Request) {
       icon: String(icon || "🏅"),
       colorDark: String(colorDark || "#0ea5e9"),
       colorLight: String(colorLight || "#c9956a"),
-      imageUrl: finalImageUrl,
+      imageUrl: primaryImage,
       images: certImages,
       real: certImages.length > 0,
     };
@@ -169,7 +206,7 @@ export async function POST(req: Request) {
     const supabase = getSupabaseAdmin();
     if (supabase) {
       try {
-        await supabase.from("certificates").upsert({
+        const payload: Record<string, unknown> = {
           id,
           title: newCert.title,
           subtitle: newCert.subtitle,
@@ -178,8 +215,17 @@ export async function POST(req: Request) {
           icon: newCert.icon,
           color_dark: newCert.colorDark,
           color_light: newCert.colorLight,
-          image_url: newCert.imageUrl || null,
-        });
+          image_url: certImages.length > 1 ? serializedImages : (primaryImage || null),
+          images: certImages,
+        };
+
+        const { error: upsertErr } = await supabase.from("certificates").upsert(payload);
+        if (upsertErr) {
+          // If 'images' column doesn't exist in Supabase yet, fallback gracefully to image_url
+          delete payload.images;
+          payload.image_url = certImages.length > 1 ? serializedImages : (primaryImage || null);
+          await supabase.from("certificates").upsert(payload);
+        }
       } catch (err) {
         console.warn("Supabase upsert failed:", err);
       }
@@ -205,15 +251,13 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Missing certificate id" }, { status: 400 });
     }
 
-    let finalImageUrl = imageUrl;
-    let certImages = images;
-    if (images !== undefined) {
-      certImages = parseCertificateImages(undefined, images);
-      finalImageUrl = certImages.join(",");
-    } else if (imageUrl !== undefined) {
+    let certImages = images !== undefined ? parseCertificateImages(undefined, images) : undefined;
+    if (certImages === undefined && imageUrl !== undefined) {
       certImages = parseCertificateImages(imageUrl);
-      finalImageUrl = certImages.join(",") || imageUrl;
     }
+
+    const primaryImage = certImages && certImages.length > 0 ? certImages[0] : (typeof imageUrl === "string" ? imageUrl : undefined);
+    const serializedImages = certImages ? JSON.stringify(certImages) : undefined;
 
     const supabase = getSupabaseAdmin();
     if (supabase) {
@@ -226,9 +270,23 @@ export async function PATCH(req: Request) {
         if (icon !== undefined) updateData.icon = icon;
         if (colorDark !== undefined) updateData.color_dark = colorDark;
         if (colorLight !== undefined) updateData.color_light = colorLight;
-        if (finalImageUrl !== undefined) updateData.image_url = finalImageUrl;
 
-        await supabase.from("certificates").update(updateData).eq("id", id);
+        if (certImages !== undefined) {
+          updateData.images = certImages;
+          updateData.image_url = certImages.length > 1 ? serializedImages : (primaryImage || null);
+        } else if (imageUrl !== undefined) {
+          updateData.image_url = imageUrl;
+        }
+
+        const { error: patchErr } = await supabase.from("certificates").update(updateData).eq("id", id);
+        if (patchErr) {
+          // If 'images' column doesn't exist in Supabase yet, fallback gracefully
+          delete updateData.images;
+          if (certImages !== undefined) {
+            updateData.image_url = certImages.length > 1 ? serializedImages : (primaryImage || null);
+          }
+          await supabase.from("certificates").update(updateData).eq("id", id);
+        }
       } catch (err) {
         console.warn("Supabase certificate update failed:", err);
       }
@@ -237,7 +295,7 @@ export async function PATCH(req: Request) {
     const current = await readLocalCertificates();
     const updated = current.map((c) => {
       if (c.id === id) {
-        const updatedImages = certImages !== undefined ? certImages : parseCertificateImages(finalImageUrl || c.imageUrl, c.images);
+        const updatedImages = certImages !== undefined ? certImages : parseCertificateImages(c.imageUrl, c.images);
         return {
           ...c,
           ...(title !== undefined ? { title: String(title) } : {}),
@@ -247,7 +305,7 @@ export async function PATCH(req: Request) {
           ...(icon !== undefined ? { icon: String(icon) } : {}),
           ...(colorDark !== undefined ? { colorDark: String(colorDark) } : {}),
           ...(colorLight !== undefined ? { colorLight: String(colorLight) } : {}),
-          ...(finalImageUrl !== undefined ? { imageUrl: String(finalImageUrl) } : {}),
+          ...(primaryImage !== undefined ? { imageUrl: primaryImage } : {}),
           images: updatedImages,
           real: updatedImages.length > 0,
         };
