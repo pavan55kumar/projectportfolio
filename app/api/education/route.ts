@@ -17,11 +17,11 @@ const DATA_FILE = path.join(process.cwd(), "data", "education.json");
 
 const defaultEducation: EducationItem[] = [
   {
-    id: "btech-ise",
+    id: "edu-1792752050208",
     levelTag: "B.TECH",
-    degree: "B.Tech Information Science & Engineering",
+    degree: "B.tech information science and engineering",
     institution: "N.M.A.M. Institute of Technology, Nitte",
-    period: "2024 - 2028",
+    period: "2024-2028",
     status: "In Progress",
     orderIndex: 1,
   },
@@ -29,18 +29,18 @@ const defaultEducation: EducationItem[] = [
     id: "puc-science",
     levelTag: "PRE-UNIVERSITY",
     degree: "Pre-University Course (PUC)",
-    institution: "Science · College Name",
+    institution: "Science · Shamili PU College",
     period: "2022 - 2024",
-    status: "Completed",
+    status: "",
     orderIndex: 2,
   },
   {
     id: "sslc-school",
     levelTag: "SECONDARY EDUCATION",
     degree: "Secondary School (SSLC)",
-    institution: "School Name",
+    institution: "St.Cecily's High school",
     period: "2022",
-    status: "Completed",
+    status: "",
     orderIndex: 3,
   },
 ];

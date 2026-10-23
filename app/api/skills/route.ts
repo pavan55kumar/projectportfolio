@@ -15,14 +15,25 @@ export type SkillItem = {
 const DATA_FILE = path.join(process.cwd(), "data", "skills.json");
 
 const defaultSkills: SkillItem[] = [
-  { id: "skill-react", name: "React", iconKey: "react", category: "Frontend", orderIndex: 1 },
-  { id: "skill-threejs", name: "Three.js", iconKey: "threejs", category: "3D & Graphics", orderIndex: 2 },
-  { id: "skill-nextjs", name: "Next.js", iconKey: "nextjs", category: "Frontend", orderIndex: 3 },
-  { id: "skill-tailwind", name: "Tailwind", iconKey: "tailwind", category: "Styling", orderIndex: 4 },
-  { id: "skill-javascript", name: "JavaScript", iconKey: "javascript", category: "Languages", orderIndex: 5 },
-  { id: "skill-python", name: "Python", iconKey: "python", category: "Languages", orderIndex: 6 },
-  { id: "skill-uiux", name: "UI/UX", iconKey: "uiux", category: "Design", orderIndex: 7 },
-  { id: "skill-gsap", name: "GSAP", iconKey: "gsap", category: "Animation", orderIndex: 8 },
+  { id: "skill-threejs", name: "Three.js", iconKey: "threejs", category: "Frontend & 3D", orderIndex: 2 },
+  { id: "skill-react", name: "React", iconKey: "react", category: "Frontend & 3D", orderIndex: 2 },
+  { id: "skill-tailwind", name: "Tailwind", iconKey: "tailwind", category: "Frontend & 3D", orderIndex: 3 },
+  { id: "skill-nextjs", name: "Next.js", iconKey: "nextjs", category: "Frontend & 3D", orderIndex: 3 },
+  { id: "skill-gsap", name: "GSAP", iconKey: "gsap", category: "Frontend & 3D", orderIndex: 6 },
+  { id: "skill-vite", name: "Vite", iconKey: "vite", category: "Frontend & 3D", orderIndex: 6 },
+  { id: "skill-html5", name: "HTML5", iconKey: "html5", category: "Frontend & 3D", orderIndex: 6 },
+  { id: "skill-css3", name: "CSS3", iconKey: "css3", category: "Frontend & 3D", orderIndex: 8 },
+  { id: "skill-javascript", name: "JavaScript", iconKey: "javascript", category: "Languages", orderIndex: 8 },
+  { id: "skill-supabase", name: "Supabase", iconKey: "supabase", category: "Backend & DB", orderIndex: 9 },
+  { id: "skill-python", name: "Python", iconKey: "python", category: "Languages", orderIndex: 10 },
+  { id: "skill-java", name: "Java", iconKey: "java", category: "Languages", orderIndex: 12 },
+  { id: "skill-uiux", name: "UI/UX", iconKey: "uiux", category: "Design & 3D", orderIndex: 12 },
+  { id: "skill-nodejs", name: "Node.js", iconKey: "nodejs", category: "Backend & DB", orderIndex: 14 },
+  { id: "skill-express", name: "Express.js", iconKey: "express", category: "Backend & DB", orderIndex: 14 },
+  { id: "skill-postgresql", name: "PostgreSQL", iconKey: "postgresql", category: "Backend & DB", orderIndex: 14 },
+  { id: "skill-firebase", name: "Firebase", iconKey: "firebase", category: "Backend & DB", orderIndex: 18 },
+  { id: "skill-git", name: "Git", iconKey: "git", category: "DevOps & Tools", orderIndex: 18 },
+  { id: "skill-github", name: "GitHub", iconKey: "github", category: "DevOps & Tools", orderIndex: 19 },
 ];
 
 async function readLocal(): Promise<SkillItem[]> {

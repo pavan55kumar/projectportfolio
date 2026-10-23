@@ -2596,11 +2596,11 @@ export default function Home() {
               </div>
 
               {/* Connected Timeline Track (No outer card box) */}
-              <div className="relative pl-8 sm:pl-10">
+              <div className="relative">
                 {/* Continuous vertical track line */}
                 <div
                   className={cn(
-                    "absolute left-3 sm:left-3.5 top-4 bottom-6 w-[1.5px] -translate-x-1/2",
+                    "absolute left-3.5 sm:left-4 top-3 bottom-6 w-[1.5px] -translate-x-1/2 pointer-events-none",
                     dark ? "bg-white/10" : "bg-[#8b1a1a]/15"
                   )}
                 />
@@ -2610,28 +2610,28 @@ export default function Home() {
                     ? dynamicEducation
                     : [
                         {
-                          id: "btech-ise",
+                          id: "edu-1792752050208",
                           levelTag: "B.TECH",
-                          degree: "B.Tech Information Science & Engineering",
+                          degree: "B.tech information science and engineering",
                           institution: "N.M.A.M. Institute of Technology, Nitte",
-                          period: "2024 - 2028",
+                          period: "2024-2028",
                           status: "In Progress",
                         },
                         {
                           id: "puc-science",
                           levelTag: "PRE-UNIVERSITY",
                           degree: "Pre-University Course (PUC)",
-                          institution: "Science · College Name",
+                          institution: "Science · Shamili PU College",
                           period: "2022 - 2024",
-                          status: "Completed",
+                          status: "",
                         },
                         {
                           id: "sslc-school",
                           levelTag: "SECONDARY EDUCATION",
                           degree: "Secondary School (SSLC)",
-                          institution: "School Name",
+                          institution: "St.Cecily's High school",
                           period: "2022",
-                          status: "Completed",
+                          status: "",
                         },
                       ]
                   ).map((item, idx) => {
@@ -2645,41 +2645,57 @@ export default function Home() {
                       : dark ? "text-slate-400" : "text-stone-600";
 
                     return (
-                      <div key={item.id || idx} className="relative py-6 first:pt-2 last:pb-2 group">
+                      <div key={item.id || idx} className="relative pl-10 sm:pl-12 py-5 sm:py-6 group">
                         {/* Timeline Node Badge on the track */}
                         <div
-                          className="absolute left-3 sm:left-3.5 top-6 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
+                          className="absolute left-3.5 sm:left-4 top-7 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-10"
                         >
                           {isFirst ? (
-                            <span
+                            <div
                               className={cn(
-                                "text-sm sm:text-base transition-transform duration-300 group-hover:scale-115",
-                                dark ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" : "text-amber-700"
+                                "w-7 h-7 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
+                                dark
+                                  ? "bg-[#050c17] border-amber-400/40 text-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.35)]"
+                                  : "bg-white border-amber-700/30 text-amber-700 shadow-xs"
                               )}
                             >
-                              <LuGraduationCap />
-                            </span>
+                              <LuGraduationCap className="text-sm" />
+                            </div>
                           ) : idx === 1 ? (
-                            <span
+                            <div
                               className={cn(
-                                "w-2.5 h-2.5 rounded-full transition-transform duration-300 group-hover:scale-125",
-                                dark ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.85)]" : "bg-blue-600"
+                                "w-6 h-6 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
+                                dark ? "bg-[#050c17] border-cyan-400/40" : "bg-white border-blue-600/30"
                               )}
-                            />
+                            >
+                              <span
+                                className={cn(
+                                  "w-2.5 h-2.5 rounded-full",
+                                  dark ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.9)]" : "bg-blue-600"
+                                )}
+                              />
+                            </div>
                           ) : (
-                            <span
+                            <div
                               className={cn(
-                                "w-2.5 h-2.5 rounded-full transition-transform duration-300 group-hover:scale-125",
-                                dark ? "bg-slate-500/80" : "bg-stone-500"
+                                "w-6 h-6 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
+                                dark ? "bg-[#050c17] border-slate-700" : "bg-white border-stone-300"
                               )}
-                            />
+                            >
+                              <span
+                                className={cn(
+                                  "w-2.5 h-2.5 rounded-full",
+                                  dark ? "bg-slate-500" : "bg-stone-500"
+                                )}
+                              />
+                            </div>
                           )}
                         </div>
 
                         {/* Row Content: Left is Details, Right is Date & Status Pills */}
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-6">
                           {/* Left: Level Tag, Degree, Institution */}
-                          <div className="space-y-1 min-w-0">
+                          <div className="space-y-1 min-w-0 flex-1">
                             <span
                               className={cn(
                                 "text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] inline-block",
@@ -2706,14 +2722,14 @@ export default function Home() {
                             </p>
                           </div>
 
-                          {/* Right: Badges (Period & In Progress Status) */}
-                          <div className="flex flex-wrap sm:flex-col sm:items-end justify-center gap-2 shrink-0">
+                          {/* Right: Badges (Period & In Progress Status) ALWAYS on the right side */}
+                          <div className="flex flex-row sm:flex-col items-center sm:items-end justify-end gap-2 shrink-0 self-end sm:self-start pt-0.5">
                             {item.period && (
                               <span
                                 className={cn(
-                                  "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium border tracking-wide",
+                                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border tracking-wide whitespace-nowrap",
                                   dark
-                                    ? "bg-white/[0.03] border-white/10 text-slate-300"
+                                    ? "bg-white/[0.04] border-white/10 text-slate-300"
                                     : "bg-[#8b1a1a]/5 border-[#8b1a1a]/15 text-[#2a1008]/80"
                                 )}
                               >
@@ -2725,9 +2741,9 @@ export default function Home() {
                             {item.status && isInProgress && (
                               <span
                                 className={cn(
-                                  "inline-flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-semibold border",
+                                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold border whitespace-nowrap",
                                   dark
-                                    ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400"
+                                    ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
                                     : "bg-emerald-50 border-emerald-300 text-emerald-800"
                                 )}
                               >
@@ -2855,20 +2871,36 @@ export default function Home() {
                 {(dynamicSkills && dynamicSkills.length > 0
                   ? dynamicSkills
                   : [
-                      { id: "skill-react", name: "React", iconKey: "react" },
                       { id: "skill-threejs", name: "Three.js", iconKey: "threejs" },
-                      { id: "skill-nextjs", name: "Next.js", iconKey: "nextjs" },
+                      { id: "skill-react", name: "React", iconKey: "react" },
                       { id: "skill-tailwind", name: "Tailwind", iconKey: "tailwind" },
-                      { id: "skill-javascript", name: "JavaScript", iconKey: "javascript" },
-                      { id: "skill-python", name: "Python", iconKey: "python" },
-                      { id: "skill-uiux", name: "UI/UX", iconKey: "uiux" },
+                      { id: "skill-nextjs", name: "Next.js", iconKey: "nextjs" },
                       { id: "skill-gsap", name: "GSAP", iconKey: "gsap" },
+                      { id: "skill-vite", name: "Vite", iconKey: "vite" },
+                      { id: "skill-html5", name: "HTML5", iconKey: "html5" },
+                      { id: "skill-css3", name: "CSS3", iconKey: "css3" },
+                      { id: "skill-javascript", name: "JavaScript", iconKey: "javascript" },
+                      { id: "skill-supabase", name: "Supabase", iconKey: "supabase" },
+                      { id: "skill-python", name: "Python", iconKey: "python" },
+                      { id: "skill-java", name: "Java", iconKey: "java" },
+                      { id: "skill-uiux", name: "UI/UX", iconKey: "uiux" },
+                      { id: "skill-nodejs", name: "Node.js", iconKey: "nodejs" },
+                      { id: "skill-express", name: "Express.js", iconKey: "express" },
+                      { id: "skill-postgresql", name: "PostgreSQL", iconKey: "postgresql" },
+                      { id: "skill-firebase", name: "Firebase", iconKey: "firebase" },
+                      { id: "skill-git", name: "Git", iconKey: "git" },
+                      { id: "skill-github", name: "GitHub", iconKey: "github" },
                     ]
                 ).map((skill: any, i: number) => (
                   <motion.div
                     key={skill.id || skill.name}
-                    variants={scaleIn}
-                    custom={i}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{
+                      duration: 0.35,
+                      ease: [0.22, 1, 0.36, 1],
+                      delay: (i % 8) * 0.03,
+                    }}
                     whileHover={{ scale: 1.02, y: -2 }}
                     className={cn(
                       "relative rounded-xl sm:rounded-2xl md:rounded-3xl p-1.5 sm:p-2.5 md:p-3.5 flex items-center gap-1.5 sm:gap-2.5 md:gap-3.5 border transition-all duration-300 group overflow-hidden cursor-default min-h-[38px] sm:min-h-[48px] md:min-h-[58px]",
