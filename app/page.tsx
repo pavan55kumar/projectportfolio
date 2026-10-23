@@ -24,7 +24,7 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { FaGithub, FaGoogle, FaLinkedin, FaPenNib, FaReact, FaJsSquare, FaTimes } from "react-icons/fa";
+import { FaGithub, FaGoogle, FaLinkedin, FaPenNib, FaReact, FaJsSquare, FaTimes, FaCheck, FaArrowRight, FaUser } from "react-icons/fa";
 import { useTheme } from "./theme-provider";
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -232,20 +232,22 @@ function CursorGlow({ dark }: { dark: boolean }) {
 // ─── Divider ──────────────────────────────────────────────────────────────────
 function Divider({ dark }: { dark: boolean }) {
   return (
-    <div className="flex items-center gap-4 my-2">
+    <div className="flex items-center justify-center gap-3 my-3 mx-auto max-w-[80px]">
       <div
         className={`flex-1 h-px bg-gradient-to-r from-transparent ${
-          dark ? "via-cyan-500/40" : "via-[#8b1a1a]/30"
+          dark ? "via-cyan-400/40" : "via-[#8b1a1a]/30"
         } to-transparent`}
       />
       <div
-        className={`w-1.5 h-1.5 rounded-full ${
-          dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+          dark
+            ? "bg-cyan-400 shadow-[0_0_8px_rgba(0,212,255,0.7)]"
+            : "bg-[#8b1a1a] shadow-[0_0_8px_rgba(139,26,26,0.35)]"
         }`}
       />
       <div
         className={`flex-1 h-px bg-gradient-to-r from-transparent ${
-          dark ? "via-cyan-500/40" : "via-[#8b1a1a]/30"
+          dark ? "via-cyan-400/40" : "via-[#8b1a1a]/30"
         } to-transparent`}
       />
     </div>
@@ -731,6 +733,105 @@ type Testimonial = {
   seed?: boolean;
 };
 
+// ─── Testimonials Illustration ────────────────────────────────────────────────
+function TestimonialsEmptyIllustration({ dark }: { dark: boolean }) {
+  return (
+    <div className="relative w-full max-w-[320px] h-[130px] mx-auto flex items-center justify-center select-none pointer-events-none mb-3">
+      {/* Background radial glow */}
+      <div
+        className="absolute inset-0 rounded-full blur-2xl opacity-60"
+        style={{
+          background: dark
+            ? "radial-gradient(circle, rgba(0, 150, 255, 0.25) 0%, rgba(147, 51, 234, 0.2) 60%, transparent 80%)"
+            : "radial-gradient(circle, rgba(201, 149, 106, 0.2) 0%, transparent 70%)",
+        }}
+      />
+
+      {/* Decorative sparkles */}
+      <span className="absolute top-1 left-6 text-cyan-400/70 text-sm">✦</span>
+      <span className="absolute bottom-3 left-10 text-purple-400/60 text-xs">✦</span>
+      <span className="absolute bottom-1 right-8 text-cyan-300/70 text-xs">✦</span>
+
+      {/* Radiating sparks (top right) */}
+      <div className="absolute top-1 right-12 flex items-end gap-1">
+        <span className="w-0.5 h-2.5 rounded-full bg-cyan-400 -rotate-25 shadow-[0_0_8px_rgba(0,212,255,0.8)]" />
+        <span className="w-0.5 h-3.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,212,255,0.8)]" />
+        <span className="w-0.5 h-2.5 rounded-full bg-cyan-400 rotate-25 shadow-[0_0_8px_rgba(0,212,255,0.8)]" />
+      </div>
+
+      {/* Back card (Dark blue with user avatar and placeholder bars) */}
+      <div
+        className={cn(
+          "absolute -top-1 left-4 sm:left-6 w-[190px] sm:w-[210px] rounded-2xl p-3 flex items-center gap-3 border shadow-lg transition-transform",
+          dark
+            ? "bg-[#132238]/95 border-blue-400/30 shadow-[0_8px_25px_rgba(0,100,255,0.25)]"
+            : "bg-[#fffaf2] border-[#8b1a1a]/20 shadow-md"
+        )}
+      >
+        <div
+          className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border",
+            dark
+              ? "bg-blue-500/25 border-blue-400/40 text-blue-300"
+              : "bg-[#8b1a1a]/10 border-[#8b1a1a]/20 text-[#8b1a1a]"
+          )}
+        >
+          <FaUser className="text-xs" />
+        </div>
+        <div className="flex-1 space-y-1.5">
+          <div
+            className={cn(
+              "h-2 w-20 rounded-full",
+              dark ? "bg-blue-300/30" : "bg-[#8b1a1a]/25"
+            )}
+          />
+          <div
+            className={cn(
+              "h-1.5 w-12 rounded-full",
+              dark ? "bg-blue-300/20" : "bg-[#8b1a1a]/15"
+            )}
+          />
+        </div>
+      </div>
+
+      {/* Front card (Purple with user avatar and placeholder bars) */}
+      <div
+        className={cn(
+          "absolute top-7 right-4 sm:right-6 w-[190px] sm:w-[210px] rounded-2xl p-3 flex items-center gap-3 border shadow-xl z-10 transition-transform",
+          dark
+            ? "bg-[#251842]/95 border-purple-400/40 shadow-[0_12px_32px_rgba(147,51,234,0.35)]"
+            : "bg-[#fff] border-[#c9956a]/30 shadow-lg"
+        )}
+      >
+        <div
+          className={cn(
+            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border",
+            dark
+              ? "bg-purple-500/35 border-purple-300/50 text-purple-200"
+              : "bg-[#c9956a]/20 border-[#c9956a]/40 text-[#8b1a1a]"
+          )}
+        >
+          <FaUser className="text-xs" />
+        </div>
+        <div className="flex-1 space-y-1.5">
+          <div
+            className={cn(
+              "h-2 w-24 rounded-full",
+              dark ? "bg-purple-300/40" : "bg-[#8b1a1a]/30"
+            )}
+          />
+          <div
+            className={cn(
+              "h-1.5 w-16 rounded-full",
+              dark ? "bg-purple-300/25" : "bg-[#8b1a1a]/20"
+            )}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TestimonialsSection({
   dark,
   lang,
@@ -855,62 +956,61 @@ function TestimonialsSection({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
-              "max-w-xl mx-auto rounded-3xl border p-10 text-center space-y-6 overflow-hidden relative",
+              "max-w-xl mx-auto rounded-3xl border p-8 sm:p-10 text-center space-y-6 overflow-hidden relative",
               dark
-                ? "glass-card border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.3)]"
+                ? "bg-[#091122]/90 border-blue-500/25 shadow-[0_8px_32px_rgba(0,140,255,0.15)]"
                 : "bg-[#fffaf2]/80 border-[#8b1a1a]/15 shadow-[0_8px_32px_rgba(139,26,26,0.08)]"
             )}
           >
-            <div
-              className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-lg border"
-              style={{
-                backgroundColor: dark ? "rgba(0, 212, 255, 0.1)" : "rgba(139, 26, 26, 0.08)",
-                borderColor: dark ? "rgba(0, 212, 255, 0.25)" : "rgba(139, 26, 26, 0.2)",
-                color: dark ? "#00d4ff" : "#8b1a1a",
-              }}
-            >
-              💬
-            </div>
+            <TestimonialsEmptyIllustration dark={dark} />
 
             <div className="space-y-2">
               <h3 className={cn("text-2xl font-bold tracking-tight", dark ? "text-white" : "text-[#2a1008]")}>
-                {t.noTestimonialsYet || (lang === "jp" ? "推薦状はまだありません" : "No Testimonials Yet")}
+                {t.noTestimonialsYet || (lang === "jp" ? "推薦状はまだありません" : "No testimonials yet")}
               </h3>
               <p className={cn("text-sm leading-relaxed max-w-md mx-auto", dark ? "text-white/60" : "text-[#7a4a35]/80")}>
                 {t.noTestimonialsDesc || (lang === "jp"
                   ? "パヴァンとの協業やプロジェクトの体験を最初にシェアしませんか？Googleアカウントでサインインして、LinkedInプロフィールのリンクを添えて推薦状を投稿できます。"
-                  : "Be the first peer, colleague, or collaborator to share your experience working with Pavan! Sign in with your Google account to leave a recommendation, and paste your LinkedIn profile link.")}
+                  : "Be the first peer, colleague, or collaborator to share your experience working with Pavan! Sign in with your Google account to leave a testimonial, and paste your LinkedIn profile link.")}
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-2 pt-1">
-              {[
-                { icon: <FaGoogle className="text-xs text-[#EA4335]" />, text: lang === "jp" ? "Googleログイン" : "Google Sign-In" },
-                { icon: <FaLinkedin className="text-xs text-[#0A66C2]" />, text: lang === "jp" ? "LinkedIn連携" : "LinkedIn Profile Badge" },
-                { icon: "✨", text: lang === "jp" ? "本物の推薦状のみ" : "100% Real Testimonials" },
-              ].map(({ icon, text }, idx) => (
-                <span
-                  key={idx}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border",
-                    dark ? "border-white/10 text-white/50 bg-white/5" : "border-[#8b1a1a]/12 text-[#7a4a35]/80 bg-[#8b1a1a]/5"
-                  )}
-                >
-                  <span>{icon}</span>{text}
-                </span>
-              ))}
+            <div className="flex flex-wrap justify-center gap-3 pt-1">
+              <span
+                className={cn(
+                  "inline-flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-full border shadow-sm",
+                  dark
+                    ? "border-white/10 text-white/80 bg-[#0e1726]/80"
+                    : "border-[#8b1a1a]/15 text-[#7a4a35] bg-[#8b1a1a]/5"
+                )}
+              >
+                <FaGoogle className="text-xs text-[#EA4335]" />
+                <span>{lang === "jp" ? "Googleログイン" : "Google Sign-In"}</span>
+              </span>
+
+              <span
+                className={cn(
+                  "inline-flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-full border shadow-sm",
+                  dark
+                    ? "border-white/10 text-white/80 bg-[#0e1726]/80"
+                    : "border-[#8b1a1a]/15 text-[#7a4a35] bg-[#8b1a1a]/5"
+                )}
+              >
+                <FaLinkedin className="text-xs text-[#0A66C2]" />
+                <span>{lang === "jp" ? "LinkedIn連携" : "LinkedIn Profile Badge"}</span>
+              </span>
             </div>
 
             {!showForm && (
               <motion.button
                 type="button"
-                whileHover={{ scale: 1.04, y: -2 }}
+                whileHover={{ scale: 1.03, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => { setShowForm(true); setStatus("idle"); }}
                 className={cn(
-                  "inline-flex items-center gap-2.5 rounded-xl px-7 py-3.5 font-semibold text-sm text-white shadow-lg transition-all duration-300",
+                  "w-full max-w-sm mx-auto flex items-center justify-center gap-2.5 rounded-2xl px-8 py-3.5 font-semibold text-sm text-white shadow-xl transition-all duration-300 mt-2",
                   dark
-                    ? "bg-gradient-to-r from-cyan-500 to-blue-600 shadow-[0_0_25px_rgba(0,212,255,0.3)] hover:shadow-[0_0_35px_rgba(0,212,255,0.5)]"
+                    ? "bg-gradient-to-r from-[#00d2ff] via-[#009bf9] to-[#0066ff] shadow-[0_0_25px_rgba(0,180,255,0.4)] hover:shadow-[0_0_35px_rgba(0,180,255,0.6)]"
                     : "bg-gradient-to-r from-[#8b1a1a] to-[#c9956a] shadow-[0_4px_20px_rgba(139,26,26,0.3)] hover:shadow-[0_6px_30px_rgba(139,26,26,0.45)]"
                 )}
               >
@@ -921,103 +1021,117 @@ function TestimonialsSection({
           </motion.div>
         ) : (
           /* Cards grid: Only real testimonials */
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 max-w-4xl mx-auto gap-6">
             {testimonials.map((item, i) => (
               <motion.div
                 key={item.id}
-                initial={{ opacity: 0, y: 40 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.6, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  "relative rounded-2xl border p-6 flex flex-col gap-4 group overflow-hidden transition-all duration-500",
+                  "relative rounded-2xl border p-6 sm:p-7 flex flex-col justify-between group overflow-hidden transition-all duration-300",
                   dark
-                    ? "glass-card border-white/8 hover:border-cyan-400/30 hover:shadow-[0_8px_40px_rgba(0,212,255,0.08)]"
-                    : "glass-card border-[#8b1a1a]/12 hover:border-[#8b1a1a]/35 shadow-[0_2px_20px_rgba(139,26,26,0.06)] hover:shadow-[0_8px_40px_rgba(139,26,26,0.12)]"
+                    ? "bg-[#0a1324]/85 border-white/10 hover:border-cyan-400/30 hover:shadow-[0_8px_32px_rgba(0,212,255,0.1)]"
+                    : "bg-[#fffaf2]/90 border-[#8b1a1a]/15 hover:border-[#8b1a1a]/35 shadow-[0_4px_20px_rgba(139,26,26,0.06)]"
                 )}
               >
-                <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-                  style={{
-                    background: `radial-gradient(ellipse at top left, ${item.avatarColor}10 0%, transparent 60%)`,
-                  }}
-                />
+                <div>
+                  <div className="flex items-start justify-between gap-4">
+                    <p
+                      className={cn(
+                        "text-sm sm:text-base leading-relaxed italic font-medium flex-1",
+                        dark ? "text-white/90" : "text-[#2a1008]"
+                      )}
+                    >
+                      &ldquo;{item.message}&rdquo;
+                    </p>
+                    <span
+                      className={cn(
+                        "text-4xl sm:text-5xl font-serif leading-none select-none pointer-events-none -mt-2",
+                        dark ? "text-white/20" : "text-[#8b1a1a]/20"
+                      )}
+                    >
+                      ”
+                    </span>
+                  </div>
 
-                <span
-                  className="absolute top-3 right-5 text-7xl font-serif leading-none select-none pointer-events-none"
-                  style={{ color: item.avatarColor, opacity: dark ? 0.1 : 0.12 }}
-                >
-                  ”
-                </span>
-
-                <p
-                  className={cn(
-                    "text-sm leading-relaxed italic flex-1 relative z-10",
-                    dark ? "text-white/70" : "text-[#5a3020]/80"
-                  )}
-                >
-                  &ldquo;{item.message}&rdquo;
-                </p>
-
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, si) => (
-                    <span key={si} className="text-amber-400 text-sm">★</span>
-                  ))}
+                  <div className="flex gap-1 mt-3">
+                    {Array.from({ length: 5 }).map((_, si) => (
+                      <span key={si} className="text-amber-400 text-sm">★</span>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-3 pt-2 border-t relative z-10" style={{ borderColor: dark ? "rgba(255,255,255,0.06)" : "rgba(139,26,26,0.08)" }}>
-                  <div
-                    className="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow-lg overflow-hidden border border-white/15"
-                    style={{ background: `linear-gradient(135deg, ${item.avatarColor} 0%, ${item.avatarColor}99 100%)` }}
-                  >
-                    {item.avatarImage ? (
-                      <Image
-                        src={item.avatarImage}
-                        alt={`${item.name}'s profile photo`}
-                        fill
-                        sizes="40px"
-                        className="object-cover"
-                      />
-                    ) : item.initials}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
-                        {item.name}
-                      </p>
-                      {item.linkedin && (
-                        <a
-                          href={item.linkedin.startsWith("http") ? item.linkedin : `https://${item.linkedin}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          title="View LinkedIn Profile"
-                          className="text-[#0A66C2] hover:scale-110 transition-transform shrink-0"
-                        >
-                          <FaLinkedin className="text-sm" />
-                        </a>
+                <div
+                  className={cn(
+                    "w-full h-px my-4",
+                    dark ? "bg-white/[0.08]" : "bg-[#8b1a1a]/10"
+                  )}
+                />
+
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div
+                      className="relative w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 shadow overflow-hidden"
+                      style={{
+                        background: item.avatarColor || "#0A66C2",
+                      }}
+                    >
+                      {item.avatarImage ? (
+                        <Image
+                          src={item.avatarImage}
+                          alt={`${item.name}'s profile photo`}
+                          fill
+                          sizes="40px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        item.initials || item.name.slice(0, 1).toUpperCase()
                       )}
                     </div>
-                    <p className={cn("text-xs truncate", dark ? "text-white/40" : "text-[#7a4a35]/70")}>
-                      {item.role}
-                    </p>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
+                          {item.name}
+                        </p>
+                        {item.linkedin && (
+                          <a
+                            href={item.linkedin.startsWith("http") ? item.linkedin : `https://${item.linkedin}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="View LinkedIn Profile"
+                            className="text-[#0A66C2] hover:scale-110 transition-transform shrink-0"
+                          >
+                            <FaLinkedin className="text-xs" />
+                          </a>
+                        )}
+                      </div>
+                      <p className={cn("text-xs truncate", dark ? "text-white/50" : "text-[#7a4a35]/70")}>
+                        {item.role}
+                      </p>
+                    </div>
                   </div>
-                  {item.linkedin && (
-                    <motion.a
-                      href={item.linkedin.startsWith("http") ? item.linkedin : `https://${item.linkedin}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`${item.name}'s LinkedIn Profile`}
-                      whileHover={{ scale: 1.05, y: -1 }}
-                      whileTap={{ scale: 0.96 }}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-[#0A66C2]/10 border border-[#0A66C2]/30 text-[#0A66C2] hover:bg-[#0A66C2] hover:text-white transition-all duration-200 shrink-0 shadow-sm"
-                    >
-                      <FaLinkedin className="text-xs" />
-                      <span>LinkedIn</span>
-                    </motion.a>
-                  )}
-                  <span className={cn("text-[10px] shrink-0", dark ? "text-white/20" : "text-[#8b1a1a]/30")}>
-                    {item.date}
-                  </span>
+
+                  <div className="flex items-center gap-3 shrink-0">
+                    {item.linkedin && (
+                      <motion.a
+                        href={item.linkedin.startsWith("http") ? item.linkedin : `https://${item.linkedin}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`${item.name}'s LinkedIn Profile`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.96 }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#0A66C2]/15 border border-[#0A66C2]/35 text-[#38bdf8] hover:bg-[#0A66C2] hover:text-white transition-all shadow-sm"
+                      >
+                        <FaLinkedin className="text-xs text-[#0A66C2]" />
+                        <span>LinkedIn</span>
+                      </motion.a>
+                    )}
+                    <span className={cn("text-xs", dark ? "text-white/40" : "text-[#8b1a1a]/40")}>
+                      {item.date}
+                    </span>
+                  </div>
                 </div>
               </motion.div>
             ))}
@@ -1039,28 +1153,28 @@ function TestimonialsSection({
             onClick={() => { setShowForm((v) => !v); setStatus("idle"); }}
             aria-expanded={showForm}
             className={cn(
-              "group relative inline-flex items-center gap-3 overflow-hidden rounded-xl border px-7 py-3 font-semibold text-sm transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+              "group relative inline-flex items-center gap-3.5 overflow-hidden rounded-2xl border px-6 py-2.5 font-semibold text-sm transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 shadow-lg",
               dark
-                ? "border-cyan-300/25 bg-[#07121b]/80 text-cyan-100 shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:border-cyan-200/50 hover:shadow-[0_10px_38px_rgba(0,212,255,0.12)] focus-visible:ring-cyan-300 focus-visible:ring-offset-[#030712]"
-                : "border-[#8b1a1a]/20 bg-[#fffaf2]/80 text-[#6f1919] shadow-[0_8px_28px_rgba(139,26,26,0.08)] hover:border-[#8b1a1a]/45 hover:shadow-[0_10px_32px_rgba(139,26,26,0.14)] focus-visible:ring-[#8b1a1a] focus-visible:ring-offset-[#f5ede0]"
+                ? "border-cyan-500/25 bg-[#071322]/90 text-white hover:border-cyan-400/50 hover:shadow-[0_8px_30px_rgba(0,212,255,0.15)] focus-visible:ring-cyan-300 focus-visible:ring-offset-[#030712]"
+                : "border-[#8b1a1a]/20 bg-[#fffaf2] text-[#6f1919] hover:border-[#8b1a1a]/45 shadow-[0_4px_20px_rgba(139,26,26,0.08)] focus-visible:ring-[#8b1a1a] focus-visible:ring-offset-[#f5ede0]"
             )}
           >
             <span
               className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg border transition-all duration-300",
+                "flex h-7 w-7 items-center justify-center rounded-lg border transition-all duration-300",
                 dark
-                  ? "border-cyan-200/15 bg-cyan-300/[0.08] text-cyan-200 group-hover:border-cyan-200/30 group-hover:bg-cyan-300/[0.14]"
-                  : "border-[#8b1a1a]/10 bg-[#8b1a1a]/[0.05] text-[#8b1a1a] group-hover:border-[#8b1a1a]/20 group-hover:bg-[#8b1a1a]/[0.09]"
+                  ? "border-cyan-400/25 bg-cyan-400/10 text-cyan-300 group-hover:border-cyan-400/50"
+                  : "border-[#8b1a1a]/15 bg-[#8b1a1a]/10 text-[#8b1a1a] group-hover:border-[#8b1a1a]/25"
               )}
             >
               {showForm ? <FaTimes className="text-xs" /> : <FaPenNib className="text-xs transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />}
             </span>
             <span>{showForm ? (lang === "jp" ? "閉じる" : "Close") : t.leaveTestimonial}</span>
             <span className={cn(
-              "ml-1 h-1.5 w-1.5 rounded-full transition-colors duration-300",
-              showForm
-                ? dark ? "bg-white/35" : "bg-[#8b1a1a]/35"
-                : dark ? "bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.7)]" : "bg-[#8b1a1a]/60"
+              "ml-1 h-1.5 w-1.5 rounded-full transition-colors duration-300 shrink-0",
+              dark
+                ? "bg-cyan-400 shadow-[0_0_8px_rgba(0,212,255,0.8)]"
+                : "bg-[#8b1a1a]/60"
             )} />
           </motion.button>
 
@@ -1120,26 +1234,45 @@ function TestimonialsSection({
                   </div>
                 ) : status === "success" ? (
                   <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
+                    initial={{ scale: 0.95, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     className={cn(
-                      "rounded-2xl border p-10 text-center space-y-3",
-                      dark ? "glass-card border-white/10" : "bg-[#f5ede0] border-[#8b1a1a]/15"
+                      "rounded-3xl border p-10 text-center space-y-5 max-w-xl mx-auto shadow-xl",
+                      dark
+                        ? "bg-[#0a1324]/90 border-white/10 shadow-[0_12px_40px_rgba(0,0,0,0.4)]"
+                        : "bg-[#fffaf2] border-[#8b1a1a]/15 shadow-lg"
                     )}
                   >
-                    <div className="text-5xl">🙏</div>
-                    <h3 className={cn("text-xl font-bold", dark ? "text-white" : "text-[#2a1008]")}>
-                      {t.testimonialSuccess}
-                    </h3>
-                    <p className={cn("text-sm", dark ? "text-white/50" : "text-[#7a4a35]")}>
-                      {t.testimonialSuccessDesc}
-                    </p>
-                    <button
-                      onClick={() => { setStatus("idle"); setShowForm(false); }}
-                      className={cn("text-sm font-semibold underline underline-offset-4 mt-2", dark ? "text-cyan-300" : "text-[#8b1a1a]")}
-                    >
-                      {t.testimonialSendAnother}
-                    </button>
+                    <div className="w-16 h-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.25)]">
+                      <FaCheck className="text-2xl text-emerald-400" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <h3 className={cn("text-2xl font-bold tracking-tight", dark ? "text-white" : "text-[#2a1008]")}>
+                        {t.testimonialSuccess || (lang === "jp" ? "ありがとうございます！" : "Thank you so much!")}
+                      </h3>
+                      <p className={cn("text-sm", dark ? "text-white/60" : "text-[#7a4a35]")}>
+                        {t.testimonialSuccessDesc || (lang === "jp" ? "推薦状を受け取りました。" : "Your testimonial has been received.")}
+                      </p>
+                    </div>
+                    <div className="pt-2">
+                      <motion.button
+                        type="button"
+                        whileHover={{ scale: 1.03, y: -1 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => { setStatus("idle"); setShowForm(true); }}
+                        className={cn(
+                          "inline-flex items-center gap-3 px-6 py-3 rounded-xl border text-sm font-semibold transition-all duration-300",
+                          dark
+                            ? "border-cyan-400/30 bg-[#0c1b2f]/90 text-white hover:border-cyan-400/60 hover:bg-[#11243e] shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+                            : "border-[#8b1a1a]/25 bg-[#fffaf2] text-[#8b1a1a] hover:border-[#8b1a1a]/50 shadow-sm"
+                        )}
+                      >
+                        <FaPenNib className="text-xs" />
+                        <span>{t.testimonialSendAnother || (lang === "jp" ? "もう一つ書く" : "Leave another")}</span>
+                        <FaArrowRight className="text-xs text-cyan-400" />
+                      </motion.button>
+                    </div>
                   </motion.div>
                 ) : (
                   <motion.form
@@ -1165,7 +1298,6 @@ function TestimonialsSection({
                       {[
                         { icon: <FaGoogle className="text-xs text-[#EA4335]" />, text: lang === "jp" ? "Google認証済み" : "Google Signed-In" },
                         { icon: <FaLinkedin className="text-xs text-[#0A66C2]" />, text: lang === "jp" ? "LinkedIn連携可能" : "LinkedIn Profile Badge" },
-                        { icon: "✨", text: lang === "jp" ? "リアル推薦状" : "Real Testimonial" },
                       ].map(({ icon, text }, idx) => (
                         <span
                           key={idx}
