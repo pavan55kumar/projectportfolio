@@ -24,7 +24,7 @@ import {
   AnimatePresence,
 } from "framer-motion";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { FaGithub, FaGoogle, FaLinkedin, FaPenNib, FaReact, FaJsSquare, FaTimes, FaCheck, FaArrowRight, FaUser } from "react-icons/fa";
+import { FaGithub, FaGoogle, FaLinkedin, FaPenNib, FaReact, FaJsSquare, FaTimes, FaCheck, FaArrowRight, FaUser, FaGraduationCap } from "react-icons/fa";
 import {
   FiHome,
   FiUser,
@@ -34,6 +34,7 @@ import {
   FiBriefcase,
   FiMail,
   FiFileText,
+  FiCalendar,
 } from "react-icons/fi";
 import { useTheme } from "./theme-provider";
 
@@ -1531,6 +1532,9 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   const [dynamicProjects, setDynamicProjects] = useState<any[] | null>(null);
   const [dynamicCertificates, setDynamicCertificates] = useState<any[] | null>(null);
+  const [siteProfile, setSiteProfile] = useState<{ heroDesc: string; aboutMeDesc: string } | null>(null);
+  const [dynamicEducation, setDynamicEducation] = useState<any[] | null>(null);
+  const [dynamicExperience, setDynamicExperience] = useState<any[] | null>(null);
 
   useEffect(() => {
     fetch("/api/projects")
@@ -1544,6 +1548,27 @@ export default function Home() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) setDynamicCertificates(data);
+      })
+      .catch(() => {});
+
+    fetch("/api/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && data.heroDesc) setSiteProfile(data);
+      })
+      .catch(() => {});
+
+    fetch("/api/education")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) setDynamicEducation(data);
+      })
+      .catch(() => {});
+
+    fetch("/api/experience")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) setDynamicExperience(data);
       })
       .catch(() => {});
   }, []);
@@ -2395,7 +2420,7 @@ export default function Home() {
                 dark ? "text-white/50" : "text-[#7a4a35]"
               )}
             >
-              {t.heroDesc}
+              {(lang === "en" && siteProfile?.heroDesc) ? siteProfile.heroDesc : t.heroDesc}
             </motion.p>
 
             <motion.div
@@ -2515,27 +2540,220 @@ export default function Home() {
                   dark ? "text-white/60" : "text-[#5a3020]"
                 )}
               >
-                {t.aboutMeDesc}
+                {(lang === "en" && siteProfile?.aboutMeDesc) ? siteProfile.aboutMeDesc : t.aboutMeDesc}
               </p>
-              <div className="space-y-5">
+              <div className="space-y-6">
+                {/* ── Education Timeline (Reference Design) ── */}
                 <div
                   className={cn(
-                    "glass-card rounded-2xl p-5 border",
-                    dark ? "border-white/8" : "border-[#8b1a1a]/12"
+                    "rounded-2xl sm:rounded-3xl p-5 sm:p-7 border transition-all duration-300 relative overflow-hidden",
+                    dark
+                      ? "glass-card border-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                      : "bg-[#fffaf2]/95 border-[#8b1a1a]/15 shadow-[0_10px_30px_rgba(42,16,8,0.08)] backdrop-blur-xl"
                   )}
                 >
-                  <h3 className="text-sm font-semibold text-gradient-gold mb-2 tracking-wide uppercase">
-                    {t.education}
-                  </h3>
-                  <p
-                    className={cn(
-                      "text-sm leading-relaxed",
-                      dark ? "text-white/55" : "text-[#7a4a35]"
-                    )}
-                  >
-                    {t.educationDesc}
-                  </p>
+                  {/* Subtle ambient corner glow */}
+                  <div
+                    className="pointer-events-none absolute -top-10 -left-10 w-40 h-40 rounded-full"
+                    style={{
+                      background: dark
+                        ? "radial-gradient(circle, rgba(14,165,233,0.18) 0%, transparent 70%)"
+                        : "radial-gradient(circle, rgba(245,158,11,0.14) 0%, transparent 70%)",
+                      filter: "blur(35px)",
+                    }}
+                  />
+
+                  {/* Header matching Image 3 */}
+                  <div className="flex items-center gap-3.5 mb-7 relative z-10">
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 border",
+                        dark
+                          ? "bg-amber-400/10 border-amber-400/25 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.2)]"
+                          : "bg-[#8b1a1a]/10 border-[#8b1a1a]/25 text-[#8b1a1a]"
+                      )}
+                    >
+                      <FaGraduationCap />
+                    </div>
+                    <div>
+                      <h3
+                        className={cn(
+                          "text-base sm:text-lg font-extrabold tracking-wider uppercase",
+                          dark ? "text-white" : "text-[#2a1008]"
+                        )}
+                      >
+                        {t.education}
+                      </h3>
+                      <p
+                        className={cn(
+                          "text-[10px] sm:text-[11px] font-bold tracking-[0.24em] uppercase",
+                          dark ? "text-white/40" : "text-[#7a4a35]/70"
+                        )}
+                      >
+                        ACADEMIC BACKGROUND
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Vertical Connected Timeline Track */}
+                  <div className="relative pl-7 sm:pl-8 space-y-6 sm:space-y-7">
+                    {/* Continuous vertical track line */}
+                    <div
+                      className={cn(
+                        "absolute left-[11px] sm:left-[13px] top-2 bottom-2 w-[1.5px]",
+                        dark ? "bg-white/10" : "bg-[#8b1a1a]/15"
+                      )}
+                    />
+
+                    {(dynamicEducation && dynamicEducation.length > 0
+                      ? dynamicEducation
+                      : [
+                          {
+                            id: "btech-ise",
+                            levelTag: "B.TECH",
+                            degree: "B.Tech Information Science & Engineering",
+                            institution: "N.M.A.M. Institute of Technology, Nitte",
+                            period: "2024 - 2028",
+                            status: "In Progress",
+                          },
+                          {
+                            id: "puc-science",
+                            levelTag: "PRE-UNIVERSITY",
+                            degree: "Pre-University Course (PUC)",
+                            institution: "Science · College Name",
+                            period: "2022 - 2024",
+                            status: "Completed",
+                          },
+                          {
+                            id: "sslc-school",
+                            levelTag: "SECONDARY EDUCATION",
+                            degree: "Secondary School (SSLC)",
+                            institution: "School Name",
+                            period: "2022",
+                            status: "Completed",
+                          },
+                        ]
+                    ).map((item, idx) => {
+                      const isFirst = idx === 0;
+                      const isCompleted = item.status?.toLowerCase().includes("completed");
+                      const isInProgress = item.status?.toLowerCase().includes("progress");
+
+                      const tagColor = isFirst
+                        ? dark ? "text-amber-300" : "text-amber-700"
+                        : idx === 1
+                        ? dark ? "text-cyan-300" : "text-blue-700"
+                        : dark ? "text-slate-400" : "text-stone-600";
+
+                      return (
+                        <div key={item.id || idx} className="relative group">
+                          {/* Timeline Node Badge on the track */}
+                          <div
+                            className={cn(
+                              "absolute rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
+                              isFirst
+                                ? "w-[22px] h-[22px] sm:w-[24px] sm:h-[24px] border -left-[27px] sm:-left-[31px] -top-0.5"
+                                : "w-2.5 h-2.5 sm:w-3 sm:h-3 -left-[22px] sm:-left-[24px] top-1",
+                              isFirst
+                                ? dark
+                                  ? "bg-[#0b1b36] border-amber-400/60 text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.3)]"
+                                  : "bg-[#fffaf2] border-amber-600/60 text-amber-800 shadow-sm"
+                                : idx === 1
+                                ? dark
+                                  ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.7)]"
+                                  : "bg-blue-600 shadow-sm"
+                                : dark
+                                ? "bg-slate-400"
+                                : "bg-stone-500"
+                            )}
+                          >
+                            {isFirst && <FaGraduationCap className="text-[10px]" />}
+                          </div>
+
+                          {/* Content Row */}
+                          <div className="flex flex-col gap-2">
+                            {/* Degree & Level Tag */}
+                            <div className="space-y-0.5">
+                              <span
+                                className={cn(
+                                  "text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest inline-block",
+                                  tagColor
+                                )}
+                              >
+                                {item.levelTag}
+                              </span>
+                              <h4
+                                className={cn(
+                                  "text-sm sm:text-base font-bold tracking-tight",
+                                  dark ? "text-white" : "text-[#2a1008]"
+                                )}
+                              >
+                                {item.degree}
+                              </h4>
+                              <p
+                                className={cn(
+                                  "text-xs sm:text-[13px] font-medium leading-relaxed",
+                                  dark ? "text-white/55" : "text-[#7a4a35]"
+                                )}
+                              >
+                                {item.institution}
+                              </p>
+                            </div>
+
+                            {/* Badges: Period & Status */}
+                            <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                              {item.period && (
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border tracking-wide",
+                                    dark
+                                      ? "bg-white/5 border-white/10 text-white/70"
+                                      : "bg-[#8b1a1a]/5 border-[#8b1a1a]/15 text-[#2a1008]/75"
+                                  )}
+                                >
+                                  <FiCalendar className="text-[11px] opacity-70" />
+                                  {item.period}
+                                </span>
+                              )}
+
+                              {item.status && (
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border",
+                                    isInProgress
+                                      ? dark
+                                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                                        : "bg-emerald-50 border-emerald-300 text-emerald-800"
+                                      : isCompleted
+                                      ? dark
+                                        ? "bg-cyan-500/10 border-cyan-500/25 text-cyan-300"
+                                        : "bg-blue-50 border-blue-200 text-blue-800"
+                                      : dark
+                                      ? "bg-white/5 border-white/10 text-white/60"
+                                      : "bg-stone-100 border-stone-200 text-stone-700"
+                                  )}
+                                >
+                                  <span
+                                    className={cn(
+                                      "w-1.5 h-1.5 rounded-full shrink-0",
+                                      isInProgress
+                                        ? "bg-emerald-400 animate-pulse"
+                                        : isCompleted
+                                        ? "bg-cyan-400"
+                                        : "bg-stone-400"
+                                    )}
+                                  />
+                                  {item.status}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
+
+                {/* ── Experience Section ── */}
                 <div
                   className={cn(
                     "glass-card rounded-2xl p-5 border",
@@ -2550,24 +2768,54 @@ export default function Home() {
                   >
                     {t.experience}
                   </h3>
-                  <ul className="space-y-2">
-                    {t.experienceList.map((exp, i) => (
-                      <li
-                        key={i}
-                        className={cn(
-                          "flex items-start gap-3 text-sm",
-                          dark ? "text-white/55" : "text-[#7a4a35]"
-                        )}
-                      >
-                        <span
+                  <ul className="space-y-3">
+                    {(dynamicExperience && dynamicExperience.length > 0
+                      ? dynamicExperience
+                      : t.experienceList
+                    ).map((exp: any, i: number) => {
+                      const isString = typeof exp === "string";
+                      return (
+                        <li
+                          key={exp.id || i}
                           className={cn(
-                            "w-1 h-1 rounded-full mt-2 shrink-0",
-                            dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                            "text-sm flex flex-col gap-0.5",
+                            dark ? "text-white/60" : "text-[#7a4a35]"
                           )}
-                        />
-                        {exp}
-                      </li>
-                    ))}
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <span
+                              className={cn(
+                                "w-1.5 h-1.5 rounded-full mt-1.5 shrink-0",
+                                dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                              )}
+                            />
+                            <div className="flex-1">
+                              {isString ? (
+                                <span>{exp}</span>
+                              ) : (
+                                <>
+                                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <span className={cn("font-semibold", dark ? "text-white" : "text-[#2a1008]")}>
+                                      {exp.role} {exp.company && <span className={dark ? "text-cyan-300" : "text-[#8b1a1a]"}>· {exp.company}</span>}
+                                    </span>
+                                    {exp.period && (
+                                      <span className={cn("text-[11px] px-2 py-0.5 rounded-full border shrink-0", dark ? "border-white/10 text-white/50" : "border-[#8b1a1a]/15 text-[#7a4a35]/80")}>
+                                        {exp.period}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {exp.description && (
+                                    <p className={cn("text-xs mt-0.5 leading-relaxed", dark ? "text-white/45" : "text-[#7a4a35]/70")}>
+                                      {exp.description}
+                                    </p>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               </div>

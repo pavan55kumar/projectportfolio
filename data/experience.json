@@ -1,0 +1,18 @@
+[
+  {
+    "id": "web-intern-abc",
+    "role": "Web Intern",
+    "company": "ABC Corp",
+    "period": "May 2025 – July 2025",
+    "description": "Full-stack web application development and component engineering.",
+    "orderIndex": 1
+  },
+  {
+    "id": "freelance-uiux",
+    "role": "Freelance UI/UX & Frontend Developer",
+    "company": "Independent Client Projects",
+    "period": "2024 – Present",
+    "description": "Crafting interactive 3D web interfaces, responsive design systems, and frontend features.",
+    "orderIndex": 2
+  }
+]

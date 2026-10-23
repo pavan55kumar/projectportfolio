@@ -21,7 +21,11 @@ import {
   FiX,
   FiRefreshCw,
   FiEye,
+  FiUser,
+  FiBriefcase,
+  FiCalendar,
 } from "react-icons/fi";
+import { FaGraduationCap } from "react-icons/fa";
 
 const cn = (...classes: (string | boolean | undefined | null)[]) =>
   classes.filter(Boolean).join(" ");
@@ -64,6 +68,33 @@ function parseCertificateImages(imageUrl?: unknown, images?: unknown): string[] 
   }
   return [];
 }
+
+type SiteProfile = {
+  id: string;
+  heroDesc: string;
+  aboutMeDesc: string;
+  heroRole?: string;
+  updatedAt?: string;
+};
+
+type EducationItem = {
+  id: string;
+  levelTag: string;
+  degree: string;
+  institution: string;
+  period: string;
+  status?: string;
+  orderIndex?: number;
+};
+
+type ExperienceItem = {
+  id: string;
+  role: string;
+  company: string;
+  period: string;
+  description?: string;
+  orderIndex?: number;
+};
 
 type Project = {
   id: string;
@@ -362,6 +393,39 @@ function MultiCertificateImagesInput({
 }
 
 const SQL_SCHEMA = `-- Run this in your Supabase SQL Editor:
+-- 1. Profile / Bio Table
+CREATE TABLE IF NOT EXISTS public.profile (
+    id TEXT PRIMARY KEY DEFAULT 'default',
+    hero_desc TEXT NOT NULL,
+    about_desc TEXT NOT NULL,
+    hero_role TEXT DEFAULT 'Full-Stack Developer & AI Enthusiast',
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Education Timeline Table
+CREATE TABLE IF NOT EXISTS public.education (
+    id TEXT PRIMARY KEY,
+    level_tag TEXT NOT NULL,
+    degree TEXT NOT NULL,
+    institution TEXT NOT NULL,
+    period TEXT NOT NULL,
+    status TEXT,
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Experience Table
+CREATE TABLE IF NOT EXISTS public.experience (
+    id TEXT PRIMARY KEY,
+    role TEXT NOT NULL,
+    company TEXT NOT NULL,
+    period TEXT NOT NULL,
+    description TEXT,
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Testimonials Table
 CREATE TABLE IF NOT EXISTS public.testimonials (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -377,6 +441,7 @@ CREATE TABLE IF NOT EXISTS public.testimonials (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 5. Projects Table
 CREATE TABLE IF NOT EXISTS public.projects (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -390,6 +455,7 @@ CREATE TABLE IF NOT EXISTS public.projects (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 6. Certificates Table
 CREATE TABLE IF NOT EXISTS public.certificates (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -405,44 +471,147 @@ CREATE TABLE IF NOT EXISTS public.certificates (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Migration for existing certificates table (enables native multi-image support):
-ALTER TABLE public.certificates ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb;
-
+ALTER TABLE public.profile ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.education ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.experience ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Public view profile" ON public.profile;
+DROP POLICY IF EXISTS "Admin full profile" ON public.profile;
+CREATE POLICY "Public view profile" ON public.profile FOR SELECT USING (true);
+CREATE POLICY "Admin full profile" ON public.profile FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public view education" ON public.education;
+DROP POLICY IF EXISTS "Admin full education" ON public.education;
+CREATE POLICY "Public view education" ON public.education FOR SELECT USING (true);
+CREATE POLICY "Admin full education" ON public.education FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public view experience" ON public.experience;
+DROP POLICY IF EXISTS "Admin full experience" ON public.experience;
+CREATE POLICY "Public view experience" ON public.experience FOR SELECT USING (true);
+CREATE POLICY "Admin full experience" ON public.experience FOR ALL USING (true) WITH CHECK (true);
+
 DROP POLICY IF EXISTS "Public view testimonials" ON public.testimonials;
 DROP POLICY IF EXISTS "Public insert testimonials" ON public.testimonials;
 DROP POLICY IF EXISTS "Admin full testimonials" ON public.testimonials;
-DROP POLICY IF EXISTS "Public view projects" ON public.projects;
-DROP POLICY IF EXISTS "Admin full projects" ON public.projects;
-DROP POLICY IF EXISTS "Public view certificates" ON public.certificates;
-DROP POLICY IF EXISTS "Admin full certificates" ON public.certificates;
-
 CREATE POLICY "Public view testimonials" ON public.testimonials FOR SELECT USING (approved = true);
 CREATE POLICY "Public insert testimonials" ON public.testimonials FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admin full testimonials" ON public.testimonials FOR ALL USING (true) WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Public view projects" ON public.projects;
+DROP POLICY IF EXISTS "Admin full projects" ON public.projects;
 CREATE POLICY "Public view projects" ON public.projects FOR SELECT USING (true);
 CREATE POLICY "Admin full projects" ON public.projects FOR ALL USING (true) WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Public view certificates" ON public.certificates;
+DROP POLICY IF EXISTS "Admin full certificates" ON public.certificates;
 CREATE POLICY "Public view certificates" ON public.certificates FOR SELECT USING (true);
 CREATE POLICY "Admin full certificates" ON public.certificates FOR ALL USING (true) WITH CHECK (true);`;
+
+const SQL_MIGRATION_NEW_TABLES = `-- Copy & Paste this into Supabase SQL Editor to create Profile, Education, and Experience tables:
+CREATE TABLE IF NOT EXISTS public.profile (
+    id TEXT PRIMARY KEY DEFAULT 'default',
+    hero_desc TEXT NOT NULL,
+    about_desc TEXT NOT NULL,
+    hero_role TEXT DEFAULT 'Full-Stack Developer & AI Enthusiast',
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.education (
+    id TEXT PRIMARY KEY,
+    level_tag TEXT NOT NULL,
+    degree TEXT NOT NULL,
+    institution TEXT NOT NULL,
+    period TEXT NOT NULL,
+    status TEXT,
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.experience (
+    id TEXT PRIMARY KEY,
+    role TEXT NOT NULL,
+    company TEXT NOT NULL,
+    period TEXT NOT NULL,
+    description TEXT,
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.profile ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.education ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.experience ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public view profile" ON public.profile;
+DROP POLICY IF EXISTS "Admin full profile" ON public.profile;
+CREATE POLICY "Public view profile" ON public.profile FOR SELECT USING (true);
+CREATE POLICY "Admin full profile" ON public.profile FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public view education" ON public.education;
+DROP POLICY IF EXISTS "Admin full education" ON public.education;
+CREATE POLICY "Public view education" ON public.education FOR SELECT USING (true);
+CREATE POLICY "Admin full education" ON public.education FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public view experience" ON public.experience;
+DROP POLICY IF EXISTS "Admin full experience" ON public.experience;
+CREATE POLICY "Public view experience" ON public.experience FOR SELECT USING (true);
+CREATE POLICY "Admin full experience" ON public.experience FOR ALL USING (true) WITH CHECK (true);`;
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [activeTab, setActiveTab] = useState<"projects" | "certificates" | "testimonials" | "supabase">("projects");
+  const [activeTab, setActiveTab] = useState<
+    "profile" | "education" | "experience" | "projects" | "certificates" | "testimonials" | "supabase"
+  >("profile");
 
-  // Data states
+  // Profile state
+  const [profile, setProfile] = useState<SiteProfile>({
+    id: "default",
+    heroDesc:
+      "2nd-year B.Tech student at NMAMIT, exploring web development, AI, and interactive projects that push the boundaries of what's possible.",
+    aboutMeDesc:
+      "I am a 2nd-year B.Tech student in Information Science and Engineering at N.M.A.M Institute of Technology, Nitte. Passionate about web development, 3D visuals, and interactive UI design. Skilled in C, Python, HTML, CSS, and React; I enjoy building websites and experimenting with AI-powered tools and creative prompts.",
+    heroRole: "Full-Stack Developer & AI Enthusiast",
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileSavedToast, setProfileSavedToast] = useState(false);
+
+  // Education state
+  const [education, setEducation] = useState<EducationItem[]>([]);
+  const [showEduModal, setShowEduModal] = useState(false);
+  const [editingEdu, setEditingEdu] = useState<EducationItem | null>(null);
+  const [eduForm, setEduForm] = useState<Partial<EducationItem>>({
+    levelTag: "B.TECH",
+    degree: "",
+    institution: "",
+    period: "",
+    status: "In Progress",
+    orderIndex: 0,
+  });
+
+  // Experience state
+  const [experience, setExperience] = useState<ExperienceItem[]>([]);
+  const [showExpModal, setShowExpModal] = useState(false);
+  const [editingExp, setEditingExp] = useState<ExperienceItem | null>(null);
+  const [expForm, setExpForm] = useState<Partial<ExperienceItem>>({
+    role: "",
+    company: "",
+    period: "",
+    description: "",
+    orderIndex: 0,
+  });
+
+  // Existing Data states
   const [projects, setProjects] = useState<Project[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedMigration, setCopiedMigration] = useState(false);
+  const [copiedNewMigration, setCopiedNewMigration] = useState(false);
 
   // Project modal state (handles both Add and Edit)
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -498,15 +667,24 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [projRes, certRes, testRes] = await Promise.all([
+      const [projRes, certRes, testRes, profRes, eduRes, expRes] = await Promise.all([
         fetch("/api/projects"),
         fetch("/api/certificates"),
         fetch("/api/testimonials"),
+        fetch("/api/profile"),
+        fetch("/api/education"),
+        fetch("/api/experience"),
       ]);
 
       if (projRes.ok) setProjects(await projRes.json());
       if (certRes.ok) setCertificates(await certRes.json());
       if (testRes.ok) setTestimonials(await testRes.json());
+      if (profRes.ok) {
+        const p = await profRes.json();
+        if (p && p.heroDesc) setProfile(p);
+      }
+      if (eduRes.ok) setEducation(await eduRes.json());
+      if (expRes.ok) setExperience(await expRes.json());
     } catch (err) {
       console.error("Failed to load admin data:", err);
     } finally {
@@ -544,6 +722,164 @@ export default function AdminPage() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem("pavan_admin_auth");
+  };
+
+  // ── Profile Actions ──
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingProfile(true);
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(profile),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setProfile(updated);
+        setProfileSavedToast(true);
+        setTimeout(() => setProfileSavedToast(false), 3000);
+      } else {
+        alert("Failed to save profile. Please check console.");
+      }
+    } catch (err) {
+      console.error("Failed to save profile:", err);
+      alert("Error saving profile");
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  // ── Education Actions ──
+  const openAddEducation = () => {
+    setEditingEdu(null);
+    setEduForm({
+      levelTag: "B.TECH",
+      degree: "",
+      institution: "",
+      period: "",
+      status: "In Progress",
+      orderIndex: education.length + 1,
+    });
+    setShowEduModal(true);
+  };
+
+  const openEditEducation = (item: EducationItem) => {
+    setEditingEdu(item);
+    setEduForm({
+      levelTag: item.levelTag,
+      degree: item.degree,
+      institution: item.institution,
+      period: item.period,
+      status: item.status || "",
+      orderIndex: item.orderIndex ?? 0,
+    });
+    setShowEduModal(true);
+  };
+
+  const handleSaveEducation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingEdu) {
+        const res = await fetch("/api/education", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingEdu.id, ...eduForm }),
+        });
+        if (res.ok) {
+          setShowEduModal(false);
+          setEditingEdu(null);
+          fetchData();
+        }
+      } else {
+        const res = await fetch("/api/education", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(eduForm),
+        });
+        if (res.ok) {
+          setShowEduModal(false);
+          fetchData();
+        }
+      }
+    } catch (err) {
+      console.error("Failed to save education:", err);
+    }
+  };
+
+  const handleDeleteEducation = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this education entry?")) return;
+    try {
+      await fetch(`/api/education?id=${id}`, { method: "DELETE" });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ── Experience Actions ──
+  const openAddExperience = () => {
+    setEditingExp(null);
+    setExpForm({
+      role: "",
+      company: "",
+      period: "",
+      description: "",
+      orderIndex: experience.length + 1,
+    });
+    setShowExpModal(true);
+  };
+
+  const openEditExperience = (item: ExperienceItem) => {
+    setEditingExp(item);
+    setExpForm({
+      role: item.role,
+      company: item.company,
+      period: item.period,
+      description: item.description || "",
+      orderIndex: item.orderIndex ?? 0,
+    });
+    setShowExpModal(true);
+  };
+
+  const handleSaveExperience = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingExp) {
+        const res = await fetch("/api/experience", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingExp.id, ...expForm }),
+        });
+        if (res.ok) {
+          setShowExpModal(false);
+          setEditingExp(null);
+          fetchData();
+        }
+      } else {
+        const res = await fetch("/api/experience", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(expForm),
+        });
+        if (res.ok) {
+          setShowExpModal(false);
+          fetchData();
+        }
+      }
+    } catch (err) {
+      console.error("Failed to save experience:", err);
+    }
+  };
+
+  const handleDeleteExperience = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this experience entry?")) return;
+    try {
+      await fetch(`/api/experience?id=${id}`, { method: "DELETE" });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   // ── Project Actions ──
@@ -846,8 +1182,44 @@ export default function AdminPage() {
         <div className="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-hide border-b border-[#8b1a1a]/15">
           <button
             type="button"
+            onClick={() => setActiveTab("profile")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
+              activeTab === "profile"
+                ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
+                : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
+            }`}
+          >
+            <FiUser /> Bio &amp; About Me
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("education")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
+              activeTab === "education"
+                ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
+                : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
+            }`}
+          >
+            <FaGraduationCap /> Education ({education.length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("experience")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
+              activeTab === "experience"
+                ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
+                : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
+            }`}
+          >
+            <FiBriefcase /> Experience ({experience.length})
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("projects")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
               activeTab === "projects"
                 ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
                 : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
@@ -859,7 +1231,7 @@ export default function AdminPage() {
           <button
             type="button"
             onClick={() => setActiveTab("certificates")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
               activeTab === "certificates"
                 ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
                 : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
@@ -871,27 +1243,276 @@ export default function AdminPage() {
           <button
             type="button"
             onClick={() => setActiveTab("testimonials")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
               activeTab === "testimonials"
                 ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
                 : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
             }`}
           >
-            <FiMessageSquare /> Testimonials & DPs ({testimonials.length})
+            <FiMessageSquare /> Testimonials &amp; DPs ({testimonials.length})
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab("supabase")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
               activeTab === "supabase"
                 ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
                 : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
             }`}
           >
-            <FiDatabase /> Supabase Setup & SQL
+            <FiDatabase /> Supabase Setup &amp; SQL
           </button>
         </div>
+
+        {/* ── TAB: PROFILE / BIO & ABOUT ME ── */}
+        {activeTab === "profile" && (
+          <section className="mt-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2a1008] flex items-center gap-2">
+                  <FiUser className="text-[#8b1a1a]" /> Bio &amp; About Me Editor
+                </h2>
+                <p className="text-xs sm:text-sm text-[#7a4a35] mt-1">
+                  Customize the introduction bio on the Hero section and your detailed story in the About Me section.
+                </p>
+              </div>
+
+              {profileSavedToast && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-800 text-xs font-bold animate-pulse">
+                  <FiCheck className="text-emerald-600 text-sm" /> Saved to Database &amp; Live!
+                </div>
+              )}
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="space-y-6">
+              <div className="p-6 rounded-2xl border border-[#8b1a1a]/15 bg-[#fffaf2] shadow-sm space-y-5">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Hero Role Badge (Pill above name)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={profile.heroRole || ""}
+                    onChange={(e) => setProfile({ ...profile, heroRole: e.target.value })}
+                    placeholder="Full-Stack Developer & AI Enthusiast"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#2a1008]">
+                      Hero Section Introduction Bio Paragraph *
+                    </label>
+                    <span className="text-[11px] text-[#7a4a35]">Appears right beneath your name on home</span>
+                  </div>
+                  <textarea
+                    required
+                    rows={3}
+                    value={profile.heroDesc}
+                    onChange={(e) => setProfile({ ...profile, heroDesc: e.target.value })}
+                    placeholder="2nd-year B.Tech student at NMAMIT, exploring web development, AI, and interactive projects that push the boundaries of what's possible."
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all leading-relaxed"
+                  />
+                  <p className="text-[11px] text-[#7a4a35] mt-1">
+                    💡 This is the paragraph circled in green from your screenshot.
+                  </p>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#2a1008]">
+                      About Me Section Story Paragraph *
+                    </label>
+                    <span className="text-[11px] text-[#7a4a35]">Appears in &ldquo;WHO I AM &gt; About Me&rdquo;</span>
+                  </div>
+                  <textarea
+                    required
+                    rows={5}
+                    value={profile.aboutMeDesc}
+                    onChange={(e) => setProfile({ ...profile, aboutMeDesc: e.target.value })}
+                    placeholder="I am a 2nd-year B.Tech student in Information Science and Engineering at N.M.A.M Institute of Technology, Nitte..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all leading-relaxed"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end pt-2">
+                  <button
+                    type="submit"
+                    disabled={savingProfile}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all disabled:opacity-50"
+                  >
+                    {savingProfile ? (
+                      <>
+                        <FiRefreshCw className="animate-spin" /> Saving changes...
+                      </>
+                    ) : (
+                      <>
+                        <FiCheck /> Save Bio &amp; About Me Changes
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {/* ── TAB: EDUCATION TIMELINE ── */}
+        {activeTab === "education" && (
+          <section className="mt-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2a1008] flex items-center gap-2">
+                  <FaGraduationCap className="text-[#8b1a1a]" /> Education Timeline
+                </h2>
+                <p className="text-xs sm:text-sm text-[#7a4a35] mt-1">
+                  Manage your academic background timeline shown in the About section.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={openAddEducation}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all"
+              >
+                <FiPlus /> Add Education
+              </button>
+            </div>
+
+            <div className="grid gap-4">
+              {education.length === 0 ? (
+                <div className="p-8 text-center rounded-2xl border border-dashed border-[#8b1a1a]/25 bg-white/40 text-sm text-[#7a4a35]">
+                  No education entries found. Click &quot;Add Education&quot; to create one.
+                </div>
+              ) : (
+                education.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-5 sm:p-6 rounded-2xl border border-[#8b1a1a]/15 bg-[#fffaf2] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:shadow-md"
+                  >
+                    <div className="flex items-start gap-4 min-w-0">
+                      <span className="p-3 rounded-xl bg-[#faeedd] border border-[#8b1a1a]/15 text-[#8b1a1a] text-xl shrink-0">
+                        <FaGraduationCap />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-900 border border-amber-500/25">
+                            {item.levelTag}
+                          </span>
+                          {item.status && (
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 border border-emerald-500/30 flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              {item.status}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="font-bold text-base sm:text-lg text-[#2a1008] mt-1.5">{item.degree}</h3>
+                        <p className="text-xs sm:text-sm text-[#7a4a35] font-medium">{item.institution}</p>
+                        <p className="text-xs text-[#8b1a1a] font-semibold mt-1 flex items-center gap-1.5">
+                          <FiCalendar /> {item.period}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => openEditEducation(item)}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold border border-[#8b1a1a]/20 bg-white hover:bg-[#faeedd] text-[#8b1a1a] transition-all flex items-center gap-1.5 shadow-xs"
+                      >
+                        <FiEdit3 /> Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteEducation(item.id)}
+                        className="p-2 rounded-xl text-xs text-rose-500 hover:text-white hover:bg-rose-600 border border-rose-200 transition-all shadow-xs"
+                        title="Delete education"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ── TAB: EXPERIENCE ── */}
+        {activeTab === "experience" && (
+          <section className="mt-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2a1008] flex items-center gap-2">
+                  <FiBriefcase className="text-[#8b1a1a]" /> Experience &amp; Internships
+                </h2>
+                <p className="text-xs sm:text-sm text-[#7a4a35] mt-1">
+                  Manage your work experiences, internships, and freelance roles shown on your portfolio.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={openAddExperience}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all"
+              >
+                <FiPlus /> Add Experience
+              </button>
+            </div>
+
+            <div className="grid gap-4">
+              {experience.length === 0 ? (
+                <div className="p-8 text-center rounded-2xl border border-dashed border-[#8b1a1a]/25 bg-white/40 text-sm text-[#7a4a35]">
+                  No experience entries found. Click &quot;Add Experience&quot; to create one.
+                </div>
+              ) : (
+                experience.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-5 sm:p-6 rounded-2xl border border-[#8b1a1a]/15 bg-[#fffaf2] shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all hover:shadow-md"
+                  >
+                    <div className="flex items-start gap-4 min-w-0">
+                      <span className="p-3 rounded-xl bg-[#faeedd] border border-[#8b1a1a]/15 text-[#8b1a1a] text-xl shrink-0">
+                        <FiBriefcase />
+                      </span>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-base sm:text-lg text-[#2a1008]">{item.role}</h3>
+                        <p className="text-xs sm:text-sm text-[#8b1a1a] font-semibold mt-0.5">{item.company}</p>
+                        <p className="text-xs text-[#7a4a35] font-medium mt-1 flex items-center gap-1.5">
+                          <FiCalendar /> {item.period}
+                        </p>
+                        {item.description && (
+                          <p className="text-xs text-[#7a4a35] mt-2 max-w-2xl leading-relaxed whitespace-pre-line">
+                            {item.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => openEditExperience(item)}
+                        className="px-3.5 py-2 rounded-xl text-xs font-bold border border-[#8b1a1a]/20 bg-white hover:bg-[#faeedd] text-[#8b1a1a] transition-all flex items-center gap-1.5 shadow-xs"
+                      >
+                        <FiEdit3 /> Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteExperience(item.id)}
+                        className="p-2 rounded-xl text-xs text-rose-500 hover:text-white hover:bg-rose-600 border border-rose-200 transition-all shadow-xs"
+                        title="Delete experience"
+                      >
+                        <FiTrash2 />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        )}
 
         {/* ── TAB 1: PROJECTS ── */}
         {activeTab === "projects" && (
@@ -1228,6 +1849,41 @@ export default function AdminPage() {
                   </div>
                 </li>
               </ol>
+            </div>
+
+            {/* Quick Migration Box for Profile, Education & Experience Tables */}
+            <div className="p-5 rounded-2xl border-2 border-amber-600/30 bg-amber-500/10 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-bold text-amber-950 flex items-center gap-2">
+                  <FiDatabase className="text-amber-700" />
+                  Database Query for Profile, Education &amp; Experience Tables
+                </h4>
+                <p className="text-xs text-amber-800 mt-1">
+                  Run this query in your Supabase SQL Editor to create tables for editable Bio, Education Timeline, and Experience:
+                </p>
+                <code className="inline-block mt-2 font-mono text-xs px-3 py-1.5 rounded-lg bg-[#2a1008] text-amber-300">
+                  CREATE TABLE IF NOT EXISTS public.profile (...); CREATE TABLE IF NOT EXISTS public.education (...); ...
+                </code>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(SQL_MIGRATION_NEW_TABLES);
+                  setCopiedNewMigration(true);
+                  setTimeout(() => setCopiedNewMigration(false), 2000);
+                }}
+                className="shrink-0 px-4 py-2.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+              >
+                {copiedNewMigration ? (
+                  <>
+                    <FiCheck /> Copied!
+                  </>
+                ) : (
+                  <>
+                    <FiCopy /> Copy SQL Query
+                  </>
+                )}
+              </button>
             </div>
 
             {/* Quick Migration Box for Certificates Multi-Image Support */}
@@ -1764,6 +2420,257 @@ export default function AdminPage() {
                   Next →
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL: ADD / EDIT EDUCATION ── */}
+      <AnimatePresence>
+        {showEduModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-xl p-6 sm:p-8 rounded-3xl border border-[#8b1a1a]/20 bg-[#fffaf2] text-[#2a1008] shadow-2xl max-h-[92vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#8b1a1a]/15">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#2a1008]">
+                    {editingEdu ? "Edit Education" : "Add Education"}
+                  </h2>
+                  <p className="text-xs text-[#7a4a35] mt-0.5">
+                    Entries will appear in the Education Timeline in the About Me section.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEduModal(false)}
+                  className="p-2 rounded-xl text-[#7a4a35] hover:text-[#8b1a1a] hover:bg-[#faeedd] transition-colors"
+                >
+                  <FiX className="text-lg" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEducation} className="mt-5 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Level Tag *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={eduForm.levelTag || ""}
+                      onChange={(e) => setEduForm({ ...eduForm, levelTag: e.target.value })}
+                      placeholder="e.g. B.TECH or PRE-UNIVERSITY"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Period *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={eduForm.period || ""}
+                      onChange={(e) => setEduForm({ ...eduForm, period: e.target.value })}
+                      placeholder="e.g. 2024 – 2028 or 2022 – 2024"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Degree / Course Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={eduForm.degree || ""}
+                    onChange={(e) => setEduForm({ ...eduForm, degree: e.target.value })}
+                    placeholder="e.g. B.Tech Information Science & Engineering"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Institution / College Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={eduForm.institution || ""}
+                    onChange={(e) => setEduForm({ ...eduForm, institution: e.target.value })}
+                    placeholder="e.g. N.M.A.M. Institute of Technology, Nitte"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Status Badge (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={eduForm.status || ""}
+                      onChange={(e) => setEduForm({ ...eduForm, status: e.target.value })}
+                      placeholder="e.g. In Progress or Completed"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Sort Order (1, 2, 3...)
+                    </label>
+                    <input
+                      type="number"
+                      value={eduForm.orderIndex ?? 0}
+                      onChange={(e) => setEduForm({ ...eduForm, orderIndex: parseInt(e.target.value) || 0 })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#8b1a1a]/15">
+                  <button
+                    type="button"
+                    onClick={() => setShowEduModal(false)}
+                    className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#faeedd] transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all"
+                  >
+                    {editingEdu ? "Update Education" : "Save Education"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL: ADD / EDIT EXPERIENCE ── */}
+      <AnimatePresence>
+        {showExpModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-xl p-6 sm:p-8 rounded-3xl border border-[#8b1a1a]/20 bg-[#fffaf2] text-[#2a1008] shadow-2xl max-h-[92vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#8b1a1a]/15">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#2a1008]">
+                    {editingExp ? "Edit Experience" : "Add Experience"}
+                  </h2>
+                  <p className="text-xs text-[#7a4a35] mt-0.5">
+                    Entries will appear in the Experience section under About Me.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowExpModal(false)}
+                  className="p-2 rounded-xl text-[#7a4a35] hover:text-[#8b1a1a] hover:bg-[#faeedd] transition-colors"
+                >
+                  <FiX className="text-lg" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveExperience} className="mt-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Role / Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={expForm.role || ""}
+                    onChange={(e) => setExpForm({ ...expForm, role: e.target.value })}
+                    placeholder="e.g. Web Intern or Freelance UI/UX & Frontend Projects"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Company / Organization *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={expForm.company || ""}
+                      onChange={(e) => setExpForm({ ...expForm, company: e.target.value })}
+                      placeholder="e.g. ABC Corp or Self-Employed"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Period *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={expForm.period || ""}
+                      onChange={(e) => setExpForm({ ...expForm, period: e.target.value })}
+                      placeholder="e.g. May 2025 – July 2025"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Description / Notes (Optional)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={expForm.description || ""}
+                    onChange={(e) => setExpForm({ ...expForm, description: e.target.value })}
+                    placeholder="Responsibilities, key achievements, tech used..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Sort Order (1, 2, 3...)
+                  </label>
+                  <input
+                    type="number"
+                    value={expForm.orderIndex ?? 0}
+                    onChange={(e) => setExpForm({ ...expForm, orderIndex: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#8b1a1a]/15">
+                  <button
+                    type="button"
+                    onClick={() => setShowExpModal(false)}
+                    className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#faeedd] transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all"
+                  >
+                    {editingExp ? "Update Experience" : "Save Experience"}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}
