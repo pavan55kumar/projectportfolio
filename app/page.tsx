@@ -36,6 +36,7 @@ import {
   FiFileText,
 } from "react-icons/fi";
 import { useTheme } from "./theme-provider";
+import CosmicSpacetimeScene from "./components/CosmicSpacetimeScene";
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 const cn = (...classes: (string | boolean | undefined | null)[]) =>
@@ -2307,11 +2308,17 @@ export default function Home() {
               intensity={0.6}
             />
             <Suspense fallback={null}>
-              <MovingStars mobile={isMobile} touchRef={touchState} />
-              <InteractiveSphere dark={dark} mobile={isMobile} touchRef={touchState} />
+              {dark ? (
+                <CosmicSpacetimeScene mobile={isMobile} touchRef={touchState} />
+              ) : (
+                <>
+                  <MovingStars mobile={isMobile} touchRef={touchState} />
+                  <InteractiveSphere dark={false} mobile={isMobile} touchRef={touchState} />
+                </>
+              )}
             </Suspense>
-            {/* Not mounted on phones: OrbitControls would block page scrolling */}
-            {!isMobile && (
+            {/* OrbitControls for light mode desktop interactive sphere */}
+            {!isMobile && !dark && (
               <OrbitControls
                 enableZoom={false}
                 autoRotate
