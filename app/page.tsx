@@ -2541,88 +2541,22 @@ export default function Home() {
             <Divider dark={dark} />
           </motion.div>
 
-          <div className="space-y-12 sm:space-y-16">
-            {/* Top Grid: Left is Bio Story & Experience, Right is Education Timeline */}
+          <div className="space-y-10 sm:space-y-14">
+            {/* Bio Story Narrative */}
+            <motion.div variants={fadeUp} className="max-w-3xl">
+              <p
+                className={cn(
+                  "text-base sm:text-lg leading-relaxed",
+                  dark ? "text-white/70" : "text-[#5a3020]"
+                )}
+              >
+                {(lang === "en" && siteProfile?.aboutMeDesc) ? siteProfile.aboutMeDesc : t.aboutMeDesc}
+              </p>
+            </motion.div>
+
+            {/* Top Grid: Left is Education Timeline (FIRST), Right is Experience Card (THEN) */}
             <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
-              {/* Left Column: Bio Story & Experience */}
-              <motion.div variants={fadeUp} className="space-y-6">
-                <p
-                  className={cn(
-                    "text-base leading-relaxed",
-                    dark ? "text-white/60" : "text-[#5a3020]"
-                  )}
-                >
-                  {(lang === "en" && siteProfile?.aboutMeDesc) ? siteProfile.aboutMeDesc : t.aboutMeDesc}
-                </p>
-
-                {/* ── Experience Section ── */}
-                <div
-                  className={cn(
-                    "glass-card rounded-2xl p-5 border",
-                    dark ? "border-white/8" : "border-[#8b1a1a]/12"
-                  )}
-                >
-                  <h3
-                    className={cn(
-                      "text-sm font-semibold mb-3 tracking-wide uppercase",
-                      dark ? "text-cyan-300" : "text-[#8b1a1a]"
-                    )}
-                  >
-                    {t.experience}
-                  </h3>
-                  <ul className="space-y-3">
-                    {(dynamicExperience && dynamicExperience.length > 0
-                      ? dynamicExperience
-                      : t.experienceList
-                    ).map((exp: any, i: number) => {
-                      const isString = typeof exp === "string";
-                      return (
-                        <li
-                          key={exp.id || i}
-                          className={cn(
-                            "text-sm flex flex-col gap-0.5",
-                            dark ? "text-white/60" : "text-[#7a4a35]"
-                          )}
-                        >
-                          <div className="flex items-start gap-2.5">
-                            <span
-                              className={cn(
-                                "w-1.5 h-1.5 rounded-full mt-1.5 shrink-0",
-                                dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
-                              )}
-                            />
-                            <div className="flex-1">
-                              {isString ? (
-                                <span>{exp}</span>
-                              ) : (
-                                <>
-                                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                                    <span className={cn("font-semibold", dark ? "text-white" : "text-[#2a1008]")}>
-                                      {exp.role} {exp.company && <span className={dark ? "text-cyan-300" : "text-[#8b1a1a]"}>· {exp.company}</span>}
-                                    </span>
-                                    {exp.period && (
-                                      <span className={cn("text-[11px] px-2 py-0.5 rounded-full border shrink-0", dark ? "border-white/10 text-white/50" : "border-[#8b1a1a]/15 text-[#7a4a35]/80")}>
-                                        {exp.period}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {exp.description && (
-                                    <p className={cn("text-xs mt-0.5 leading-relaxed", dark ? "text-white/45" : "text-[#7a4a35]/70")}>
-                                      {exp.description}
-                                    </p>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </motion.div>
-
-              {/* Right Column: Education Timeline (Reference Design) */}
+              {/* ── 1. Education Timeline (FIRST) ── */}
               <motion.div variants={fadeUp}>
                 <div
                   className={cn(
@@ -2643,7 +2577,7 @@ export default function Home() {
                     }}
                   />
 
-                  {/* Header matching Image 3 */}
+                  {/* Header matching Reference Design */}
                   <div className="flex items-center gap-3.5 mb-7 relative z-10">
                     <div
                       className={cn(
@@ -2831,6 +2765,114 @@ export default function Home() {
                       );
                     })}
                   </div>
+                </div>
+              </motion.div>
+
+              {/* ── 2. Experience Card (THEN) ── */}
+              <motion.div variants={fadeUp}>
+                <div
+                  className={cn(
+                    "rounded-2xl sm:rounded-3xl p-5 sm:p-7 border transition-all duration-300 relative overflow-hidden",
+                    dark
+                      ? "glass-card border-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl"
+                      : "bg-[#fffaf2]/95 border-[#8b1a1a]/15 shadow-[0_10px_30px_rgba(42,16,8,0.08)] backdrop-blur-xl"
+                  )}
+                >
+                  {/* Subtle ambient corner glow */}
+                  <div
+                    className="pointer-events-none absolute -top-10 -right-10 w-40 h-40 rounded-full"
+                    style={{
+                      background: dark
+                        ? "radial-gradient(circle, rgba(6,182,212,0.18) 0%, transparent 70%)"
+                        : "radial-gradient(circle, rgba(139,26,26,0.14) 0%, transparent 70%)",
+                      filter: "blur(35px)",
+                    }}
+                  />
+
+                  {/* Header */}
+                  <div className="flex items-center gap-3.5 mb-7 relative z-10">
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 border",
+                        dark
+                          ? "bg-cyan-400/10 border-cyan-400/25 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                          : "bg-[#8b1a1a]/10 border-[#8b1a1a]/25 text-[#8b1a1a]"
+                      )}
+                    >
+                      <FiBriefcase />
+                    </div>
+                    <div>
+                      <h3
+                        className={cn(
+                          "text-base sm:text-lg font-extrabold tracking-wider uppercase",
+                          dark ? "text-white" : "text-[#2a1008]"
+                        )}
+                      >
+                        {t.experience}
+                      </h3>
+                      <p
+                        className={cn(
+                          "text-[10px] sm:text-[11px] font-bold tracking-[0.24em] uppercase",
+                          dark ? "text-white/40" : "text-[#7a4a35]/70"
+                        )}
+                      >
+                        CAREER &amp; INTERNSHIPS
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Experience List */}
+                  <ul className="space-y-4 relative z-10">
+                    {(dynamicExperience && dynamicExperience.length > 0
+                      ? dynamicExperience
+                      : t.experienceList
+                    ).map((exp: any, i: number) => {
+                      const isString = typeof exp === "string";
+                      return (
+                        <li
+                          key={exp.id || i}
+                          className={cn(
+                            "text-sm flex flex-col gap-1 p-3.5 rounded-xl border transition-all duration-200",
+                            dark
+                              ? "bg-white/5 border-white/10 hover:border-cyan-400/30 text-white/70"
+                              : "bg-[#faeedd]/60 border-[#8b1a1a]/10 hover:border-[#8b1a1a]/30 text-[#7a4a35]"
+                          )}
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <span
+                              className={cn(
+                                "w-2 h-2 rounded-full mt-1.5 shrink-0",
+                                dark ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-[#8b1a1a]"
+                              )}
+                            />
+                            <div className="flex-1 min-w-0">
+                              {isString ? (
+                                <span className="font-medium">{exp}</span>
+                              ) : (
+                                <>
+                                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <span className={cn("font-bold text-sm", dark ? "text-white" : "text-[#2a1008]")}>
+                                      {exp.role} {exp.company && <span className={dark ? "text-cyan-300" : "text-[#8b1a1a]"}>· {exp.company}</span>}
+                                    </span>
+                                    {exp.period && (
+                                      <span className={cn("text-[11px] px-2 py-0.5 rounded-full border shrink-0", dark ? "border-white/10 text-white/60 bg-white/5" : "border-[#8b1a1a]/15 text-[#7a4a35]/80 bg-white/60")}>
+                                        {exp.period}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {exp.description && (
+                                    <p className={cn("text-xs mt-1 leading-relaxed", dark ? "text-white/50" : "text-[#7a4a35]/80")}>
+                                      {exp.description}
+                                    </p>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
                 </div>
               </motion.div>
             </div>
