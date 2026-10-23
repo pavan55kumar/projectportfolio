@@ -2557,28 +2557,22 @@ export default function Home() {
               </p>
             </motion.div>
 
-            {/* ── 1. EDUCATION (Matching Reference Image - Full Width & Unboxed) ── */}
-            <motion.div variants={fadeUp} className="pt-2 sm:pt-4">
-              {/* Header matching Reference Image */}
-              <div className="flex items-start gap-3.5 mb-8">
+            {/* ── 1. EDUCATION (Compact & Comfortable Layout) ── */}
+            <motion.div variants={fadeUp} className="pt-1 sm:pt-2">
+              {/* Header without top line */}
+              <div className="flex items-center gap-3 mb-4 sm:mb-5">
                 <div
                   className={cn(
-                    "text-2xl sm:text-3xl mt-0.5 shrink-0",
+                    "text-xl sm:text-2xl shrink-0",
                     dark ? "text-amber-400/90" : "text-[#8b1a1a]"
                   )}
                 >
                   <LuGraduationCap />
                 </div>
                 <div>
-                  <div
-                    className={cn(
-                      "w-4 h-[1.5px] mb-2 rounded-full",
-                      dark ? "bg-white/40" : "bg-[#8b1a1a]/40"
-                    )}
-                  />
                   <h3
                     className={cn(
-                      "text-lg sm:text-xl font-bold tracking-[0.2em] uppercase",
+                      "text-base sm:text-lg font-bold tracking-[0.2em] uppercase leading-tight",
                       dark ? "text-white" : "text-[#2a1008]"
                     )}
                   >
@@ -2586,7 +2580,7 @@ export default function Home() {
                   </h3>
                   <p
                     className={cn(
-                      "text-[10px] sm:text-[11px] font-semibold tracking-[0.24em] uppercase mt-0.5",
+                      "text-[9px] sm:text-[10px] font-semibold tracking-[0.24em] uppercase mt-0.5",
                       dark ? "text-slate-400/80" : "text-[#7a4a35]/70"
                     )}
                   >
@@ -2595,17 +2589,17 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Connected Timeline Track (No outer card box) */}
+              {/* Connected Timeline Track (Compact & comfortable sizing) */}
               <div className="relative">
                 {/* Continuous vertical track line */}
                 <div
                   className={cn(
-                    "absolute left-3.5 sm:left-4 top-3 bottom-6 w-[1.5px] -translate-x-1/2 pointer-events-none",
+                    "absolute left-3 sm:left-3.5 top-2.5 bottom-3 w-[1.5px] -translate-x-1/2 pointer-events-none",
                     dark ? "bg-white/10" : "bg-[#8b1a1a]/15"
                   )}
                 />
 
-                <div className="divide-y divide-white/[0.07]">
+                <div className="divide-y divide-white/[0.06]">
                   {(dynamicEducation && dynamicEducation.length > 0
                     ? dynamicEducation
                     : [
@@ -2630,7 +2624,7 @@ export default function Home() {
                           levelTag: "SECONDARY EDUCATION",
                           degree: "Secondary School (SSLC)",
                           institution: "St.Cecily's High school",
-                          period: "2022",
+                          period: "2020",
                           status: "",
                         },
                       ]
@@ -2645,46 +2639,46 @@ export default function Home() {
                       : dark ? "text-slate-400" : "text-stone-600";
 
                     return (
-                      <div key={item.id || idx} className="relative pl-10 sm:pl-12 py-5 sm:py-6 group">
+                      <div key={item.id || idx} className="relative pl-7 sm:pl-9 py-3 sm:py-3.5 group">
                         {/* Timeline Node Badge on the track */}
                         <div
-                          className="absolute left-3.5 sm:left-4 top-7 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-10"
+                          className="absolute left-3 sm:left-3.5 top-[18px] sm:top-[20px] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-10"
                         >
                           {isFirst ? (
                             <div
                               className={cn(
-                                "w-7 h-7 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
+                                "w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
                                 dark
-                                  ? "bg-[#050c17] border-amber-400/40 text-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.35)]"
+                                  ? "bg-[#050c17] border-amber-400/40 text-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.3)]"
                                   : "bg-white border-amber-700/30 text-amber-700 shadow-xs"
                               )}
                             >
-                              <LuGraduationCap className="text-sm" />
+                              <LuGraduationCap className="text-xs" />
                             </div>
                           ) : idx === 1 ? (
                             <div
                               className={cn(
-                                "w-6 h-6 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
+                                "w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
                                 dark ? "bg-[#050c17] border-cyan-400/40" : "bg-white border-blue-600/30"
                               )}
                             >
                               <span
                                 className={cn(
-                                  "w-2.5 h-2.5 rounded-full",
-                                  dark ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.9)]" : "bg-blue-600"
+                                  "w-2 h-2 rounded-full",
+                                  dark ? "bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.9)]" : "bg-blue-600"
                                 )}
                               />
                             </div>
                           ) : (
                             <div
                               className={cn(
-                                "w-6 h-6 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
+                                "w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
                                 dark ? "bg-[#050c17] border-slate-700" : "bg-white border-stone-300"
                               )}
                             >
                               <span
                                 className={cn(
-                                  "w-2.5 h-2.5 rounded-full",
+                                  "w-2 h-2 rounded-full",
                                   dark ? "bg-slate-500" : "bg-stone-500"
                                 )}
                               />
@@ -2692,13 +2686,13 @@ export default function Home() {
                           )}
                         </div>
 
-                        {/* Row Content: Left is Details, Right is Date & Status Pills */}
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 sm:gap-6">
+                        {/* Row Content: Left is Details, Right is Date & Status Badges */}
+                        <div className="flex items-start justify-between gap-2.5 sm:gap-4">
                           {/* Left: Level Tag, Degree, Institution */}
-                          <div className="space-y-1 min-w-0 flex-1">
+                          <div className="min-w-0 flex-1">
                             <span
                               className={cn(
-                                "text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] inline-block",
+                                "text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] inline-block",
                                 tagColor
                               )}
                             >
@@ -2706,7 +2700,7 @@ export default function Home() {
                             </span>
                             <h4
                               className={cn(
-                                "text-base sm:text-lg font-bold tracking-tight",
+                                "text-xs sm:text-sm font-bold tracking-tight leading-snug mt-0.5",
                                 dark ? "text-white" : "text-[#2a1008]"
                               )}
                             >
@@ -2714,7 +2708,7 @@ export default function Home() {
                             </h4>
                             <p
                               className={cn(
-                                "text-xs sm:text-sm font-normal leading-relaxed",
+                                "text-[11px] sm:text-xs font-normal leading-relaxed mt-0.5",
                                 dark ? "text-slate-400" : "text-[#7a4a35]"
                               )}
                             >
@@ -2722,18 +2716,18 @@ export default function Home() {
                             </p>
                           </div>
 
-                          {/* Right: Badges (Period & In Progress Status) ALWAYS on the right side */}
-                          <div className="flex flex-row sm:flex-col items-center sm:items-end justify-end gap-2 shrink-0 self-end sm:self-start pt-0.5">
+                          {/* Right: Badges (Period & In Progress Status) compact & right-aligned */}
+                          <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-1 sm:gap-1.5 shrink-0 pt-0.5">
                             {item.period && (
                               <span
                                 className={cn(
-                                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border tracking-wide whitespace-nowrap",
+                                  "inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-medium border tracking-wide whitespace-nowrap",
                                   dark
                                     ? "bg-white/[0.04] border-white/10 text-slate-300"
                                     : "bg-[#8b1a1a]/5 border-[#8b1a1a]/15 text-[#2a1008]/80"
                                 )}
                               >
-                                <FiCalendar className="text-xs opacity-70" />
+                                <FiCalendar className="text-[10px] opacity-70" />
                                 {item.period}
                               </span>
                             )}
@@ -2741,13 +2735,13 @@ export default function Home() {
                             {item.status && isInProgress && (
                               <span
                                 className={cn(
-                                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold border whitespace-nowrap",
+                                  "inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-semibold border whitespace-nowrap",
                                   dark
-                                    ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                                    ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.15)]"
                                     : "bg-emerald-50 border-emerald-300 text-emerald-800"
                                 )}
                               >
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)] animate-pulse" />
                                 {item.status}
                               </span>
                             )}
