@@ -2854,14 +2854,14 @@ export default function Home() {
               <h3
                 className={cn(
                   "text-xl sm:text-2xl font-extrabold tracking-wider mb-6 sm:mb-8 uppercase",
-                  dark ? "text-cyan-400" : "text-[#8b1a1a]"
+                  dark ? "text-white" : "text-[#2a1008]"
                 )}
               >
-                {t.skillsStack || "SKILLS & STACK"}
+                SKILLS &amp; <span className={dark ? "text-cyan-400" : "text-[#8b1a1a]"}>STACK</span>
               </h3>
 
               {/* 4-Column Grid with Clean & Minimal Aesthetic (Matching Reference Design) */}
-              <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5 md:gap-3.5 lg:gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4">
                 {(dynamicSkills && dynamicSkills.length > 0
                   ? dynamicSkills
                   : [
@@ -2897,31 +2897,29 @@ export default function Home() {
                     }}
                     whileHover={{ scale: 1.02, y: -2 }}
                     className={cn(
-                      "relative rounded-xl sm:rounded-2xl md:rounded-3xl p-1.5 sm:p-2.5 md:p-3.5 flex items-center gap-1.5 sm:gap-2.5 md:gap-3.5 border transition-all duration-300 group overflow-hidden cursor-default min-h-[38px] sm:min-h-[48px] md:min-h-[58px]",
+                      "relative rounded-xl sm:rounded-2xl px-3.5 py-3 sm:px-4.5 sm:py-3.5 md:px-5 md:py-4 flex items-center gap-3 sm:gap-4 border transition-all duration-200 group cursor-default min-h-[48px] sm:min-h-[56px] md:min-h-[62px]",
                       dark
-                        ? "bg-[#040c18]/80 border-cyan-500/25 hover:border-cyan-400/60 shadow-[0_4px_16px_rgba(2,8,20,0.6)] hover:shadow-[0_0_20px_rgba(34,211,238,0.25)] backdrop-blur-md"
-                        : "bg-[#fffaf2] border-[#8b1a1a]/15 hover:border-[#8b1a1a]/40 shadow-xs hover:shadow-sm"
+                        ? "bg-[#040e1c]/80 border-cyan-500/20 hover:border-cyan-400 hover:bg-[#07172b]/90 shadow-sm hover:shadow-[0_0_18px_rgba(34,211,238,0.2)] backdrop-blur-md"
+                        : "bg-[#fffaf2] border-[#8b1a1a]/15 hover:border-[#8b1a1a]/40 hover:bg-[#faeedd]/70 shadow-xs hover:shadow-sm"
                     )}
                   >
-                    {/* Glowing cyan top accent edge line from reference image */}
-                    {dark && (
-                      <div className="absolute top-0 left-2 right-2 sm:left-4 sm:right-4 md:left-6 md:right-6 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-85 group-hover:opacity-100 transition-opacity shadow-[0_0_8px_#22d3ee]" />
-                    )}
-
-                    {/* Logo Inner Squircle Frame */}
-                    <div
+                    {/* Active/Hover cyan indicator dot in top-right corner matching reference image */}
+                    <span
                       className={cn(
-                        "w-6 h-6 sm:w-8 sm:h-8 md:w-11 md:h-11 rounded-md sm:rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-300",
+                        "absolute top-2.5 right-2.5 sm:top-3 sm:right-3 w-1.5 h-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none",
                         dark
-                          ? "bg-[#07172b]/90 border-cyan-500/25 group-hover:border-cyan-400/50"
-                          : "bg-[#faeedd] border-[#8b1a1a]/15 group-hover:border-[#8b1a1a]/30"
+                          ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
+                          : "bg-[#8b1a1a] shadow-[0_0_6px_rgba(139,26,26,0.6)]"
                       )}
-                    >
+                    />
+
+                    {/* Clean direct logo without inner box frame */}
+                    <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
                       <SkillIcon
                         iconKey={skill.iconKey}
                         iconUrl={skill.iconUrl}
                         name={skill.name}
-                        className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 md:w-6 md:h-6 object-contain"
+                        className="w-full h-full object-contain"
                       />
                     </div>
 
@@ -2929,7 +2927,7 @@ export default function Home() {
                     <div className="min-w-0 flex-1">
                       <span
                         className={cn(
-                          "font-medium sm:font-semibold text-[10px] sm:text-xs md:text-sm lg:text-base tracking-tight sm:tracking-normal truncate block",
+                          "font-semibold text-xs sm:text-sm md:text-base tracking-normal truncate block transition-colors",
                           dark
                             ? "text-white group-hover:text-cyan-200"
                             : "text-[#2a1008] group-hover:text-[#8b1a1a]"
