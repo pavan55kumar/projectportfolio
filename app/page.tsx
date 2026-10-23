@@ -240,25 +240,33 @@ function CursorGlow({ dark }: { dark: boolean }) {
 }
 
 // ─── Divider ──────────────────────────────────────────────────────────────────
-function Divider({ dark }: { dark: boolean }) {
+function Divider({ dark, className }: { dark: boolean; className?: string }) {
   return (
-    <div className="flex items-center justify-center gap-3 my-3 mx-auto max-w-[80px]">
+    <div
+      className={cn(
+        "flex items-center justify-center gap-2.5 my-3.5 mx-auto w-full max-w-[190px] sm:max-w-[230px]",
+        className
+      )}
+    >
       <div
-        className={`flex-1 h-px bg-gradient-to-r from-transparent ${
-          dark ? "via-cyan-400/40" : "via-[#8b1a1a]/30"
-        } to-transparent`}
+        className={cn(
+          "flex-1 h-px bg-gradient-to-r from-transparent",
+          dark ? "via-cyan-400/25 to-cyan-400/50" : "via-[#8b1a1a]/25 to-[#8b1a1a]/55"
+        )}
       />
       <div
-        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+        className={cn(
+          "w-10 sm:w-12 h-[3.5px] rounded-full shrink-0 transition-all duration-300",
           dark
-            ? "bg-cyan-400 shadow-[0_0_8px_rgba(0,212,255,0.7)]"
-            : "bg-[#8b1a1a] shadow-[0_0_8px_rgba(139,26,26,0.35)]"
-        }`}
+            ? "bg-gradient-to-r from-cyan-500 via-cyan-300 to-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.6)]"
+            : "bg-gradient-to-r from-[#8b1a1a] via-[#b33939] to-[#8b1a1a] shadow-[0_1px_6px_rgba(139,26,26,0.3)]"
+        )}
       />
       <div
-        className={`flex-1 h-px bg-gradient-to-r from-transparent ${
-          dark ? "via-cyan-400/40" : "via-[#8b1a1a]/30"
-        } to-transparent`}
+        className={cn(
+          "flex-1 h-px bg-gradient-to-l from-transparent",
+          dark ? "via-cyan-400/25 to-cyan-400/50" : "via-[#8b1a1a]/25 to-[#8b1a1a]/55"
+        )}
       />
     </div>
   );
