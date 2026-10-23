@@ -479,13 +479,46 @@ CREATE TABLE IF NOT EXISTS public.projects (
     description TEXT NOT NULL,
     github TEXT,
     lab_url TEXT,
+    live_url TEXT,
     logo TEXT,
     emoji TEXT DEFAULT '🚀',
     order_index INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 7. Certificates Table
+-- 7. Engineering Lab Projects Table
+CREATE TABLE IF NOT EXISTS public.engineering_projects (
+    id TEXT PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon TEXT DEFAULT 'portfolio',
+    status TEXT,
+    category TEXT,
+    cover_image TEXT,
+    banner_image TEXT,
+    overview TEXT,
+    problem TEXT,
+    solution TEXT,
+    intended_for TEXT,
+    role TEXT,
+    duration TEXT,
+    technologies JSONB DEFAULT '[]'::jsonb,
+    features JSONB DEFAULT '[]'::jsonb,
+    contributions JSONB DEFAULT '[]'::jsonb,
+    architecture TEXT,
+    challenges TEXT,
+    additional_details TEXT,
+    github_url TEXT,
+    live_url TEXT,
+    live_demo_url TEXT,
+    team JSONB DEFAULT '[]'::jsonb,
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. Certificates Table
 CREATE TABLE IF NOT EXISTS public.certificates (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -507,7 +540,14 @@ ALTER TABLE public.education ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.experience ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.engineering_projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public view engineering projects" ON public.engineering_projects;
+DROP POLICY IF EXISTS "Admin full engineering projects" ON public.engineering_projects;
+CREATE POLICY "Public view engineering projects" ON public.engineering_projects FOR SELECT USING (true);
+CREATE POLICY "Admin full engineering projects" ON public.engineering_projects FOR ALL USING (true) WITH CHECK (true);
+
 
 DROP POLICY IF EXISTS "Public view profile" ON public.profile;
 DROP POLICY IF EXISTS "Admin full profile" ON public.profile;
@@ -611,6 +651,49 @@ DROP POLICY IF EXISTS "Admin full experience" ON public.experience;
 CREATE POLICY "Public view experience" ON public.experience FOR SELECT USING (true);
 CREATE POLICY "Admin full experience" ON public.experience FOR ALL USING (true) WITH CHECK (true);`;
 
+const SQL_MIGRATION_ENGINEERING_LAB = `-- Copy & Paste this into Supabase SQL Editor for Engineer's Lab & Live Previews:
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS live_url TEXT;
+
+CREATE TABLE IF NOT EXISTS public.engineering_projects (
+    id TEXT PRIMARY KEY,
+    slug TEXT UNIQUE NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon TEXT DEFAULT 'portfolio',
+    status TEXT,
+    category TEXT,
+    cover_image TEXT,
+    banner_image TEXT,
+    overview TEXT,
+    problem TEXT,
+    solution TEXT,
+    intended_for TEXT,
+    role TEXT,
+    duration TEXT,
+    technologies JSONB DEFAULT '[]'::jsonb,
+    features JSONB DEFAULT '[]'::jsonb,
+    contributions JSONB DEFAULT '[]'::jsonb,
+    architecture TEXT,
+    challenges TEXT,
+    additional_details TEXT,
+    github_url TEXT,
+    live_url TEXT,
+    live_demo_url TEXT,
+    team JSONB DEFAULT '[]'::jsonb,
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.engineering_projects ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Public view engineering projects" ON public.engineering_projects;
+DROP POLICY IF EXISTS "Admin full engineering projects" ON public.engineering_projects;
+
+CREATE POLICY "Public view engineering projects" ON public.engineering_projects FOR SELECT USING (true);
+CREATE POLICY "Admin full engineering projects" ON public.engineering_projects FOR ALL USING (true) WITH CHECK (true);`;
+
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -686,6 +769,7 @@ export default function AdminPage() {
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedMigration, setCopiedMigration] = useState(false);
   const [copiedNewMigration, setCopiedNewMigration] = useState(false);
+  const [copiedEngMigration, setCopiedEngMigration] = useState(false);
 
   // Project modal state (handles both Add and Edit)
   const [showProjectModal, setShowProjectModal] = useState(false);
@@ -2668,6 +2752,42 @@ export default function AdminPage() {
                 )}
               </button>
             </div>
+
+            {/* Quick Migration Box for Engineer's Lab & Live Previews */}
+            <div className="p-5 rounded-2xl border-2 border-cyan-600/30 bg-cyan-500/10 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-bold text-cyan-950 flex items-center gap-2">
+                  <FiDatabase className="text-cyan-700" />
+                  Database Query for Engineer&apos;s Lab &amp; Live Previews
+                </h4>
+                <p className="text-xs text-cyan-800 mt-1">
+                  Run this query in Supabase SQL Editor to create the <code>engineering_projects</code> table and add <code>live_url</code> to projects:
+                </p>
+                <code className="inline-block mt-2 font-mono text-xs px-3 py-1.5 rounded-lg bg-[#2a1008] text-cyan-300">
+                  ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS live_url TEXT; CREATE TABLE IF NOT EXISTS public.engineering_projects (...);
+                </code>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(SQL_MIGRATION_ENGINEERING_LAB);
+                  setCopiedEngMigration(true);
+                  setTimeout(() => setCopiedEngMigration(false), 2000);
+                }}
+                className="shrink-0 px-4 py-2.5 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+              >
+                {copiedEngMigration ? (
+                  <>
+                    <FiCheck /> Copied!
+                  </>
+                ) : (
+                  <>
+                    <FiCopy /> Copy Lab Query
+                  </>
+                )}
+              </button>
+            </div>
+
 
             {/* SQL Copy Box */}
             <div className="relative rounded-2xl overflow-hidden border border-[#8b1a1a]/20 shadow-sm">

@@ -6,6 +6,66 @@ import { EngineeringProject, engineeringProjects as defaultProjects } from "@/da
 
 const DATA_FILE = path.join(process.cwd(), "data", "engineeringProjects.json");
 
+function mapFromDb(d: any): EngineeringProject {
+  return {
+    id: String(d.id),
+    slug: String(d.slug || d.id),
+    title: String(d.title || ""),
+    description: String(d.description || ""),
+    icon: d.icon || "portfolio",
+    status: d.status || "",
+    category: d.category || "",
+    coverImage: d.cover_image || d.coverImage || "",
+    bannerImage: d.banner_image || d.bannerImage || d.cover_image || d.coverImage || "",
+    overview: d.overview || "",
+    problem: d.problem || "",
+    solution: d.solution || "",
+    intendedFor: d.intended_for || d.intendedFor || "",
+    role: d.role || "",
+    duration: d.duration || "",
+    technologies: Array.isArray(d.technologies) ? d.technologies : [],
+    features: Array.isArray(d.features) ? d.features : [],
+    contributions: Array.isArray(d.contributions) ? d.contributions : [],
+    architecture: d.architecture || "",
+    challenges: d.challenges || "",
+    additionalDetails: d.additional_details || d.additionalDetails || "",
+    githubUrl: d.github_url || d.githubUrl || "",
+    liveUrl: d.live_url || d.liveUrl || "",
+    liveDemoUrl: d.live_demo_url || d.liveDemoUrl || "",
+    team: Array.isArray(d.team) ? d.team : [],
+  };
+}
+
+function mapToDb(p: Partial<EngineeringProject>): Record<string, unknown> {
+  const db: Record<string, unknown> = {};
+  if (p.id !== undefined) db.id = p.id;
+  if (p.slug !== undefined) db.slug = p.slug;
+  if (p.title !== undefined) db.title = p.title;
+  if (p.description !== undefined) db.description = p.description;
+  if (p.icon !== undefined) db.icon = p.icon;
+  if (p.status !== undefined) db.status = p.status;
+  if (p.category !== undefined) db.category = p.category;
+  if (p.coverImage !== undefined) db.cover_image = p.coverImage;
+  if (p.bannerImage !== undefined) db.banner_image = p.bannerImage;
+  if (p.overview !== undefined) db.overview = p.overview;
+  if (p.problem !== undefined) db.problem = p.problem;
+  if (p.solution !== undefined) db.solution = p.solution;
+  if (p.intendedFor !== undefined) db.intended_for = p.intendedFor;
+  if (p.role !== undefined) db.role = p.role;
+  if (p.duration !== undefined) db.duration = p.duration;
+  if (p.technologies !== undefined) db.technologies = p.technologies;
+  if (p.features !== undefined) db.features = p.features;
+  if (p.contributions !== undefined) db.contributions = p.contributions;
+  if (p.architecture !== undefined) db.architecture = p.architecture;
+  if (p.challenges !== undefined) db.challenges = p.challenges;
+  if (p.additionalDetails !== undefined) db.additional_details = p.additionalDetails;
+  if (p.githubUrl !== undefined) db.github_url = p.githubUrl;
+  if (p.liveUrl !== undefined) db.live_url = p.liveUrl;
+  if (p.liveDemoUrl !== undefined) db.live_demo_url = p.liveDemoUrl;
+  if (p.team !== undefined) db.team = p.team;
+  return db;
+}
+
 async function readLocalEngineeringProjects(): Promise<EngineeringProject[]> {
   try {
     const raw = await fs.readFile(DATA_FILE, "utf-8");
@@ -38,7 +98,7 @@ export async function GET() {
         .order("order_index", { ascending: true });
 
       if (!error && Array.isArray(data) && data.length > 0) {
-        return NextResponse.json(data);
+        return NextResponse.json(data.map(mapFromDb));
       }
     } catch (err) {
       console.warn("Failed to fetch engineering projects from Supabase, using local fallback:", err);
@@ -105,7 +165,7 @@ export async function POST(req: Request) {
     const supabase = getSupabaseAdmin();
     if (supabase) {
       try {
-        await supabase.from("engineering_projects").upsert(newProject);
+        await supabase.from("engineering_projects").upsert(mapToDb(newProject));
       } catch (err) {
         console.warn("Supabase engineering project upsert failed:", err);
       }
@@ -198,7 +258,7 @@ export async function PATCH(req: Request) {
       try {
         await supabase
           .from("engineering_projects")
-          .update(updatedProject)
+          .update(mapToDb(updatedProject))
           .eq("id", updatedProject.id);
       } catch (err) {
         console.warn("Supabase engineering project update failed:", err);
