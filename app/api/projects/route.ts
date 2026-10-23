@@ -95,6 +95,63 @@ async function writeLocalProjects(items: PortfolioProject[]): Promise<void> {
   }
 }
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+};
+
+// Helper to sync to engineering_projects table and data/engineeringProjects.json
+async function syncToEngineeringProjectsTable(p: PortfolioProject) {
+  const supabase = getSupabaseAdmin();
+  if (supabase) {
+    try {
+      const engUpdate: Record<string, unknown> = {};
+      if (p.title) engUpdate.title = p.title;
+      if (p.desc) engUpdate.description = p.desc;
+      if (p.liveUrl !== undefined) engUpdate.live_url = p.liveUrl || null;
+      if (p.logo) engUpdate.cover_image = p.logo;
+      if (p.github !== undefined) engUpdate.github_url = p.github;
+
+      await supabase
+        .from("engineering_projects")
+        .update(engUpdate)
+        .or(`id.eq.${p.id},slug.eq.${p.id}`);
+    } catch (err) {
+      console.warn("Sync to engineering_projects table failed:", err);
+    }
+  }
+
+  try {
+    const engFile = path.join(process.cwd(), "data", "engineeringProjects.json");
+    const raw = await fs.readFile(engFile, "utf-8").catch(() => "[]");
+    const list = JSON.parse(raw);
+    if (Array.isArray(list)) {
+      let modified = false;
+      const updatedList = list.map((item: any) => {
+        if (item.id === p.id || item.slug === p.id) {
+          modified = true;
+          return {
+            ...item,
+            ...(p.title ? { title: p.title } : {}),
+            ...(p.desc ? { description: p.desc } : {}),
+            ...(p.liveUrl !== undefined ? { liveUrl: p.liveUrl } : {}),
+            ...(p.logo ? { coverImage: p.logo, bannerImage: p.logo } : {}),
+            ...(p.github !== undefined ? { githubUrl: p.github } : {}),
+          };
+        }
+        return item;
+      });
+      if (modified) {
+        await fs.writeFile(engFile, JSON.stringify(updatedList, null, 2), "utf-8");
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to sync to data/engineeringProjects.json:", err);
+  }
+}
+
 export async function GET() {
   const supabase = getSupabaseAdmin();
   if (supabase) {
@@ -116,7 +173,9 @@ export async function GET() {
           logo: p.logo || "",
           emoji: p.emoji || "🚀",
         }));
-        return NextResponse.json(mapped);
+        // Update local file in background so local JSON stays fresh
+        writeLocalProjects(mapped).catch(() => {});
+        return NextResponse.json(mapped, { headers: noCacheHeaders });
       }
     } catch (err) {
       console.warn("Failed to fetch projects from Supabase, using local fallback:", err);
@@ -124,7 +183,7 @@ export async function GET() {
   }
 
   const localProjects = await readLocalProjects();
-  return NextResponse.json(localProjects);
+  return NextResponse.json(localProjects, { headers: noCacheHeaders });
 }
 
 export async function POST(req: Request) {
@@ -173,7 +232,10 @@ export async function POST(req: Request) {
     const updated = [newProject, ...current.filter((p) => p.id !== id)];
     await writeLocalProjects(updated);
 
-    return NextResponse.json({ success: true, project: newProject }, { status: 201 });
+    // Sync to engineering_projects table
+    await syncToEngineeringProjectsTable(newProject);
+
+    return NextResponse.json({ success: true, project: newProject }, { status: 201, headers: noCacheHeaders });
   } catch (err) {
     console.error("Failed to add project:", err);
     return NextResponse.json({ error: "Failed to add project" }, { status: 500 });
@@ -209,9 +271,10 @@ export async function PATCH(req: Request) {
     }
 
     const current = await readLocalProjects();
+    let updatedTarget: PortfolioProject | null = null;
     const updated = current.map((p) => {
       if (p.id === id) {
-        return {
+        const res: PortfolioProject = {
           ...p,
           ...(title !== undefined ? { title: String(title) } : {}),
           ...(tech !== undefined ? { tech: String(tech) } : {}),
@@ -222,12 +285,18 @@ export async function PATCH(req: Request) {
           ...(logo !== undefined ? { logo: String(logo) } : {}),
           ...(emoji !== undefined ? { emoji: String(emoji) } : {}),
         };
+        updatedTarget = res;
+        return res;
       }
       return p;
     });
     await writeLocalProjects(updated);
 
-    return NextResponse.json({ success: true });
+    if (updatedTarget) {
+      await syncToEngineeringProjectsTable(updatedTarget);
+    }
+
+    return NextResponse.json({ success: true }, { headers: noCacheHeaders });
   } catch (err) {
     console.error("Failed to update project:", err);
     return NextResponse.json({ error: "Failed to update project" }, { status: 500 });

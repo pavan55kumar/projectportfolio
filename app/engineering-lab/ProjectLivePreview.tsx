@@ -300,6 +300,7 @@ export default function ProjectLivePreview({
                     alt={title}
                     fill
                     className="object-cover"
+                    unoptimized={typeof coverImage === "string" && coverImage.startsWith("data:")}
                   />
                   <div
                     className={`absolute inset-0 ${

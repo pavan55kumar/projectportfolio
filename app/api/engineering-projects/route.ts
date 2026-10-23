@@ -88,8 +88,104 @@ async function writeLocalEngineeringProjects(items: EngineeringProject[]): Promi
   }
 }
 
-export async function GET() {
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+};
+
+// Helper to sync shared fields to projects table and data/projects.json
+async function syncToProjectsTable(proj: EngineeringProject) {
   const supabase = getSupabaseAdmin();
+  if (supabase) {
+    try {
+      const projUpdate: Record<string, unknown> = {};
+      if (proj.title) projUpdate.title = proj.title;
+      if (proj.description) projUpdate.description = proj.description;
+      if (proj.liveUrl !== undefined) projUpdate.live_url = proj.liveUrl || null;
+      if (proj.coverImage) projUpdate.logo = proj.coverImage;
+      if (proj.githubUrl !== undefined) projUpdate.github = proj.githubUrl;
+
+      // Update matching project in Supabase by id or slug
+      await supabase
+        .from("projects")
+        .update(projUpdate)
+        .or(`id.eq.${proj.id},id.eq.${proj.slug}`);
+    } catch (err) {
+      console.warn("Sync to projects table failed:", err);
+    }
+  }
+
+  try {
+    const projectsFile = path.join(process.cwd(), "data", "projects.json");
+    const raw = await fs.readFile(projectsFile, "utf-8").catch(() => "[]");
+    const list = JSON.parse(raw);
+    if (Array.isArray(list)) {
+      let modified = false;
+      const updatedList = list.map((item: any) => {
+        if (item.id === proj.id || item.id === proj.slug) {
+          modified = true;
+          return {
+            ...item,
+            ...(proj.title ? { title: proj.title } : {}),
+            ...(proj.description ? { desc: proj.description } : {}),
+            ...(proj.liveUrl !== undefined ? { liveUrl: proj.liveUrl } : {}),
+            ...(proj.coverImage ? { logo: proj.coverImage } : {}),
+            ...(proj.githubUrl !== undefined ? { github: proj.githubUrl } : {}),
+          };
+        }
+        return item;
+      });
+      if (modified) {
+        await fs.writeFile(projectsFile, JSON.stringify(updatedList, null, 2), "utf-8");
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to sync to data/projects.json:", err);
+  }
+}
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const slug = searchParams.get("slug")?.toLowerCase().trim();
+  const id = searchParams.get("id")?.toLowerCase().trim();
+  const filter = slug || id;
+
+  const supabase = getSupabaseAdmin();
+
+  // 1. Single project lookup by slug or id
+  if (filter) {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from("engineering_projects")
+          .select("*")
+          .or(`slug.eq.${filter},id.eq.${filter}`)
+          .maybeSingle();
+
+        if (!error && data) {
+          return NextResponse.json(mapFromDb(data), { headers: noCacheHeaders });
+        }
+      } catch (err) {
+        console.warn("Failed single fetch from Supabase:", err);
+      }
+    }
+
+    const localProjects = await readLocalEngineeringProjects();
+    const match = localProjects.find(
+      (p) =>
+        p.slug?.toLowerCase() === filter ||
+        p.id?.toLowerCase() === filter ||
+        (filter === "project-orbital" && p.slug === "portfolio-3d")
+    );
+    if (match) {
+      return NextResponse.json(match, { headers: noCacheHeaders });
+    }
+    return NextResponse.json({ error: "Project not found" }, { status: 404, headers: noCacheHeaders });
+  }
+
+  // 2. Fetch all projects
   if (supabase) {
     try {
       const { data, error } = await supabase
@@ -98,7 +194,10 @@ export async function GET() {
         .order("order_index", { ascending: true });
 
       if (!error && Array.isArray(data) && data.length > 0) {
-        return NextResponse.json(data.map(mapFromDb));
+        const mapped = data.map(mapFromDb);
+        // Persist fresh Supabase data to local JSON in background
+        writeLocalEngineeringProjects(mapped).catch(() => {});
+        return NextResponse.json(mapped, { headers: noCacheHeaders });
       }
     } catch (err) {
       console.warn("Failed to fetch engineering projects from Supabase, using local fallback:", err);
@@ -106,7 +205,7 @@ export async function GET() {
   }
 
   const localProjects = await readLocalEngineeringProjects();
-  return NextResponse.json(localProjects);
+  return NextResponse.json(localProjects, { headers: noCacheHeaders });
 }
 
 export async function POST(req: Request) {
@@ -174,6 +273,9 @@ export async function POST(req: Request) {
     const current = await readLocalEngineeringProjects();
     const updated = [newProject, ...current.filter((p) => p.slug !== finalSlug && p.id !== newProject.id)];
     await writeLocalEngineeringProjects(updated);
+
+    // Sync to projects table for main portfolio
+    await syncToProjectsTable(newProject);
 
     return NextResponse.json({ success: true, project: newProject }, { status: 201 });
   } catch (err) {
@@ -265,7 +367,10 @@ export async function PATCH(req: Request) {
       }
     }
 
-    return NextResponse.json({ success: true, project: updatedProject });
+    // Sync to projects table for main portfolio
+    await syncToProjectsTable(updatedProject);
+
+    return NextResponse.json({ success: true, project: updatedProject }, { headers: noCacheHeaders });
   } catch (err) {
     console.error("Failed to update engineering project:", err);
     return NextResponse.json({ error: "Failed to update project" }, { status: 500 });

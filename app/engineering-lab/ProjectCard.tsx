@@ -123,7 +123,10 @@ export default function ProjectCard({
   };
 
   // Live demo URL or internal link
-  const exploreUrl = project.liveDemoUrl || `/engineering-lab/${project.slug}#demo`;
+  const liveUrl =
+    project.liveUrl ||
+    (project.liveDemoUrl?.startsWith("http") ? project.liveDemoUrl : undefined);
+  const exploreUrl = liveUrl || `/engineering-lab/${project.slug}`;
 
   return (
     <motion.article
@@ -152,6 +155,10 @@ export default function ProjectCard({
               sizes="(max-width: 1024px) 100vw, 50vw"
               className="object-cover transition-transform duration-700 ease-out group-hover/image:scale-[1.04]"
               priority={index === 0}
+              unoptimized={
+                typeof images[activeImageIdx] === "string" &&
+                images[activeImageIdx].startsWith("data:")
+              }
             />
 
             {/* Subtle overlay gradient on bottom */}
@@ -217,16 +224,18 @@ export default function ProjectCard({
                       <FaArrowRight className="text-[10px]" /> View Case Study
                     </Link>
 
-                    {project.liveDemoUrl && (
-                      <Link
-                        href={project.liveDemoUrl}
+                    {liveUrl && (
+                      <a
+                        href={liveUrl}
+                        target={liveUrl.startsWith("http") ? "_blank" : undefined}
+                        rel={liveUrl.startsWith("http") ? "noopener noreferrer" : undefined}
                         onClick={() => setMenuOpen(false)}
                         className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                           dark ? "hover:bg-white/10 text-white/85" : "hover:bg-[#8b1a1a]/10 text-[#2a1008]"
                         }`}
                       >
                         <FiExternalLink className="text-xs" /> Open Live Demo
-                      </Link>
+                      </a>
                     )}
 
                     {project.githubUrl && (
@@ -305,17 +314,33 @@ export default function ProjectCard({
           {/* Bottom Action Row */}
           <div className="mt-6 sm:mt-7 flex items-center justify-between gap-4 pt-1">
             {/* Primary Button: Explore Project ↗ */}
-            <Link
-              href={exploreUrl}
-              className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98] ${
-                dark
-                  ? "bg-[#38bdf8] text-[#030712] shadow-lg shadow-cyan-500/25 hover:bg-[#7dd3fc] hover:shadow-cyan-400/35 focus-visible:ring-cyan-300"
-                  : "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/25 hover:bg-[#721515] hover:shadow-[#8b1a1a]/40 focus-visible:ring-[#8b1a1a]"
-              }`}
-            >
-              Explore Project
-              <FaArrowUpRightFromSquare className="text-[10px]" />
-            </Link>
+            {exploreUrl.startsWith("http") ? (
+              <a
+                href={exploreUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98] ${
+                  dark
+                    ? "bg-[#38bdf8] text-[#030712] shadow-lg shadow-cyan-500/25 hover:bg-[#7dd3fc] hover:shadow-cyan-400/35 focus-visible:ring-cyan-300"
+                    : "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/25 hover:bg-[#721515] hover:shadow-[#8b1a1a]/40 focus-visible:ring-[#8b1a1a]"
+                }`}
+              >
+                Live Demo
+                <FaArrowUpRightFromSquare className="text-[10px]" />
+              </a>
+            ) : (
+              <Link
+                href={exploreUrl}
+                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98] ${
+                  dark
+                    ? "bg-[#38bdf8] text-[#030712] shadow-lg shadow-cyan-500/25 hover:bg-[#7dd3fc] hover:shadow-cyan-400/35 focus-visible:ring-cyan-300"
+                    : "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/25 hover:bg-[#721515] hover:shadow-[#8b1a1a]/40 focus-visible:ring-[#8b1a1a]"
+                }`}
+              >
+                Explore Project
+                <FaArrowUpRightFromSquare className="text-[10px]" />
+              </Link>
+            )}
 
             {/* Secondary CTA: View Details → */}
             <Link

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,13 +23,32 @@ import type { EngineeringProject } from "@/data/engineeringProjects";
 import ProjectLivePreview from "./ProjectLivePreview";
 
 export default function ProjectDetails({
-  project,
+  project: initialProject,
 }: {
   project: EngineeringProject;
   relatedProjects?: EngineeringProject[];
 }) {
   const router = useRouter();
   const { dark, toggle } = useTheme();
+
+  const [project, setProject] = useState<EngineeringProject>(initialProject);
+
+  useEffect(() => {
+    setProject(initialProject);
+  }, [initialProject]);
+
+  useEffect(() => {
+    const slug = initialProject?.slug || initialProject?.id;
+    if (!slug) return;
+    fetch(`/api/engineering-projects?slug=${encodeURIComponent(slug)}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data && (data.id || data.slug)) {
+          setProject(data);
+        }
+      })
+      .catch(() => {});
+  }, [initialProject?.slug, initialProject?.id]);
 
   // Accordion open/close states for technical deep-dives
   const [openAccordion, setOpenAccordion] = useState<string | null>(null);
@@ -258,6 +277,7 @@ export default function ProjectDetails({
               sizes="(max-width: 1200px) 100vw, 1152px"
               className="object-cover"
               priority
+              unoptimized={typeof displayImage === "string" && displayImage.startsWith("data:")}
             />
             <div
               className={`absolute inset-0 pointer-events-none ${

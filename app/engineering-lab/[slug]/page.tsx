@@ -10,6 +10,9 @@ type ProjectPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export function generateStaticParams() {
   const slugs = engineeringProjects.map(({ slug }) => ({ slug }));
   slugs.push({ slug: "project-orbital" });
@@ -20,7 +23,7 @@ export async function generateMetadata({
   params,
 }: ProjectPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const project = getEngineeringProject(slug);
+  const project = await getEngineeringProject(slug);
 
   if (!project) return { title: "Project not found | Engineering Lab" };
 
@@ -34,7 +37,7 @@ export default async function EngineeringProjectPage({
   params,
 }: ProjectPageProps) {
   const { slug } = await params;
-  const project = getEngineeringProject(slug);
+  const project = await getEngineeringProject(slug);
 
   if (!project) notFound();
 

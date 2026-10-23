@@ -276,12 +276,43 @@ export const engineeringProjects: EngineeringProject[] = [
   },
 ];
 
-export function getEngineeringProject(slug: string): EngineeringProject | undefined {
+export function mapEngineeringProjectFromDb(d: any): EngineeringProject {
+  return {
+    id: String(d.id),
+    slug: String(d.slug || d.id),
+    title: String(d.title || ""),
+    description: String(d.description || ""),
+    icon: d.icon || "portfolio",
+    status: d.status || "",
+    category: d.category || "",
+    coverImage: d.cover_image || d.coverImage || "",
+    bannerImage: d.banner_image || d.bannerImage || d.cover_image || d.coverImage || "",
+    overview: d.overview || "",
+    problem: d.problem || "",
+    solution: d.solution || "",
+    intendedFor: d.intended_for || d.intendedFor || "",
+    role: d.role || "",
+    duration: d.duration || "",
+    technologies: Array.isArray(d.technologies) ? d.technologies : [],
+    features: Array.isArray(d.features) ? d.features : [],
+    contributions: Array.isArray(d.contributions) ? d.contributions : [],
+    architecture: d.architecture || "",
+    challenges: d.challenges || "",
+    additionalDetails: d.additional_details || d.additionalDetails || "",
+    githubUrl: d.github_url || d.githubUrl || "",
+    liveUrl: d.live_url || d.liveUrl || "",
+    liveDemoUrl: d.live_demo_url || d.liveDemoUrl || "",
+    team: Array.isArray(d.team) ? d.team : [],
+    relatedProjectIds: Array.isArray(d.related_project_ids) ? d.related_project_ids : d.relatedProjectIds,
+  };
+}
+
+export function getEngineeringProjectSync(slug: string): EngineeringProject | undefined {
   const normalized = slug?.toLowerCase().trim();
+  if (!normalized) return undefined;
 
   if (typeof window === "undefined") {
     try {
-      // Dynamic require so browser bundles never fail
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fs = require("fs");
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -293,24 +324,51 @@ export function getEngineeringProject(slug: string): EngineeringProject | undefi
         if (Array.isArray(list) && list.length > 0) {
           const match = list.find(
             (project) =>
-              project.slug.toLowerCase() === normalized ||
-              project.id.toLowerCase() === normalized ||
+              project.slug?.toLowerCase() === normalized ||
+              project.id?.toLowerCase() === normalized ||
               (normalized === "project-orbital" && project.slug === "portfolio-3d")
           );
           if (match) return match;
         }
       }
     } catch {
-      // Fallback to static list
+      // Fallback
     }
   }
 
-  const found = engineeringProjects.find(
+  return engineeringProjects.find(
     (project) =>
       project.slug.toLowerCase() === normalized ||
       project.id.toLowerCase() === normalized ||
       (normalized === "project-orbital" && project.slug === "portfolio-3d")
   );
-  return found;
 }
+
+export async function getEngineeringProject(slug: string): Promise<EngineeringProject | undefined> {
+  const normalized = slug?.toLowerCase().trim();
+  if (!normalized) return undefined;
+
+  // 1. Try Supabase for real-time persisted updates
+  try {
+    const { getSupabaseAdmin } = await import("@/lib/supabase");
+    const supabase = getSupabaseAdmin();
+    if (supabase) {
+      const { data, error } = await supabase
+        .from("engineering_projects")
+        .select("*")
+        .or(`slug.eq.${normalized},id.eq.${normalized}`)
+        .maybeSingle();
+
+      if (!error && data) {
+        return mapEngineeringProjectFromDb(data);
+      }
+    }
+  } catch {
+    // Continue to local fallbacks
+  }
+
+  // 2. Fallback to local file or static list
+  return getEngineeringProjectSync(slug);
+}
+
 

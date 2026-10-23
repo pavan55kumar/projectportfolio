@@ -2979,7 +2979,7 @@ export default function Home() {
             paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
           }}
         >
-          {(dynamicProjects || t.projectsList).map(({ title, tech, desc, github, emoji, logo, labUrl }: any, i: number) => (
+          {(dynamicProjects || t.projectsList).map(({ title, tech, desc, github, emoji, logo, labUrl, liveUrl }: any, i: number) => (
             <motion.div
               key={i}
               variants={fadeUp}
@@ -3058,6 +3058,21 @@ export default function Home() {
                 </p>
               </div>
               <div className="mt-auto flex flex-wrap items-center gap-2 pt-2">
+                {liveUrl && (
+                  <a
+                    href={liveUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl border transition-all",
+                      dark
+                        ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 shadow-[0_0_12px_rgba(16,185,129,0.15)]"
+                        : "border-emerald-700/25 bg-emerald-600/10 text-emerald-800 hover:bg-emerald-600/20"
+                    )}
+                  >
+                    <span>🚀</span> Live App ↗
+                  </a>
+                )}
                 {labUrl && (
                   <Link
                     href={labUrl}
