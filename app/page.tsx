@@ -2855,8 +2855,8 @@ export default function Home() {
                 {t.skillsStack || "SKILLS & STACK"}
               </h3>
 
-              {/* 2-Column on Mobile, 4-Column on Desktop Responsive Grid matching reference */}
-              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-5">
+              {/* 4-Column Grid with Clean & Minimal Aesthetic (Matching Reference Design) */}
+              <div className="grid grid-cols-4 gap-1.5 sm:gap-2.5 md:gap-3.5 lg:gap-4">
                 {(dynamicSkills && dynamicSkills.length > 0
                   ? dynamicSkills
                   : [
@@ -2874,25 +2874,25 @@ export default function Home() {
                     key={skill.id || skill.name}
                     variants={scaleIn}
                     custom={i}
-                    whileHover={{ scale: 1.03, y: -2 }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                     className={cn(
-                      "relative rounded-xl sm:rounded-2xl md:rounded-3xl p-2 sm:p-2.5 md:p-3.5 lg:p-4 flex items-center gap-2 sm:gap-2.5 md:gap-3.5 border transition-all duration-300 group overflow-hidden cursor-default min-h-[44px] sm:min-h-[50px] md:min-h-[58px]",
+                      "relative rounded-xl sm:rounded-2xl md:rounded-3xl p-1.5 sm:p-2.5 md:p-3.5 flex items-center gap-1.5 sm:gap-2.5 md:gap-3.5 border transition-all duration-300 group overflow-hidden cursor-default min-h-[38px] sm:min-h-[48px] md:min-h-[58px]",
                       dark
-                        ? "bg-[#061325]/90 border-cyan-500/35 hover:border-cyan-400 shadow-[0_4px_20px_rgba(4,14,28,0.7),inset_0_1px_1px_rgba(34,211,238,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] backdrop-blur-xl"
-                        : "bg-[#fffaf2] border-[#8b1a1a]/20 hover:border-[#8b1a1a] shadow-sm hover:shadow-md"
+                        ? "bg-[#040c18]/80 border-cyan-500/25 hover:border-cyan-400/60 shadow-[0_4px_16px_rgba(2,8,20,0.6)] hover:shadow-[0_0_20px_rgba(34,211,238,0.25)] backdrop-blur-md"
+                        : "bg-[#fffaf2] border-[#8b1a1a]/15 hover:border-[#8b1a1a]/40 shadow-xs hover:shadow-sm"
                     )}
                   >
                     {/* Glowing cyan top accent edge line from reference image */}
                     {dark && (
-                      <div className="absolute top-0 left-3 right-3 sm:left-4 sm:right-4 md:left-6 md:right-6 h-[1.5px] sm:h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute top-0 left-2 right-2 sm:left-4 sm:right-4 md:left-6 md:right-6 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-85 group-hover:opacity-100 transition-opacity shadow-[0_0_8px_#22d3ee]" />
                     )}
 
                     {/* Logo Inner Squircle Frame */}
                     <div
                       className={cn(
-                        "w-8 h-8 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-300",
+                        "w-6 h-6 sm:w-8 sm:h-8 md:w-11 md:h-11 rounded-md sm:rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-300",
                         dark
-                          ? "bg-[#091b30] border-cyan-400/25 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] group-hover:border-cyan-400/50 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+                          ? "bg-[#07172b]/90 border-cyan-500/25 group-hover:border-cyan-400/50"
                           : "bg-[#faeedd] border-[#8b1a1a]/15 group-hover:border-[#8b1a1a]/30"
                       )}
                     >
@@ -2900,7 +2900,7 @@ export default function Home() {
                         iconKey={skill.iconKey}
                         iconUrl={skill.iconUrl}
                         name={skill.name}
-                        className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 object-contain"
+                        className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 md:w-6 md:h-6 object-contain"
                       />
                     </div>
 
@@ -2908,7 +2908,7 @@ export default function Home() {
                     <div className="min-w-0 flex-1">
                       <span
                         className={cn(
-                          "font-semibold text-xs sm:text-sm md:text-base tracking-tight sm:tracking-normal truncate block",
+                          "font-medium sm:font-semibold text-[10px] sm:text-xs md:text-sm lg:text-base tracking-tight sm:tracking-normal truncate block",
                           dark
                             ? "text-white group-hover:text-cyan-200"
                             : "text-[#2a1008] group-hover:text-[#8b1a1a]"
