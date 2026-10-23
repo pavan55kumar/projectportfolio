@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import fs from "fs/promises";
+import path from "path";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
 export type PortfolioProject = {
+  id: string;
   title: string;
   tech: string;
   desc: string;
@@ -9,8 +12,10 @@ export type PortfolioProject = {
   labUrl?: string;
   logo?: string;
   emoji?: string;
-  id?: string;
+  order_index?: number;
 };
+
+const DATA_FILE = path.join(process.cwd(), "data", "projects.json");
 
 // Fallback default projects
 const defaultProjects: PortfolioProject[] = [
@@ -62,6 +67,28 @@ const defaultProjects: PortfolioProject[] = [
   },
 ];
 
+async function readLocalProjects(): Promise<PortfolioProject[]> {
+  try {
+    const raw = await fs.readFile(DATA_FILE, "utf-8");
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
+    }
+    return defaultProjects;
+  } catch {
+    return defaultProjects;
+  }
+}
+
+async function writeLocalProjects(items: PortfolioProject[]): Promise<void> {
+  try {
+    await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
+    await fs.writeFile(DATA_FILE, JSON.stringify(items, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("Failed to write local projects file:", err);
+  }
+}
+
 export async function GET() {
   const supabase = getSupabaseAdmin();
   if (supabase) {
@@ -85,11 +112,12 @@ export async function GET() {
         return NextResponse.json(mapped);
       }
     } catch (err) {
-      console.warn("Failed to fetch projects from Supabase, using defaults:", err);
+      console.warn("Failed to fetch projects from Supabase, using local fallback:", err);
     }
   }
 
-  return NextResponse.json(defaultProjects);
+  const localProjects = await readLocalProjects();
+  return NextResponse.json(localProjects);
 }
 
 export async function POST(req: Request) {
@@ -103,25 +131,40 @@ export async function POST(req: Request) {
 
     const id = body.id || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || Date.now().toString();
 
+    const newProject: PortfolioProject = {
+      id,
+      title: String(title),
+      tech: String(tech || ""),
+      desc: String(desc),
+      github: github ? String(github) : "",
+      labUrl: labUrl ? String(labUrl) : "",
+      logo: logo ? String(logo) : "",
+      emoji: emoji ? String(emoji) : "🚀",
+    };
+
     const supabase = getSupabaseAdmin();
     if (supabase) {
-      const { error } = await supabase.from("projects").upsert({
-        id,
-        title,
-        tech: tech || "",
-        description: desc,
-        github: github || null,
-        lab_url: labUrl || null,
-        logo: logo || null,
-        emoji: emoji || "🚀",
-      });
-
-      if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+      try {
+        await supabase.from("projects").upsert({
+          id,
+          title: newProject.title,
+          tech: newProject.tech,
+          description: newProject.desc,
+          github: newProject.github || null,
+          lab_url: newProject.labUrl || null,
+          logo: newProject.logo || null,
+          emoji: newProject.emoji,
+        });
+      } catch (err) {
+        console.warn("Supabase upsert failed:", err);
       }
     }
 
-    return NextResponse.json({ success: true, id }, { status: 201 });
+    const current = await readLocalProjects();
+    const updated = [newProject, ...current.filter((p) => p.id !== id)];
+    await writeLocalProjects(updated);
+
+    return NextResponse.json({ success: true, project: newProject }, { status: 201 });
   } catch (err) {
     console.error("Failed to add project:", err);
     return NextResponse.json({ error: "Failed to add project" }, { status: 500 });
@@ -139,20 +182,39 @@ export async function PATCH(req: Request) {
 
     const supabase = getSupabaseAdmin();
     if (supabase) {
-      const updateData: Record<string, unknown> = {};
-      if (title !== undefined) updateData.title = title;
-      if (tech !== undefined) updateData.tech = tech;
-      if (desc !== undefined) updateData.description = desc;
-      if (github !== undefined) updateData.github = github;
-      if (labUrl !== undefined) updateData.lab_url = labUrl;
-      if (logo !== undefined) updateData.logo = logo;
-      if (emoji !== undefined) updateData.emoji = emoji;
+      try {
+        const updateData: Record<string, unknown> = {};
+        if (title !== undefined) updateData.title = title;
+        if (tech !== undefined) updateData.tech = tech;
+        if (desc !== undefined) updateData.description = desc;
+        if (github !== undefined) updateData.github = github;
+        if (labUrl !== undefined) updateData.lab_url = labUrl;
+        if (logo !== undefined) updateData.logo = logo;
+        if (emoji !== undefined) updateData.emoji = emoji;
 
-      const { error } = await supabase.from("projects").update(updateData).eq("id", id);
-      if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        await supabase.from("projects").update(updateData).eq("id", id);
+      } catch (err) {
+        console.warn("Supabase project update failed:", err);
       }
     }
+
+    const current = await readLocalProjects();
+    const updated = current.map((p) => {
+      if (p.id === id) {
+        return {
+          ...p,
+          ...(title !== undefined ? { title: String(title) } : {}),
+          ...(tech !== undefined ? { tech: String(tech) } : {}),
+          ...(desc !== undefined ? { desc: String(desc) } : {}),
+          ...(github !== undefined ? { github: String(github) } : {}),
+          ...(labUrl !== undefined ? { labUrl: String(labUrl) } : {}),
+          ...(logo !== undefined ? { logo: String(logo) } : {}),
+          ...(emoji !== undefined ? { emoji: String(emoji) } : {}),
+        };
+      }
+      return p;
+    });
+    await writeLocalProjects(updated);
 
     return NextResponse.json({ success: true });
   } catch (err) {
@@ -172,11 +234,16 @@ export async function DELETE(req: Request) {
 
     const supabase = getSupabaseAdmin();
     if (supabase) {
-      const { error } = await supabase.from("projects").delete().eq("id", id);
-      if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+      try {
+        await supabase.from("projects").delete().eq("id", id);
+      } catch (err) {
+        console.warn("Supabase delete failed:", err);
       }
     }
+
+    const current = await readLocalProjects();
+    const updated = current.filter((p) => p.id !== id);
+    await writeLocalProjects(updated);
 
     return NextResponse.json({ success: true });
   } catch (err) {

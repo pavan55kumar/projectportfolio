@@ -2420,6 +2420,7 @@ export default function Home() {
                       alt={title}
                       width={44}
                       height={44}
+                      unoptimized={typeof logo === "string" && logo.startsWith("data:")}
                       className="w-full h-full object-cover rounded-lg"
                     />
                   </div>
@@ -2621,6 +2622,7 @@ export default function Home() {
                             src={cardImg}
                             alt={card.title}
                             fill
+                            unoptimized={typeof cardImg === "string" && cardImg.startsWith("data:")}
                             className="object-cover"
                           />
                         </div>
