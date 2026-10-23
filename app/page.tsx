@@ -2855,8 +2855,8 @@ export default function Home() {
                 {t.skillsStack || "SKILLS & STACK"}
               </h3>
 
-              {/* 4-Column Responsive Grid matching reference */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              {/* 2-Column on Mobile, 4-Column on Desktop Responsive Grid matching reference */}
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-5">
                 {(dynamicSkills && dynamicSkills.length > 0
                   ? dynamicSkills
                   : [
@@ -2874,23 +2874,23 @@ export default function Home() {
                     key={skill.id || skill.name}
                     variants={scaleIn}
                     custom={i}
-                    whileHover={{ scale: 1.03, y: -3 }}
+                    whileHover={{ scale: 1.03, y: -2 }}
                     className={cn(
-                      "relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex items-center gap-3.5 border transition-all duration-300 group overflow-hidden cursor-default",
+                      "relative rounded-xl sm:rounded-2xl md:rounded-3xl p-2 sm:p-2.5 md:p-3.5 lg:p-4 flex items-center gap-2 sm:gap-2.5 md:gap-3.5 border transition-all duration-300 group overflow-hidden cursor-default min-h-[44px] sm:min-h-[50px] md:min-h-[58px]",
                       dark
-                        ? "bg-[#061325]/90 border-cyan-500/35 hover:border-cyan-400 shadow-[0_4px_25px_rgba(4,14,28,0.8),inset_0_1px_1px_rgba(34,211,238,0.2)] hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] backdrop-blur-xl"
+                        ? "bg-[#061325]/90 border-cyan-500/35 hover:border-cyan-400 shadow-[0_4px_20px_rgba(4,14,28,0.7),inset_0_1px_1px_rgba(34,211,238,0.2)] hover:shadow-[0_0_25px_rgba(6,182,212,0.35)] backdrop-blur-xl"
                         : "bg-[#fffaf2] border-[#8b1a1a]/20 hover:border-[#8b1a1a] shadow-sm hover:shadow-md"
                     )}
                   >
                     {/* Glowing cyan top accent edge line from reference image */}
                     {dark && (
-                      <div className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute top-0 left-3 right-3 sm:left-4 sm:right-4 md:left-6 md:right-6 h-[1.5px] sm:h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
                     )}
 
                     {/* Logo Inner Squircle Frame */}
                     <div
                       className={cn(
-                        "w-12 h-12 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-300",
+                        "w-8 h-8 sm:w-9 sm:h-9 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl md:rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-300",
                         dark
                           ? "bg-[#091b30] border-cyan-400/25 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] group-hover:border-cyan-400/50 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.25)]"
                           : "bg-[#faeedd] border-[#8b1a1a]/15 group-hover:border-[#8b1a1a]/30"
@@ -2900,7 +2900,7 @@ export default function Home() {
                         iconKey={skill.iconKey}
                         iconUrl={skill.iconUrl}
                         name={skill.name}
-                        className="w-6 h-6 sm:w-7 sm:h-7 object-contain"
+                        className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 object-contain"
                       />
                     </div>
 
@@ -2908,7 +2908,7 @@ export default function Home() {
                     <div className="min-w-0 flex-1">
                       <span
                         className={cn(
-                          "font-semibold text-sm sm:text-base tracking-wide truncate block",
+                          "font-semibold text-xs sm:text-sm md:text-base tracking-tight sm:tracking-normal truncate block",
                           dark
                             ? "text-white group-hover:text-cyan-200"
                             : "text-[#2a1008] group-hover:text-[#8b1a1a]"
