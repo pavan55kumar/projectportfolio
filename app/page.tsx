@@ -37,6 +37,7 @@ import {
   FiCalendar,
 } from "react-icons/fi";
 import { useTheme } from "./theme-provider";
+import { SkillIcon } from "@/lib/skills-catalog";
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 const cn = (...classes: (string | boolean | undefined | null)[]) =>
@@ -1535,6 +1536,7 @@ export default function Home() {
   const [siteProfile, setSiteProfile] = useState<{ heroDesc: string; aboutMeDesc: string } | null>(null);
   const [dynamicEducation, setDynamicEducation] = useState<any[] | null>(null);
   const [dynamicExperience, setDynamicExperience] = useState<any[] | null>(null);
+  const [dynamicSkills, setDynamicSkills] = useState<any[] | null>(null);
 
   useEffect(() => {
     fetch("/api/projects")
@@ -1569,6 +1571,13 @@ export default function Home() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) setDynamicExperience(data);
+      })
+      .catch(() => {});
+
+    fetch("/api/skills")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) setDynamicSkills(data);
       })
       .catch(() => {});
   }, []);
@@ -2532,18 +2541,89 @@ export default function Home() {
             <Divider dark={dark} />
           </motion.div>
 
-          <div className="grid md:grid-cols-2 gap-10 md:gap-16 items-start">
-            <motion.div variants={fadeUp} className="space-y-6">
-              <p
-                className={cn(
-                  "text-base leading-relaxed",
-                  dark ? "text-white/60" : "text-[#5a3020]"
-                )}
-              >
-                {(lang === "en" && siteProfile?.aboutMeDesc) ? siteProfile.aboutMeDesc : t.aboutMeDesc}
-              </p>
-              <div className="space-y-6">
-                {/* ── Education Timeline (Reference Design) ── */}
+          <div className="space-y-12 sm:space-y-16">
+            {/* Top Grid: Left is Bio Story & Experience, Right is Education Timeline */}
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
+              {/* Left Column: Bio Story & Experience */}
+              <motion.div variants={fadeUp} className="space-y-6">
+                <p
+                  className={cn(
+                    "text-base leading-relaxed",
+                    dark ? "text-white/60" : "text-[#5a3020]"
+                  )}
+                >
+                  {(lang === "en" && siteProfile?.aboutMeDesc) ? siteProfile.aboutMeDesc : t.aboutMeDesc}
+                </p>
+
+                {/* ── Experience Section ── */}
+                <div
+                  className={cn(
+                    "glass-card rounded-2xl p-5 border",
+                    dark ? "border-white/8" : "border-[#8b1a1a]/12"
+                  )}
+                >
+                  <h3
+                    className={cn(
+                      "text-sm font-semibold mb-3 tracking-wide uppercase",
+                      dark ? "text-cyan-300" : "text-[#8b1a1a]"
+                    )}
+                  >
+                    {t.experience}
+                  </h3>
+                  <ul className="space-y-3">
+                    {(dynamicExperience && dynamicExperience.length > 0
+                      ? dynamicExperience
+                      : t.experienceList
+                    ).map((exp: any, i: number) => {
+                      const isString = typeof exp === "string";
+                      return (
+                        <li
+                          key={exp.id || i}
+                          className={cn(
+                            "text-sm flex flex-col gap-0.5",
+                            dark ? "text-white/60" : "text-[#7a4a35]"
+                          )}
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <span
+                              className={cn(
+                                "w-1.5 h-1.5 rounded-full mt-1.5 shrink-0",
+                                dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                              )}
+                            />
+                            <div className="flex-1">
+                              {isString ? (
+                                <span>{exp}</span>
+                              ) : (
+                                <>
+                                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                                    <span className={cn("font-semibold", dark ? "text-white" : "text-[#2a1008]")}>
+                                      {exp.role} {exp.company && <span className={dark ? "text-cyan-300" : "text-[#8b1a1a]"}>· {exp.company}</span>}
+                                    </span>
+                                    {exp.period && (
+                                      <span className={cn("text-[11px] px-2 py-0.5 rounded-full border shrink-0", dark ? "border-white/10 text-white/50" : "border-[#8b1a1a]/15 text-[#7a4a35]/80")}>
+                                        {exp.period}
+                                      </span>
+                                    )}
+                                  </div>
+                                  {exp.description && (
+                                    <p className={cn("text-xs mt-0.5 leading-relaxed", dark ? "text-white/45" : "text-[#7a4a35]/70")}>
+                                      {exp.description}
+                                    </p>
+                                  )}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </motion.div>
+
+              {/* Right Column: Education Timeline (Reference Design) */}
+              <motion.div variants={fadeUp}>
                 <div
                   className={cn(
                     "rounded-2xl sm:rounded-3xl p-5 sm:p-7 border transition-all duration-300 relative overflow-hidden",
@@ -2752,102 +2832,92 @@ export default function Home() {
                     })}
                   </div>
                 </div>
+              </motion.div>
+            </div>
 
-                {/* ── Experience Section ── */}
-                <div
-                  className={cn(
-                    "glass-card rounded-2xl p-5 border",
-                    dark ? "border-white/8" : "border-[#8b1a1a]/12"
-                  )}
-                >
-                  <h3
-                    className={cn(
-                      "text-sm font-semibold mb-3 tracking-wide uppercase",
-                      dark ? "text-cyan-300" : "text-[#8b1a1a]"
-                    )}
-                  >
-                    {t.experience}
-                  </h3>
-                  <ul className="space-y-3">
-                    {(dynamicExperience && dynamicExperience.length > 0
-                      ? dynamicExperience
-                      : t.experienceList
-                    ).map((exp: any, i: number) => {
-                      const isString = typeof exp === "string";
-                      return (
-                        <li
-                          key={exp.id || i}
-                          className={cn(
-                            "text-sm flex flex-col gap-0.5",
-                            dark ? "text-white/60" : "text-[#7a4a35]"
-                          )}
-                        >
-                          <div className="flex items-start gap-2.5">
-                            <span
-                              className={cn(
-                                "w-1.5 h-1.5 rounded-full mt-1.5 shrink-0",
-                                dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
-                              )}
-                            />
-                            <div className="flex-1">
-                              {isString ? (
-                                <span>{exp}</span>
-                              ) : (
-                                <>
-                                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                                    <span className={cn("font-semibold", dark ? "text-white" : "text-[#2a1008]")}>
-                                      {exp.role} {exp.company && <span className={dark ? "text-cyan-300" : "text-[#8b1a1a]"}>· {exp.company}</span>}
-                                    </span>
-                                    {exp.period && (
-                                      <span className={cn("text-[11px] px-2 py-0.5 rounded-full border shrink-0", dark ? "border-white/10 text-white/50" : "border-[#8b1a1a]/15 text-[#7a4a35]/80")}>
-                                        {exp.period}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {exp.description && (
-                                    <p className={cn("text-xs mt-0.5 leading-relaxed", dark ? "text-white/45" : "text-[#7a4a35]/70")}>
-                                      {exp.description}
-                                    </p>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div variants={fadeUp}>
+            {/* ── SKILLS & STACK (Matching Reference Image) ── */}
+            <motion.div variants={fadeUp} className="pt-4 sm:pt-6">
+              {/* Cyan Accent Indicator Bar */}
+              <div
+                className={cn(
+                  "w-12 h-1 rounded-full mb-3",
+                  dark
+                    ? "bg-cyan-400 shadow-[0_0_12px_#22d3ee]"
+                    : "bg-[#8b1a1a] shadow-xs"
+                )}
+              />
               <h3
                 className={cn(
-                  "text-sm font-semibold tracking-widest uppercase mb-6",
-                  dark ? "text-white/40" : "text-[#7a4a35]/60"
+                  "text-xl sm:text-2xl font-extrabold tracking-wider mb-6 sm:mb-8 uppercase",
+                  dark ? "text-cyan-400" : "text-[#8b1a1a]"
                 )}
               >
-                {t.skillsStack}
+                {t.skillsStack || "SKILLS & STACK"}
               </h3>
-              <div className="flex flex-wrap gap-3">
-                {skills.map(({ label, icon }, i) => (
-                  <motion.span
-                    key={label}
+
+              {/* 4-Column Responsive Grid matching reference */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+                {(dynamicSkills && dynamicSkills.length > 0
+                  ? dynamicSkills
+                  : [
+                      { id: "skill-react", name: "React", iconKey: "react" },
+                      { id: "skill-threejs", name: "Three.js", iconKey: "threejs" },
+                      { id: "skill-nextjs", name: "Next.js", iconKey: "nextjs" },
+                      { id: "skill-tailwind", name: "Tailwind", iconKey: "tailwind" },
+                      { id: "skill-javascript", name: "JavaScript", iconKey: "javascript" },
+                      { id: "skill-python", name: "Python", iconKey: "python" },
+                      { id: "skill-uiux", name: "UI/UX", iconKey: "uiux" },
+                      { id: "skill-gsap", name: "GSAP", iconKey: "gsap" },
+                    ]
+                ).map((skill: any, i: number) => (
+                  <motion.div
+                    key={skill.id || skill.name}
                     variants={scaleIn}
                     custom={i}
-                    whileHover={{ scale: 1.06, y: -2 }}
+                    whileHover={{ scale: 1.03, y: -3 }}
                     className={cn(
-                      "inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold glass-card border transition-all duration-300 glow-border",
+                      "relative rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 flex items-center gap-3.5 border transition-all duration-300 group overflow-hidden cursor-default",
                       dark
-                        ? "border-white/10 text-cyan-200 hover:border-cyan-400/40 hover:text-cyan-300"
-                        : "border-[#8b1a1a]/18 text-[#8b1a1a] hover:border-[#8b1a1a]/45 hover:bg-[#8b1a1a]/6"
+                        ? "bg-[#061325]/90 border-cyan-500/35 hover:border-cyan-400 shadow-[0_4px_25px_rgba(4,14,28,0.8),inset_0_1px_1px_rgba(34,211,238,0.2)] hover:shadow-[0_0_30px_rgba(6,182,212,0.35)] backdrop-blur-xl"
+                        : "bg-[#fffaf2] border-[#8b1a1a]/20 hover:border-[#8b1a1a] shadow-sm hover:shadow-md"
                     )}
-                    style={{ animationDelay: `${i * 0.4}s` }}
                   >
-                    {icon && <span className="text-base">{icon}</span>}
-                    {label}
-                  </motion.span>
+                    {/* Glowing cyan top accent edge line from reference image */}
+                    {dark && (
+                      <div className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+                    )}
+
+                    {/* Logo Inner Squircle Frame */}
+                    <div
+                      className={cn(
+                        "w-12 h-12 sm:w-13 sm:h-13 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-300",
+                        dark
+                          ? "bg-[#091b30] border-cyan-400/25 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] group-hover:border-cyan-400/50 group-hover:shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+                          : "bg-[#faeedd] border-[#8b1a1a]/15 group-hover:border-[#8b1a1a]/30"
+                      )}
+                    >
+                      <SkillIcon
+                        iconKey={skill.iconKey}
+                        iconUrl={skill.iconUrl}
+                        name={skill.name}
+                        className="w-6 h-6 sm:w-7 sm:h-7 object-contain"
+                      />
+                    </div>
+
+                    {/* Skill Name */}
+                    <div className="min-w-0 flex-1">
+                      <span
+                        className={cn(
+                          "font-semibold text-sm sm:text-base tracking-wide truncate block",
+                          dark
+                            ? "text-white group-hover:text-cyan-200"
+                            : "text-[#2a1008] group-hover:text-[#8b1a1a]"
+                        )}
+                      >
+                        {skill.name}
+                      </span>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             </motion.div>

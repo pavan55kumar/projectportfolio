@@ -24,8 +24,16 @@ import {
   FiUser,
   FiBriefcase,
   FiCalendar,
+  FiCpu,
+  FiSearch,
 } from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
+import {
+  SkillIcon,
+  SKILLS_CATALOG,
+  CatalogSkill,
+  normalizeSkillKey,
+} from "@/lib/skills-catalog";
 
 const cn = (...classes: (string | boolean | undefined | null)[]) =>
   classes.filter(Boolean).join(" ");
@@ -75,6 +83,15 @@ type SiteProfile = {
   aboutMeDesc: string;
   heroRole?: string;
   updatedAt?: string;
+};
+
+type SkillItem = {
+  id: string;
+  name: string;
+  iconKey?: string;
+  iconUrl?: string;
+  category?: string;
+  orderIndex?: number;
 };
 
 type EducationItem = {
@@ -402,7 +419,18 @@ CREATE TABLE IF NOT EXISTS public.profile (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Education Timeline Table
+-- 2. Skills & Stack Table
+CREATE TABLE IF NOT EXISTS public.skills (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    icon_key TEXT,
+    icon_url TEXT,
+    category TEXT DEFAULT 'General',
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 3. Education Timeline Table
 CREATE TABLE IF NOT EXISTS public.education (
     id TEXT PRIMARY KEY,
     level_tag TEXT NOT NULL,
@@ -414,7 +442,7 @@ CREATE TABLE IF NOT EXISTS public.education (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. Experience Table
+-- 4. Experience Table
 CREATE TABLE IF NOT EXISTS public.experience (
     id TEXT PRIMARY KEY,
     role TEXT NOT NULL,
@@ -425,7 +453,7 @@ CREATE TABLE IF NOT EXISTS public.experience (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. Testimonials Table
+-- 5. Testimonials Table
 CREATE TABLE IF NOT EXISTS public.testimonials (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -441,7 +469,7 @@ CREATE TABLE IF NOT EXISTS public.testimonials (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 5. Projects Table
+-- 6. Projects Table
 CREATE TABLE IF NOT EXISTS public.projects (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -455,7 +483,7 @@ CREATE TABLE IF NOT EXISTS public.projects (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 6. Certificates Table
+-- 7. Certificates Table
 CREATE TABLE IF NOT EXISTS public.certificates (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -472,6 +500,7 @@ CREATE TABLE IF NOT EXISTS public.certificates (
 );
 
 ALTER TABLE public.profile ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.education ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.experience ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.testimonials ENABLE ROW LEVEL SECURITY;
@@ -482,6 +511,11 @@ DROP POLICY IF EXISTS "Public view profile" ON public.profile;
 DROP POLICY IF EXISTS "Admin full profile" ON public.profile;
 CREATE POLICY "Public view profile" ON public.profile FOR SELECT USING (true);
 CREATE POLICY "Admin full profile" ON public.profile FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public view skills" ON public.skills;
+DROP POLICY IF EXISTS "Admin full skills" ON public.skills;
+CREATE POLICY "Public view skills" ON public.skills FOR SELECT USING (true);
+CREATE POLICY "Admin full skills" ON public.skills FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Public view education" ON public.education;
 DROP POLICY IF EXISTS "Admin full education" ON public.education;
@@ -510,13 +544,23 @@ DROP POLICY IF EXISTS "Admin full certificates" ON public.certificates;
 CREATE POLICY "Public view certificates" ON public.certificates FOR SELECT USING (true);
 CREATE POLICY "Admin full certificates" ON public.certificates FOR ALL USING (true) WITH CHECK (true);`;
 
-const SQL_MIGRATION_NEW_TABLES = `-- Copy & Paste this into Supabase SQL Editor to create Profile, Education, and Experience tables:
+const SQL_MIGRATION_NEW_TABLES = `-- Copy & Paste this into Supabase SQL Editor to create Profile, Skills, Education, and Experience tables:
 CREATE TABLE IF NOT EXISTS public.profile (
     id TEXT PRIMARY KEY DEFAULT 'default',
     hero_desc TEXT NOT NULL,
     about_desc TEXT NOT NULL,
     hero_role TEXT DEFAULT 'Full-Stack Developer & AI Enthusiast',
     updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.skills (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    icon_key TEXT,
+    icon_url TEXT,
+    category TEXT DEFAULT 'General',
+    order_index INTEGER DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS public.education (
@@ -541,6 +585,7 @@ CREATE TABLE IF NOT EXISTS public.experience (
 );
 
 ALTER TABLE public.profile ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.education ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.experience ENABLE ROW LEVEL SECURITY;
 
@@ -548,6 +593,11 @@ DROP POLICY IF EXISTS "Public view profile" ON public.profile;
 DROP POLICY IF EXISTS "Admin full profile" ON public.profile;
 CREATE POLICY "Public view profile" ON public.profile FOR SELECT USING (true);
 CREATE POLICY "Admin full profile" ON public.profile FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public view skills" ON public.skills;
+DROP POLICY IF EXISTS "Admin full skills" ON public.skills;
+CREATE POLICY "Public view skills" ON public.skills FOR SELECT USING (true);
+CREATE POLICY "Admin full skills" ON public.skills FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Public view education" ON public.education;
 DROP POLICY IF EXISTS "Admin full education" ON public.education;
@@ -564,7 +614,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [activeTab, setActiveTab] = useState<
-    "profile" | "education" | "experience" | "projects" | "certificates" | "testimonials" | "supabase"
+    "profile" | "skills" | "education" | "experience" | "projects" | "certificates" | "testimonials" | "supabase"
   >("profile");
 
   // Profile state
@@ -578,6 +628,20 @@ export default function AdminPage() {
   });
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileSavedToast, setProfileSavedToast] = useState(false);
+
+  // Skills state
+  const [skills, setSkills] = useState<SkillItem[]>([]);
+  const [showSkillModal, setShowSkillModal] = useState(false);
+  const [editingSkill, setEditingSkill] = useState<SkillItem | null>(null);
+  const [skillForm, setSkillForm] = useState<Partial<SkillItem>>({
+    name: "",
+    iconKey: "react",
+    iconUrl: "",
+    category: "Frontend & 3D",
+    orderIndex: 0,
+  });
+  const [catalogCategory, setCatalogCategory] = useState<string>("All");
+  const [catalogSearch, setCatalogSearch] = useState<string>("");
 
   // Education state
   const [education, setEducation] = useState<EducationItem[]>([]);
@@ -667,13 +731,14 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [projRes, certRes, testRes, profRes, eduRes, expRes] = await Promise.all([
+      const [projRes, certRes, testRes, profRes, eduRes, expRes, skillRes] = await Promise.all([
         fetch("/api/projects"),
         fetch("/api/certificates"),
         fetch("/api/testimonials"),
         fetch("/api/profile"),
         fetch("/api/education"),
         fetch("/api/experience"),
+        fetch("/api/skills"),
       ]);
 
       if (projRes.ok) setProjects(await projRes.json());
@@ -685,6 +750,7 @@ export default function AdminPage() {
       }
       if (eduRes.ok) setEducation(await eduRes.json());
       if (expRes.ok) setExperience(await expRes.json());
+      if (skillRes.ok) setSkills(await skillRes.json());
     } catch (err) {
       console.error("Failed to load admin data:", err);
     } finally {
@@ -722,6 +788,105 @@ export default function AdminPage() {
   const handleLogout = () => {
     setIsAuthenticated(false);
     sessionStorage.removeItem("pavan_admin_auth");
+  };
+
+  // ── Skills Actions ──
+  const openAddCustomSkill = () => {
+    setEditingSkill(null);
+    setSkillForm({
+      name: "",
+      iconKey: "react",
+      iconUrl: "",
+      category: "Frontend & 3D",
+      orderIndex: skills.length + 1,
+    });
+    setShowSkillModal(true);
+  };
+
+  const openEditSkill = (item: SkillItem) => {
+    setEditingSkill(item);
+    setSkillForm({
+      name: item.name,
+      iconKey: item.iconKey || "",
+      iconUrl: item.iconUrl || "",
+      category: item.category || "General",
+      orderIndex: item.orderIndex ?? 0,
+    });
+    setShowSkillModal(true);
+  };
+
+  const handleSaveSkill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingSkill) {
+        const res = await fetch("/api/skills", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingSkill.id, ...skillForm }),
+        });
+        if (res.ok) {
+          setShowSkillModal(false);
+          setEditingSkill(null);
+          fetchData();
+        }
+      } else {
+        const res = await fetch("/api/skills", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(skillForm),
+        });
+        if (res.ok) {
+          setShowSkillModal(false);
+          fetchData();
+        }
+      }
+    } catch (err) {
+      console.error("Failed to save skill:", err);
+    }
+  };
+
+  const handleDeleteSkill = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to remove "${name}" from your portfolio?`)) return;
+    try {
+      await fetch(`/api/skills?id=${id}`, { method: "DELETE" });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleToggleCatalogSkill = async (catalogItem: CatalogSkill) => {
+    const existing = skills.find(
+      (s) =>
+        s.name.toLowerCase() === catalogItem.name.toLowerCase() ||
+        s.iconKey?.toLowerCase() === catalogItem.key.toLowerCase()
+    );
+
+    if (existing) {
+      if (confirm(`"${catalogItem.name}" is already in your portfolio. Remove it?`)) {
+        await handleDeleteSkill(existing.id, existing.name);
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/skills", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: `skill-${catalogItem.key}`,
+          name: catalogItem.name,
+          iconKey: catalogItem.key,
+          category: catalogItem.category,
+          orderIndex: skills.length + 1,
+        }),
+      });
+      if (res.ok) {
+        fetchData();
+      }
+    } catch (err) {
+      console.error("Failed to toggle catalog skill:", err);
+    }
   };
 
   // ── Profile Actions ──
@@ -1194,6 +1359,18 @@ export default function AdminPage() {
 
           <button
             type="button"
+            onClick={() => setActiveTab("skills")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
+              activeTab === "skills"
+                ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
+                : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
+            }`}
+          >
+            <FiCpu /> Skills &amp; Stack ({skills.length})
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("education")}
             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
               activeTab === "education"
@@ -1357,6 +1534,239 @@ export default function AdminPage() {
                 </div>
               </div>
             </form>
+          </section>
+        )}
+
+        {/* ── TAB: SKILLS & STACK ── */}
+        {activeTab === "skills" && (
+          <section className="mt-8 space-y-8">
+            {/* Header & Quick Action */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2a1008] flex items-center gap-2">
+                  <FiCpu className="text-[#8b1a1a]" /> Skills &amp; Technology Stack
+                </h2>
+                <p className="text-xs sm:text-sm text-[#7a4a35] mt-1">
+                  Manage technologies displayed on your portfolio. Add custom skills or pick directly from the ready-made catalog with authentic brand logos.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={openAddCustomSkill}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/20 transition-all self-start sm:self-auto cursor-pointer"
+              >
+                <FiPlus className="text-base" /> Add Custom Skill
+              </button>
+            </div>
+
+            {/* SECTION 1: Active Portfolio Skills */}
+            <div className="bg-white/70 backdrop-blur-md rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#8b1a1a]/15 shadow-sm space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#8b1a1a]/10 pb-4">
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-[#2a1008] flex items-center gap-2">
+                    <span>Active on Portfolio</span>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#8b1a1a]/10 text-[#8b1a1a]">
+                      {skills.length} {skills.length === 1 ? "skill" : "skills"}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-[#7a4a35] mt-0.5">
+                    These are currently visible in the &quot;SKILLS &amp; STACK&quot; grid on your portfolio.
+                  </p>
+                </div>
+              </div>
+
+              {skills.length === 0 ? (
+                <div className="text-center py-12 px-4 rounded-2xl border border-dashed border-[#8b1a1a]/20 bg-[#faeedd]/40">
+                  <FiCpu className="w-10 h-10 text-[#8b1a1a]/40 mx-auto mb-3" />
+                  <p className="text-sm font-semibold text-[#2a1008]">No skills added yet</p>
+                  <p className="text-xs text-[#7a4a35] max-w-md mx-auto mt-1 mb-4">
+                    Choose from the technology library below or click &quot;Add Custom Skill&quot; to showcase your technical stack.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {skills.map((item, idx) => {
+                    const normKey = normalizeSkillKey(item.iconKey || item.name);
+                    return (
+                      <div
+                        key={item.id || idx}
+                        className="group relative flex items-center justify-between p-3.5 rounded-2xl bg-white/90 border border-[#8b1a1a]/15 hover:border-[#8b1a1a]/40 shadow-xs hover:shadow-md transition-all duration-300"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          {/* Authentic Logo Squircle */}
+                          <div className="w-11 h-11 rounded-xl bg-[#081524] border border-cyan-500/30 flex items-center justify-center shrink-0 shadow-inner">
+                            <SkillIcon
+                              iconKey={normKey}
+                              iconUrl={item.iconUrl}
+                              size={22}
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-sm font-bold text-[#2a1008] truncate">
+                              {item.name}
+                            </div>
+                            <div className="text-[11px] text-[#7a4a35] flex items-center gap-1.5 truncate">
+                              <span>{item.category || "General"}</span>
+                              {item.orderIndex !== undefined && (
+                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#faeedd] text-[#7a4a35]">
+                                  #{item.orderIndex}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1 shrink-0 ml-2">
+                          <button
+                            type="button"
+                            onClick={() => openEditSkill(item)}
+                            title="Edit"
+                            className="p-1.5 rounded-lg text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#faeedd] transition-colors"
+                          >
+                            <FiEdit3 className="text-sm" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteSkill(item.id, item.name)}
+                            title="Remove"
+                            className="p-1.5 rounded-lg text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors"
+                          >
+                            <FiTrash2 className="text-sm" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 2: Ready-To-Add Technology Library */}
+            <div className="bg-white/70 backdrop-blur-md rounded-2xl sm:rounded-3xl p-6 sm:p-8 border border-[#8b1a1a]/15 shadow-sm space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#8b1a1a]/10 pb-4">
+                <div>
+                  <h3 className="text-base sm:text-lg font-bold text-[#2a1008] flex items-center gap-2">
+                    <span>Ready-To-Use Technology Library</span>
+                    <span className="text-xs font-normal text-[#7a4a35] hidden sm:inline">
+                      (1-Click Add &amp; Remove with Authentic Brand Logos)
+                    </span>
+                  </h3>
+                  <p className="text-xs text-[#7a4a35] mt-0.5">
+                    Click any technology to instantly add it to your portfolio without writing any code.
+                  </p>
+                </div>
+
+                {/* Search Bar */}
+                <div className="relative w-full md:w-64">
+                  <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#7a4a35]/60 text-sm" />
+                  <input
+                    type="text"
+                    value={catalogSearch}
+                    onChange={(e) => setCatalogSearch(e.target.value)}
+                    placeholder="Search technologies..."
+                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs text-[#2a1008] placeholder:text-[#7a4a35]/50 outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                  {catalogSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setCatalogSearch("")}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#7a4a35] hover:text-[#2a1008]"
+                    >
+                      <FiX className="text-xs" />
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Category Filter Chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-hide">
+                {[
+                  "All",
+                  "Frontend & 3D",
+                  "Backend & Systems",
+                  "Languages",
+                  "Tools & DevOps",
+                  "Design & Creative",
+                ].map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setCatalogCategory(cat)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                      catalogCategory === cat
+                        ? "bg-[#8b1a1a] text-white shadow-xs"
+                        : "bg-white/80 text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#faeedd] border border-[#8b1a1a]/10"
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              {/* Catalog Cards Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {SKILLS_CATALOG.filter((item) => {
+                  const matchesCategory =
+                    catalogCategory === "All" || item.category === catalogCategory;
+                  const matchesSearch =
+                    catalogSearch.trim() === "" ||
+                    item.name.toLowerCase().includes(catalogSearch.toLowerCase()) ||
+                    item.key.toLowerCase().includes(catalogSearch.toLowerCase());
+                  return matchesCategory && matchesSearch;
+                }).map((tech) => {
+                  const isAdded = skills.some(
+                    (s) =>
+                      s.name.toLowerCase() === tech.name.toLowerCase() ||
+                      s.iconKey?.toLowerCase() === tech.key.toLowerCase()
+                  );
+
+                  return (
+                    <button
+                      key={tech.key}
+                      type="button"
+                      onClick={() => handleToggleCatalogSkill(tech)}
+                      className={`group relative flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 text-center cursor-pointer ${
+                        isAdded
+                          ? "bg-emerald-500/5 border-emerald-500/40 hover:bg-emerald-500/10 shadow-xs"
+                          : "bg-white/80 border-[#8b1a1a]/15 hover:border-cyan-500/50 hover:shadow-md hover:bg-white"
+                      }`}
+                    >
+                      {/* Active indicator badge */}
+                      {isAdded && (
+                        <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                          <FiCheck className="text-[10px]" />
+                        </div>
+                      )}
+
+                      {/* Icon */}
+                      <div className="w-10 h-10 rounded-xl bg-[#081524] border border-cyan-500/30 flex items-center justify-center mb-2 shadow-inner group-hover:scale-105 transition-transform">
+                        <SkillIcon iconKey={tech.key} size={20} />
+                      </div>
+
+                      {/* Name */}
+                      <div className="text-xs font-bold text-[#2a1008] truncate w-full">
+                        {tech.name}
+                      </div>
+                      <div className="text-[10px] text-[#7a4a35] truncate w-full mt-0.5">
+                        {tech.category}
+                      </div>
+
+                      {/* Action label */}
+                      <div
+                        className={`mt-2 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-colors ${
+                          isAdded
+                            ? "bg-emerald-500/15 text-emerald-700"
+                            : "bg-[#faeedd] text-[#7a4a35] group-hover:bg-cyan-50 group-hover:text-cyan-700"
+                        }`}
+                      >
+                        {isAdded ? "Added ✓" : "+ Add"}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </section>
         )}
 
@@ -2668,6 +3078,164 @@ export default function AdminPage() {
                     className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all"
                   >
                     {editingExp ? "Update Experience" : "Save Experience"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* SKILL MODAL */}
+        {showSkillModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="w-full max-w-lg bg-[#faeedd] border border-[#8b1a1a]/20 rounded-2xl shadow-2xl p-6 overflow-hidden max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-[#8b1a1a]/15">
+                <h3 className="text-lg font-bold text-[#2a1008] flex items-center gap-2">
+                  <FiCpu className="text-[#8b1a1a]" />
+                  {editingSkill ? "Edit Skill" : "Add Custom Skill"}
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowSkillModal(false)}
+                  className="p-1 rounded-lg text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/10 transition-colors"
+                >
+                  <FiX className="text-lg" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveSkill} className="mt-5 space-y-4">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Skill / Technology Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={skillForm.name || ""}
+                    onChange={(e) => {
+                      const newName = e.target.value;
+                      const autoKey = normalizeSkillKey(newName);
+                      setSkillForm({
+                        ...skillForm,
+                        name: newName,
+                        iconKey: skillForm.iconKey || autoKey,
+                      });
+                    }}
+                    placeholder="e.g. Next.js, Docker, WebGL..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Category
+                    </label>
+                    <select
+                      value={skillForm.category || "Frontend & 3D"}
+                      onChange={(e) => setSkillForm({ ...skillForm, category: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    >
+                      <option value="Frontend & 3D">Frontend &amp; 3D</option>
+                      <option value="Backend & Systems">Backend &amp; Systems</option>
+                      <option value="Languages">Languages</option>
+                      <option value="Tools & DevOps">Tools &amp; DevOps</option>
+                      <option value="Design & Creative">Design &amp; Creative</option>
+                      <option value="General">General</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Icon Key (Preset)
+                    </label>
+                    <select
+                      value={skillForm.iconKey || "react"}
+                      onChange={(e) => setSkillForm({ ...skillForm, iconKey: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    >
+                      {SKILLS_CATALOG.map((c) => (
+                        <option key={c.key} value={c.key}>
+                          {c.name} ({c.key})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Or Custom Icon Image / SVG URL (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    value={skillForm.iconUrl || ""}
+                    onChange={(e) => setSkillForm({ ...skillForm, iconUrl: e.target.value })}
+                    placeholder="https://... or /icons/custom.svg"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                  <p className="text-[11px] text-[#7a4a35] mt-1">
+                    If provided, this image will be used instead of the preset icon.
+                  </p>
+                </div>
+
+                {/* Live Card Preview */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1.5 text-[#2a1008]">
+                    Live Card Preview (matches portfolio design)
+                  </label>
+                  <div className="p-4 rounded-2xl bg-[#040810] border border-cyan-500/40 relative overflow-hidden flex items-center gap-4">
+                    <div className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
+                    <div className="w-12 h-12 rounded-2xl bg-[#091522] border border-cyan-500/40 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(34,211,238,0.15)]">
+                      <SkillIcon
+                        iconKey={normalizeSkillKey(skillForm.iconKey || skillForm.name || "react")}
+                        iconUrl={skillForm.iconUrl}
+                        size={24}
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-base font-bold text-white tracking-wide truncate">
+                        {skillForm.name || "Skill Name"}
+                      </div>
+                      <div className="text-xs text-cyan-400/80">
+                        {skillForm.category || "General"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Sort Order (1, 2, 3...)
+                  </label>
+                  <input
+                    type="number"
+                    value={skillForm.orderIndex ?? 0}
+                    onChange={(e) =>
+                      setSkillForm({ ...skillForm, orderIndex: parseInt(e.target.value) || 0 })
+                    }
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#8b1a1a]/15">
+                  <button
+                    type="button"
+                    onClick={() => setShowSkillModal(false)}
+                    className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#faeedd] transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all"
+                  >
+                    {editingSkill ? "Update Skill" : "Save Skill"}
                   </button>
                 </div>
               </form>
