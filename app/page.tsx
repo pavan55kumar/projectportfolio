@@ -25,6 +25,7 @@ import {
 } from "framer-motion";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { FaGithub, FaGoogle, FaLinkedin, FaPenNib, FaReact, FaJsSquare, FaTimes, FaCheck, FaArrowRight, FaUser, FaGraduationCap } from "react-icons/fa";
+import { LuGraduationCap } from "react-icons/lu";
 import {
   FiHome,
   FiUser,
@@ -2556,328 +2557,278 @@ export default function Home() {
               </p>
             </motion.div>
 
-            {/* Top Grid: Left is Education Timeline (FIRST), Right is Experience Card (THEN) */}
-            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
-              {/* ── 1. Education Timeline (FIRST) ── */}
-              <motion.div variants={fadeUp}>
+            {/* ── 1. EDUCATION (Matching Reference Image - Full Width & Unboxed) ── */}
+            <motion.div variants={fadeUp} className="pt-2 sm:pt-4">
+              {/* Header matching Reference Image */}
+              <div className="flex items-start gap-3.5 mb-8">
                 <div
                   className={cn(
-                    "rounded-2xl sm:rounded-3xl p-5 sm:p-7 border transition-all duration-300 relative overflow-hidden",
-                    dark
-                      ? "glass-card border-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl"
-                      : "bg-[#fffaf2]/95 border-[#8b1a1a]/15 shadow-[0_10px_30px_rgba(42,16,8,0.08)] backdrop-blur-xl"
+                    "text-2xl sm:text-3xl mt-0.5 shrink-0",
+                    dark ? "text-amber-400/90" : "text-[#8b1a1a]"
                   )}
                 >
-                  {/* Subtle ambient corner glow */}
-                  <div
-                    className="pointer-events-none absolute -top-10 -left-10 w-40 h-40 rounded-full"
-                    style={{
-                      background: dark
-                        ? "radial-gradient(circle, rgba(14,165,233,0.18) 0%, transparent 70%)"
-                        : "radial-gradient(circle, rgba(245,158,11,0.14) 0%, transparent 70%)",
-                      filter: "blur(35px)",
-                    }}
-                  />
-
-                  {/* Header matching Reference Design */}
-                  <div className="flex items-center gap-3.5 mb-7 relative z-10">
-                    <div
-                      className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 border",
-                        dark
-                          ? "bg-amber-400/10 border-amber-400/25 text-amber-300 shadow-[0_0_15px_rgba(251,191,36,0.2)]"
-                          : "bg-[#8b1a1a]/10 border-[#8b1a1a]/25 text-[#8b1a1a]"
-                      )}
-                    >
-                      <FaGraduationCap />
-                    </div>
-                    <div>
-                      <h3
-                        className={cn(
-                          "text-base sm:text-lg font-extrabold tracking-wider uppercase",
-                          dark ? "text-white" : "text-[#2a1008]"
-                        )}
-                      >
-                        {t.education}
-                      </h3>
-                      <p
-                        className={cn(
-                          "text-[10px] sm:text-[11px] font-bold tracking-[0.24em] uppercase",
-                          dark ? "text-white/40" : "text-[#7a4a35]/70"
-                        )}
-                      >
-                        ACADEMIC BACKGROUND
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Vertical Connected Timeline Track */}
-                  <div className="relative pl-7 sm:pl-8 space-y-6 sm:space-y-7">
-                    {/* Continuous vertical track line */}
-                    <div
-                      className={cn(
-                        "absolute left-[11px] sm:left-[13px] top-2 bottom-2 w-[1.5px]",
-                        dark ? "bg-white/10" : "bg-[#8b1a1a]/15"
-                      )}
-                    />
-
-                    {(dynamicEducation && dynamicEducation.length > 0
-                      ? dynamicEducation
-                      : [
-                          {
-                            id: "btech-ise",
-                            levelTag: "B.TECH",
-                            degree: "B.Tech Information Science & Engineering",
-                            institution: "N.M.A.M. Institute of Technology, Nitte",
-                            period: "2024 - 2028",
-                            status: "In Progress",
-                          },
-                          {
-                            id: "puc-science",
-                            levelTag: "PRE-UNIVERSITY",
-                            degree: "Pre-University Course (PUC)",
-                            institution: "Science · College Name",
-                            period: "2022 - 2024",
-                            status: "Completed",
-                          },
-                          {
-                            id: "sslc-school",
-                            levelTag: "SECONDARY EDUCATION",
-                            degree: "Secondary School (SSLC)",
-                            institution: "School Name",
-                            period: "2022",
-                            status: "Completed",
-                          },
-                        ]
-                    ).map((item, idx) => {
-                      const isFirst = idx === 0;
-                      const isCompleted = item.status?.toLowerCase().includes("completed");
-                      const isInProgress = item.status?.toLowerCase().includes("progress");
-
-                      const tagColor = isFirst
-                        ? dark ? "text-amber-300" : "text-amber-700"
-                        : idx === 1
-                        ? dark ? "text-cyan-300" : "text-blue-700"
-                        : dark ? "text-slate-400" : "text-stone-600";
-
-                      return (
-                        <div key={item.id || idx} className="relative group">
-                          {/* Timeline Node Badge on the track */}
-                          <div
-                            className={cn(
-                              "absolute rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110",
-                              isFirst
-                                ? "w-[22px] h-[22px] sm:w-[24px] sm:h-[24px] border -left-[27px] sm:-left-[31px] -top-0.5"
-                                : "w-2.5 h-2.5 sm:w-3 sm:h-3 -left-[22px] sm:-left-[24px] top-1",
-                              isFirst
-                                ? dark
-                                  ? "bg-[#0b1b36] border-amber-400/60 text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.3)]"
-                                  : "bg-[#fffaf2] border-amber-600/60 text-amber-800 shadow-sm"
-                                : idx === 1
-                                ? dark
-                                  ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.7)]"
-                                  : "bg-blue-600 shadow-sm"
-                                : dark
-                                ? "bg-slate-400"
-                                : "bg-stone-500"
-                            )}
-                          >
-                            {isFirst && <FaGraduationCap className="text-[10px]" />}
-                          </div>
-
-                          {/* Content Row */}
-                          <div className="flex flex-col gap-2">
-                            {/* Degree & Level Tag */}
-                            <div className="space-y-0.5">
-                              <span
-                                className={cn(
-                                  "text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest inline-block",
-                                  tagColor
-                                )}
-                              >
-                                {item.levelTag}
-                              </span>
-                              <h4
-                                className={cn(
-                                  "text-sm sm:text-base font-bold tracking-tight",
-                                  dark ? "text-white" : "text-[#2a1008]"
-                                )}
-                              >
-                                {item.degree}
-                              </h4>
-                              <p
-                                className={cn(
-                                  "text-xs sm:text-[13px] font-medium leading-relaxed",
-                                  dark ? "text-white/55" : "text-[#7a4a35]"
-                                )}
-                              >
-                                {item.institution}
-                              </p>
-                            </div>
-
-                            {/* Badges: Period & Status */}
-                            <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                              {item.period && (
-                                <span
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold border tracking-wide",
-                                    dark
-                                      ? "bg-white/5 border-white/10 text-white/70"
-                                      : "bg-[#8b1a1a]/5 border-[#8b1a1a]/15 text-[#2a1008]/75"
-                                  )}
-                                >
-                                  <FiCalendar className="text-[11px] opacity-70" />
-                                  {item.period}
-                                </span>
-                              )}
-
-                              {item.status && (
-                                <span
-                                  className={cn(
-                                    "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold border",
-                                    isInProgress
-                                      ? dark
-                                        ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.15)]"
-                                        : "bg-emerald-50 border-emerald-300 text-emerald-800"
-                                      : isCompleted
-                                      ? dark
-                                        ? "bg-cyan-500/10 border-cyan-500/25 text-cyan-300"
-                                        : "bg-blue-50 border-blue-200 text-blue-800"
-                                      : dark
-                                      ? "bg-white/5 border-white/10 text-white/60"
-                                      : "bg-stone-100 border-stone-200 text-stone-700"
-                                  )}
-                                >
-                                  <span
-                                    className={cn(
-                                      "w-1.5 h-1.5 rounded-full shrink-0",
-                                      isInProgress
-                                        ? "bg-emerald-400 animate-pulse"
-                                        : isCompleted
-                                        ? "bg-cyan-400"
-                                        : "bg-stone-400"
-                                    )}
-                                  />
-                                  {item.status}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <LuGraduationCap />
                 </div>
-              </motion.div>
+                <div>
+                  <div
+                    className={cn(
+                      "w-4 h-[1.5px] mb-2 rounded-full",
+                      dark ? "bg-white/40" : "bg-[#8b1a1a]/40"
+                    )}
+                  />
+                  <h3
+                    className={cn(
+                      "text-lg sm:text-xl font-bold tracking-[0.2em] uppercase",
+                      dark ? "text-white" : "text-[#2a1008]"
+                    )}
+                  >
+                    {t.education}
+                  </h3>
+                  <p
+                    className={cn(
+                      "text-[10px] sm:text-[11px] font-semibold tracking-[0.24em] uppercase mt-0.5",
+                      dark ? "text-slate-400/80" : "text-[#7a4a35]/70"
+                    )}
+                  >
+                    ACADEMIC BACKGROUND
+                  </p>
+                </div>
+              </div>
 
-              {/* ── 2. Experience Card (THEN) ── */}
-              <motion.div variants={fadeUp}>
+              {/* Connected Timeline Track (No outer card box) */}
+              <div className="relative pl-8 sm:pl-10">
+                {/* Continuous vertical track line */}
                 <div
                   className={cn(
-                    "rounded-2xl sm:rounded-3xl p-5 sm:p-7 border transition-all duration-300 relative overflow-hidden",
-                    dark
-                      ? "glass-card border-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.5)] backdrop-blur-xl"
-                      : "bg-[#fffaf2]/95 border-[#8b1a1a]/15 shadow-[0_10px_30px_rgba(42,16,8,0.08)] backdrop-blur-xl"
+                    "absolute left-3 sm:left-3.5 top-4 bottom-6 w-[1.5px] -translate-x-1/2",
+                    dark ? "bg-white/10" : "bg-[#8b1a1a]/15"
                   )}
-                >
-                  {/* Subtle ambient corner glow */}
-                  <div
-                    className="pointer-events-none absolute -top-10 -right-10 w-40 h-40 rounded-full"
-                    style={{
-                      background: dark
-                        ? "radial-gradient(circle, rgba(6,182,212,0.18) 0%, transparent 70%)"
-                        : "radial-gradient(circle, rgba(139,26,26,0.14) 0%, transparent 70%)",
-                      filter: "blur(35px)",
-                    }}
-                  />
+                />
 
-                  {/* Header */}
-                  <div className="flex items-center gap-3.5 mb-7 relative z-10">
-                    <div
-                      className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 border",
-                        dark
-                          ? "bg-cyan-400/10 border-cyan-400/25 text-cyan-300 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
-                          : "bg-[#8b1a1a]/10 border-[#8b1a1a]/25 text-[#8b1a1a]"
-                      )}
-                    >
-                      <FiBriefcase />
-                    </div>
-                    <div>
-                      <h3
-                        className={cn(
-                          "text-base sm:text-lg font-extrabold tracking-wider uppercase",
-                          dark ? "text-white" : "text-[#2a1008]"
-                        )}
-                      >
-                        {t.experience}
-                      </h3>
-                      <p
-                        className={cn(
-                          "text-[10px] sm:text-[11px] font-bold tracking-[0.24em] uppercase",
-                          dark ? "text-white/40" : "text-[#7a4a35]/70"
-                        )}
-                      >
-                        CAREER &amp; INTERNSHIPS
-                      </p>
-                    </div>
-                  </div>
+                <div className="divide-y divide-white/[0.07]">
+                  {(dynamicEducation && dynamicEducation.length > 0
+                    ? dynamicEducation
+                    : [
+                        {
+                          id: "btech-ise",
+                          levelTag: "B.TECH",
+                          degree: "B.Tech Information Science & Engineering",
+                          institution: "N.M.A.M. Institute of Technology, Nitte",
+                          period: "2024 - 2028",
+                          status: "In Progress",
+                        },
+                        {
+                          id: "puc-science",
+                          levelTag: "PRE-UNIVERSITY",
+                          degree: "Pre-University Course (PUC)",
+                          institution: "Science · College Name",
+                          period: "2022 - 2024",
+                          status: "Completed",
+                        },
+                        {
+                          id: "sslc-school",
+                          levelTag: "SECONDARY EDUCATION",
+                          degree: "Secondary School (SSLC)",
+                          institution: "School Name",
+                          period: "2022",
+                          status: "Completed",
+                        },
+                      ]
+                  ).map((item, idx) => {
+                    const isFirst = idx === 0;
+                    const isInProgress = item.status?.toLowerCase().includes("progress");
 
-                  {/* Experience List */}
-                  <ul className="space-y-4 relative z-10">
-                    {(dynamicExperience && dynamicExperience.length > 0
-                      ? dynamicExperience
-                      : t.experienceList
-                    ).map((exp: any, i: number) => {
-                      const isString = typeof exp === "string";
-                      return (
-                        <li
-                          key={exp.id || i}
-                          className={cn(
-                            "text-sm flex flex-col gap-1 p-3.5 rounded-xl border transition-all duration-200",
-                            dark
-                              ? "bg-white/5 border-white/10 hover:border-cyan-400/30 text-white/70"
-                              : "bg-[#faeedd]/60 border-[#8b1a1a]/10 hover:border-[#8b1a1a]/30 text-[#7a4a35]"
-                          )}
+                    const tagColor = isFirst
+                      ? dark ? "text-amber-400" : "text-amber-700"
+                      : idx === 1
+                      ? dark ? "text-cyan-400" : "text-blue-700"
+                      : dark ? "text-slate-400" : "text-stone-600";
+
+                    return (
+                      <div key={item.id || idx} className="relative py-6 first:pt-2 last:pb-2 group">
+                        {/* Timeline Node Badge on the track */}
+                        <div
+                          className="absolute left-3 sm:left-3.5 top-6 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center"
                         >
-                          <div className="flex items-start gap-2.5">
+                          {isFirst ? (
                             <span
                               className={cn(
-                                "w-2 h-2 rounded-full mt-1.5 shrink-0",
-                                dark ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-[#8b1a1a]"
+                                "text-sm sm:text-base transition-transform duration-300 group-hover:scale-115",
+                                dark ? "text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)]" : "text-amber-700"
+                              )}
+                            >
+                              <LuGraduationCap />
+                            </span>
+                          ) : idx === 1 ? (
+                            <span
+                              className={cn(
+                                "w-2.5 h-2.5 rounded-full transition-transform duration-300 group-hover:scale-125",
+                                dark ? "bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.85)]" : "bg-blue-600"
                               )}
                             />
-                            <div className="flex-1 min-w-0">
-                              {isString ? (
-                                <span className="font-medium">{exp}</span>
-                              ) : (
-                                <>
-                                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                                    <span className={cn("font-bold text-sm", dark ? "text-white" : "text-[#2a1008]")}>
-                                      {exp.role} {exp.company && <span className={dark ? "text-cyan-300" : "text-[#8b1a1a]"}>· {exp.company}</span>}
-                                    </span>
-                                    {exp.period && (
-                                      <span className={cn("text-[11px] px-2 py-0.5 rounded-full border shrink-0", dark ? "border-white/10 text-white/60 bg-white/5" : "border-[#8b1a1a]/15 text-[#7a4a35]/80 bg-white/60")}>
-                                        {exp.period}
-                                      </span>
-                                    )}
-                                  </div>
-                                  {exp.description && (
-                                    <p className={cn("text-xs mt-1 leading-relaxed", dark ? "text-white/50" : "text-[#7a4a35]/80")}>
-                                      {exp.description}
-                                    </p>
-                                  )}
-                                </>
+                          ) : (
+                            <span
+                              className={cn(
+                                "w-2.5 h-2.5 rounded-full transition-transform duration-300 group-hover:scale-125",
+                                dark ? "bg-slate-500/80" : "bg-stone-500"
                               )}
-                            </div>
+                            />
+                          )}
+                        </div>
+
+                        {/* Row Content: Left is Details, Right is Date & Status Pills */}
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-6">
+                          {/* Left: Level Tag, Degree, Institution */}
+                          <div className="space-y-1 min-w-0">
+                            <span
+                              className={cn(
+                                "text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] inline-block",
+                                tagColor
+                              )}
+                            >
+                              {item.levelTag}
+                            </span>
+                            <h4
+                              className={cn(
+                                "text-base sm:text-lg font-bold tracking-tight",
+                                dark ? "text-white" : "text-[#2a1008]"
+                              )}
+                            >
+                              {item.degree}
+                            </h4>
+                            <p
+                              className={cn(
+                                "text-xs sm:text-sm font-normal leading-relaxed",
+                                dark ? "text-slate-400" : "text-[#7a4a35]"
+                              )}
+                            >
+                              {item.institution}
+                            </p>
                           </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
+
+                          {/* Right: Badges (Period & In Progress Status) */}
+                          <div className="flex flex-wrap sm:flex-col sm:items-end justify-center gap-2 shrink-0">
+                            {item.period && (
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-medium border tracking-wide",
+                                  dark
+                                    ? "bg-white/[0.03] border-white/10 text-slate-300"
+                                    : "bg-[#8b1a1a]/5 border-[#8b1a1a]/15 text-[#2a1008]/80"
+                                )}
+                              >
+                                <FiCalendar className="text-xs opacity-70" />
+                                {item.period}
+                              </span>
+                            )}
+
+                            {item.status && isInProgress && (
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-2 px-3 py-1 rounded-xl text-xs font-semibold border",
+                                  dark
+                                    ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400"
+                                    : "bg-emerald-50 border-emerald-300 text-emerald-800"
+                                )}
+                              >
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)] animate-pulse" />
+                                {item.status}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
+
+            {/* ── 2. EXPERIENCE (THEN) ── */}
+            <motion.div variants={fadeUp} className="pt-6 sm:pt-8 border-t border-white/10">
+              <div className="flex items-center gap-3.5 mb-6">
+                <div
+                  className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0",
+                    dark ? "text-cyan-400" : "text-[#8b1a1a]"
+                  )}
+                >
+                  <FiBriefcase />
+                </div>
+                <div>
+                  <h3
+                    className={cn(
+                      "text-lg sm:text-xl font-bold tracking-[0.2em] uppercase",
+                      dark ? "text-white" : "text-[#2a1008]"
+                    )}
+                  >
+                    {t.experience}
+                  </h3>
+                  <p
+                    className={cn(
+                      "text-[10px] sm:text-[11px] font-semibold tracking-[0.24em] uppercase",
+                      dark ? "text-white/40" : "text-[#7a4a35]/70"
+                    )}
+                  >
+                    CAREER &amp; INTERNSHIPS
+                  </p>
+                </div>
+              </div>
+
+              {/* Experience List */}
+              <ul className="space-y-4">
+                {(dynamicExperience && dynamicExperience.length > 0
+                  ? dynamicExperience
+                  : t.experienceList
+                ).map((exp: any, i: number) => {
+                  const isString = typeof exp === "string";
+                  return (
+                    <li
+                      key={exp.id || i}
+                      className={cn(
+                        "text-sm flex flex-col gap-1 p-4 rounded-xl border transition-all duration-200",
+                        dark
+                          ? "bg-white/5 border-white/10 hover:border-cyan-400/30 text-white/70"
+                          : "bg-[#faeedd]/60 border-[#8b1a1a]/10 hover:border-[#8b1a1a]/30 text-[#7a4a35]"
+                      )}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span
+                          className={cn(
+                            "w-2 h-2 rounded-full mt-1.5 shrink-0",
+                            dark ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-[#8b1a1a]"
+                          )}
+                        />
+                        <div className="flex-1 min-w-0">
+                          {isString ? (
+                            <span className="font-medium">{exp}</span>
+                          ) : (
+                            <>
+                              <div className="flex items-center justify-between gap-2 flex-wrap">
+                                <span className={cn("font-bold text-base", dark ? "text-white" : "text-[#2a1008]")}>
+                                  {exp.role} {exp.company && <span className={dark ? "text-cyan-300" : "text-[#8b1a1a]"}>· {exp.company}</span>}
+                                </span>
+                                {exp.period && (
+                                  <span className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold border shrink-0", dark ? "border-white/10 text-white/60 bg-white/5" : "border-[#8b1a1a]/15 text-[#7a4a35]/80 bg-white/60")}>
+                                    <FiCalendar className="text-[11px] opacity-70" />
+                                    {exp.period}
+                                  </span>
+                                )}
+                              </div>
+                              {exp.description && (
+                                <p className={cn("text-xs sm:text-sm mt-1 leading-relaxed", dark ? "text-white/50" : "text-[#7a4a35]/80")}>
+                                  {exp.description}
+                                </p>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </motion.div>
 
             {/* ── SKILLS & STACK (Matching Reference Image) ── */}
             <motion.div variants={fadeUp} className="pt-4 sm:pt-6">
