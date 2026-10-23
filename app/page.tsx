@@ -1809,12 +1809,14 @@ export default function Home() {
     if (!certOpen) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") closeCert();
-      if (e.key === "ArrowLeft") showPrev();
-      if (e.key === "ArrowRight") showNext();
+      if (certModalImages.length > 1) {
+        if (e.key === "ArrowLeft") showPrev();
+        if (e.key === "ArrowRight") showNext();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [certOpen, closeCert, showPrev, showNext]);
+  }, [certOpen, closeCert, showPrev, showNext, certModalImages.length]);
 
   const inputClass = dark
     ? "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:border-cyan-400/60 transition-all duration-300 backdrop-blur-sm text-sm"
@@ -3176,13 +3178,6 @@ export default function Home() {
             const color = dark ? (card.colorDark || card.color_dark || "#0ea5e9") : (card.colorLight || card.color_light || "#c9956a");
             const cardImages = getCardImages(card);
             const isReal = card.real !== false && (card.real === true || cardImages.length > 0);
-            const stackImages = cardImages.length > 0
-              ? [
-                  cardImages[0],
-                  cardImages[1] || cardImages[0],
-                  cardImages[2] || cardImages[1] || cardImages[0],
-                ]
-              : [];
 
             return (
               <motion.div
@@ -3226,37 +3221,81 @@ export default function Home() {
                       }}
                     />
 
-                    {isReal && stackImages.length > 0 ? (
+                    {isReal && cardImages.length > 0 ? (
                       <div className="relative w-full h-44 flex items-center justify-center">
-                        {[
-                          { rot: "-11deg", top: "6px",  scale: 0.86, z: 1 },
-                          { rot: "1deg",   top: "16px", scale: 0.93, z: 2 },
-                          { rot: "11deg",  top: "26px", scale: 1,    z: 3 },
-                        ].map((s, idx) => {
-                          const img = stackImages[idx] || stackImages[0];
-                          return (
+                        {cardImages.length === 1 ? (
+                          /* SINGLE CERTIFICATE: Horizontal, clean, no rotation, no fake duplicate stack */
+                          <div
+                            onClick={() => openCert(cardImages, 0, card.title)}
+                            className="w-48 sm:w-52 h-32 sm:h-34 rounded-xl overflow-hidden shadow-2xl cursor-pointer transition-all duration-300 hover:scale-105 border border-white/20 relative bg-white"
+                          >
+                            <Image
+                              src={cardImages[0]}
+                              alt={card.title}
+                              fill
+                              unoptimized={typeof cardImages[0] === "string" && cardImages[0].startsWith("data:")}
+                              className="object-cover"
+                            />
+                          </div>
+                        ) : cardImages.length === 2 ? (
+                          /* TWO CERTIFICATES: 2-card stack */
+                          [
+                            { rot: "-7deg", top: "10px", scale: 0.93, z: 1 },
+                            { rot: "5deg",  top: "20px", scale: 1,    z: 2 },
+                          ].map((s, idx) => (
                             <div
                               key={idx}
-                              onClick={() => openCert(cardImages, idx % cardImages.length, card.title)}
-                              className="absolute left-1/2 w-48 h-32 rounded-xl overflow-hidden shadow-2xl cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10"
+                              onClick={() => openCert(cardImages, idx, card.title)}
+                              className="absolute left-1/2 w-48 h-32 rounded-xl overflow-hidden shadow-2xl cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10 bg-white"
                               style={{
                                 border: "1px solid rgba(255,255,255,0.18)",
                                 transform: `translateX(-50%) rotate(${s.rot}) scale(${s.scale})`,
                                 top: s.top,
                                 zIndex: s.z,
-                                backgroundColor: "#ffffff",
                               }}
                             >
                               <Image
-                                src={img}
+                                src={cardImages[idx]}
                                 alt={`${card.title} - ${idx + 1}`}
                                 fill
-                                unoptimized={typeof img === "string" && img.startsWith("data:")}
+                                unoptimized={typeof cardImages[idx] === "string" && cardImages[idx].startsWith("data:")}
                                 className="object-cover"
                               />
                             </div>
-                          );
-                        })}
+                          ))
+                        ) : (
+                          /* THREE OR MORE: 3-fan stack */
+                          [
+                            { rot: "-11deg", top: "6px",  scale: 0.86, z: 1 },
+                            { rot: "1deg",   top: "16px", scale: 0.93, z: 2 },
+                            { rot: "11deg",  top: "26px", scale: 1,    z: 3 },
+                          ].map((s, idx) => (
+                            <div
+                              key={idx}
+                              onClick={() => openCert(cardImages, idx, card.title)}
+                              className="absolute left-1/2 w-48 h-32 rounded-xl overflow-hidden shadow-2xl cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10 bg-white"
+                              style={{
+                                border: "1px solid rgba(255,255,255,0.18)",
+                                transform: `translateX(-50%) rotate(${s.rot}) scale(${s.scale})`,
+                                top: s.top,
+                                zIndex: s.z,
+                              }}
+                            >
+                              <Image
+                                src={cardImages[idx]}
+                                alt={`${card.title} - ${idx + 1}`}
+                                fill
+                                unoptimized={typeof cardImages[idx] === "string" && cardImages[idx].startsWith("data:")}
+                                className="object-cover"
+                              />
+                            </div>
+                          ))
+                        )}
+                        {cardImages.length > 1 && (
+                          <span className="absolute bottom-1 right-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/75 text-cyan-300 border border-cyan-400/30 z-20 backdrop-blur-xs">
+                            {cardImages.length} certs
+                          </span>
+                        )}
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-3 opacity-35 group-hover:opacity-55 transition-opacity duration-400">
@@ -3396,6 +3435,7 @@ export default function Home() {
               )}
               onClick={(e) => e.stopPropagation()}
               onTouchStart={(e) => {
+                if (certModalImages.length <= 1) return;
                 const startX = e.touches[0].clientX;
                 const onEnd = (ev: TouchEvent) => {
                   const dx = ev.changedTouches[0].clientX - startX;
@@ -3435,46 +3475,43 @@ export default function Home() {
                 )}
               </div>
 
-              <div className="flex items-center justify-between mt-5">
-                <button
-                  type="button"
-                  onClick={showPrev}
-                  disabled={certModalImages.length <= 1}
-                  className={cn(
-                    "flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all",
-                    certModalImages.length <= 1
-                      ? "opacity-30 cursor-not-allowed border-transparent"
-                      : dark
-                      ? "glass border-white/10 text-white/80 hover:text-white hover:border-white/25 active:scale-95"
-                      : "bg-white border-[#8b1a1a]/25 text-[#8b1a1a] hover:bg-[#faeedd] active:scale-95 shadow-xs"
-                  )}
-                >
-                  ← Prev
-                </button>
-                <span
-                  className={cn(
-                    "text-sm font-medium",
-                    dark ? "text-white/45" : "text-[#7a4a35]"
-                  )}
-                >
-                  {certIndex + 1} / {certModalImages.length}
-                </span>
-                <button
-                  type="button"
-                  onClick={showNext}
-                  disabled={certModalImages.length <= 1}
-                  className={cn(
-                    "flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all",
-                    certModalImages.length <= 1
-                      ? "opacity-30 cursor-not-allowed border-transparent"
-                      : dark
-                      ? "glass border-white/10 text-white/80 hover:text-white hover:border-white/25 active:scale-95"
-                      : "bg-white border-[#8b1a1a]/25 text-[#8b1a1a] hover:bg-[#faeedd] active:scale-95 shadow-xs"
-                  )}
-                >
-                  Next →
-                </button>
-              </div>
+              {/* Only show navigation controls when multiple certificates exist */}
+              {certModalImages.length > 1 && (
+                <div className="flex items-center justify-between mt-5">
+                  <button
+                    type="button"
+                    onClick={showPrev}
+                    className={cn(
+                      "flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all cursor-pointer",
+                      dark
+                        ? "glass border-white/10 text-white/80 hover:text-white hover:border-white/25 active:scale-95"
+                        : "bg-white border-[#8b1a1a]/25 text-[#8b1a1a] hover:bg-[#faeedd] active:scale-95 shadow-xs"
+                    )}
+                  >
+                    ← Prev
+                  </button>
+                  <span
+                    className={cn(
+                      "text-sm font-medium",
+                      dark ? "text-white/45" : "text-[#7a4a35]"
+                    )}
+                  >
+                    {certIndex + 1} / {certModalImages.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={showNext}
+                    className={cn(
+                      "flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all cursor-pointer",
+                      dark
+                        ? "glass border-white/10 text-white/80 hover:text-white hover:border-white/25 active:scale-95"
+                        : "bg-white border-[#8b1a1a]/25 text-[#8b1a1a] hover:bg-[#faeedd] active:scale-95 shadow-xs"
+                    )}
+                  >
+                    Next →
+                  </button>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}
