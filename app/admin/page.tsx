@@ -28,6 +28,7 @@ import {
   FiSearch,
 } from "react-icons/fi";
 import { FaGraduationCap } from "react-icons/fa";
+import { EngineeringProject } from "@/data/engineeringProjects";
 import {
   SkillIcon,
   SKILLS_CATALOG,
@@ -120,6 +121,7 @@ type Project = {
   desc: string;
   github?: string;
   labUrl?: string;
+  liveUrl?: string;
   logo?: string;
   emoji?: string;
 };
@@ -614,7 +616,15 @@ export default function AdminPage() {
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
   const [activeTab, setActiveTab] = useState<
-    "profile" | "skills" | "education" | "experience" | "projects" | "certificates" | "testimonials" | "supabase"
+    | "profile"
+    | "skills"
+    | "education"
+    | "experience"
+    | "projects"
+    | "engineering-lab"
+    | "certificates"
+    | "testimonials"
+    | "supabase"
   >("profile");
 
   // Profile state
@@ -686,9 +696,38 @@ export default function AdminPage() {
     desc: "",
     github: "",
     labUrl: "",
+    liveUrl: "",
     logo: "",
     emoji: "🚀",
   });
+
+  // Engineering Lab states
+  const [engProjects, setEngProjects] = useState<EngineeringProject[]>([]);
+  const [showEngProjectModal, setShowEngProjectModal] = useState(false);
+  const [editingEngProject, setEditingEngProject] = useState<EngineeringProject | null>(null);
+  const [engProjectForm, setEngProjectForm] = useState<Partial<EngineeringProject>>({
+    title: "",
+    slug: "",
+    description: "",
+    overview: "",
+    category: "AI & Systems",
+    status: "In Development",
+    icon: "portfolio",
+    coverImage: "",
+    bannerImage: "",
+    githubUrl: "",
+    liveUrl: "",
+    role: "",
+    problem: "",
+    solution: "",
+    architecture: "",
+    challenges: "",
+    technologies: [],
+    features: [],
+  });
+  const [engTechInput, setEngTechInput] = useState("");
+  const [engFeaturesInput, setEngFeaturesInput] = useState("");
+
 
   // Certificate modal state (handles both Add and Edit)
   const [showCertModal, setShowCertModal] = useState(false);
@@ -731,7 +770,7 @@ export default function AdminPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [projRes, certRes, testRes, profRes, eduRes, expRes, skillRes] = await Promise.all([
+      const [projRes, certRes, testRes, profRes, eduRes, expRes, skillRes, engRes] = await Promise.all([
         fetch("/api/projects"),
         fetch("/api/certificates"),
         fetch("/api/testimonials"),
@@ -739,6 +778,7 @@ export default function AdminPage() {
         fetch("/api/education"),
         fetch("/api/experience"),
         fetch("/api/skills"),
+        fetch("/api/engineering-projects"),
       ]);
 
       if (projRes.ok) setProjects(await projRes.json());
@@ -751,6 +791,10 @@ export default function AdminPage() {
       if (eduRes.ok) setEducation(await eduRes.json());
       if (expRes.ok) setExperience(await expRes.json());
       if (skillRes.ok) setSkills(await skillRes.json());
+      if (engRes.ok) {
+        const engData = await engRes.json();
+        if (Array.isArray(engData)) setEngProjects(engData);
+      }
     } catch (err) {
       console.error("Failed to load admin data:", err);
     } finally {
@@ -1056,6 +1100,7 @@ export default function AdminPage() {
       desc: "",
       github: "",
       labUrl: "",
+      liveUrl: "",
       logo: "",
       emoji: "🚀",
     });
@@ -1070,6 +1115,7 @@ export default function AdminPage() {
       desc: proj.desc,
       github: proj.github || "",
       labUrl: proj.labUrl || "",
+      liveUrl: proj.liveUrl || "",
       logo: proj.logo || "",
       emoji: proj.emoji || "🚀",
     });
@@ -1112,6 +1158,88 @@ export default function AdminPage() {
     if (!confirm("Are you sure you want to delete this project?")) return;
     try {
       await fetch(`/api/projects?id=${id}`, { method: "DELETE" });
+      fetchData();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // ── Engineering Lab Actions ──
+  const openAddEngProject = () => {
+    setEditingEngProject(null);
+    setEngProjectForm({
+      title: "",
+      slug: "",
+      description: "",
+      overview: "",
+      category: "AI & Disaster Logistics",
+      status: "In Development",
+      icon: "portfolio",
+      coverImage: "",
+      bannerImage: "",
+      githubUrl: "",
+      liveUrl: "",
+      role: "",
+      problem: "",
+      solution: "",
+      architecture: "",
+      challenges: "",
+      technologies: [],
+      features: [],
+    });
+    setEngTechInput("");
+    setEngFeaturesInput("");
+    setShowEngProjectModal(true);
+  };
+
+  const openEditEngProject = (proj: EngineeringProject) => {
+    setEditingEngProject(proj);
+    setEngProjectForm({ ...proj });
+    setEngTechInput((proj.technologies || []).join(", "));
+    setEngFeaturesInput((proj.features || []).join("\n"));
+    setShowEngProjectModal(true);
+  };
+
+  const handleSaveEngProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...engProjectForm,
+        technologies: engTechInput.split(",").map((s) => s.trim()).filter(Boolean),
+        features: engFeaturesInput.split("\n").map((s) => s.trim()).filter(Boolean),
+      };
+
+      if (editingEngProject) {
+        const res = await fetch("/api/engineering-projects", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: editingEngProject.id, slug: editingEngProject.slug, ...payload }),
+        });
+        if (res.ok) {
+          setShowEngProjectModal(false);
+          setEditingEngProject(null);
+          fetchData();
+        }
+      } else {
+        const res = await fetch("/api/engineering-projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          setShowEngProjectModal(false);
+          fetchData();
+        }
+      }
+    } catch (err) {
+      console.error("Failed to save engineering project:", err);
+    }
+  };
+
+  const handleDeleteEngProject = async (id: string, slug: string) => {
+    if (!confirm("Are you sure you want to delete this Engineering Lab project?")) return;
+    try {
+      await fetch(`/api/engineering-projects?id=${id}&slug=${slug}`, { method: "DELETE" });
       fetchData();
     } catch (err) {
       console.error(err);
@@ -1404,6 +1532,19 @@ export default function AdminPage() {
           >
             <FiFolder /> Projects ({projects.length})
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("engineering-lab")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
+              activeTab === "engineering-lab"
+                ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
+                : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
+            }`}
+          >
+            <FiCpu /> Engineer&apos;s Lab &amp; Live Previews ({engProjects.length})
+          </button>
+
 
           <button
             type="button"
@@ -2013,6 +2154,203 @@ export default function AdminPage() {
           </section>
         )}
 
+        {/* ── TAB: ENGINEERING LAB & LIVE PREVIEWS ── */}
+        {activeTab === "engineering-lab" && (
+          <section className="mt-8 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2a1008] flex items-center gap-2">
+                  <FiCpu className="text-[#8b1a1a]" /> Engineer&apos;s Lab &amp; Live Previews
+                </h2>
+                <p className="text-xs sm:text-sm text-[#7a4a35] mt-1">
+                  Manage deep-dive technical stories, deployed live website URLs (for interactive iframe previews), system architecture, problem/solution narratives, and features.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={openAddEngProject}
+                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all self-start sm:self-auto cursor-pointer"
+              >
+                <FiPlus /> Add Lab Project
+              </button>
+            </div>
+
+            {/* Quick helper note */}
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-xs text-[#5a3020] flex items-start gap-3">
+              <span className="text-base shrink-0">💡</span>
+              <p className="leading-relaxed">
+                <strong>Live Previews:</strong> To make an interactive live website preview load on the project detail page, enter the deployed URL into the <em>Live Website URL</em> field. If left blank, visitors will see an elegant <em>&quot;Live preview coming soon&quot;</em> showcase.
+              </p>
+            </div>
+
+            <div className="grid gap-5">
+              {engProjects.length === 0 ? (
+                <div className="p-8 text-center rounded-2xl border border-dashed border-[#8b1a1a]/25 bg-white/40 text-sm text-[#7a4a35]">
+                  No Engineering Lab projects found. Click &quot;Add Lab Project&quot; to create one.
+                </div>
+              ) : (
+                engProjects.map((proj) => {
+                  const hasLiveUrl = Boolean(proj.liveUrl && proj.liveUrl.trim());
+                  return (
+                    <div
+                      key={proj.id || proj.slug}
+                      className="p-5 sm:p-6 rounded-2xl border border-[#8b1a1a]/15 bg-[#fffaf2] shadow-sm flex flex-col gap-4 transition-all hover:shadow-md"
+                    >
+                      {/* Top Row: Info & Action Buttons */}
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                        <div className="flex items-start gap-4 min-w-0">
+                          {proj.coverImage ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={proj.coverImage}
+                              alt={proj.title}
+                              className="w-16 h-16 rounded-xl object-cover border border-[#8b1a1a]/20 bg-white shrink-0 shadow-xs"
+                            />
+                          ) : (
+                            <span className="text-3xl shrink-0 p-3 rounded-xl bg-[#faeedd] border border-[#8b1a1a]/10">
+                              🚀
+                            </span>
+                          )}
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-bold text-base sm:text-lg text-[#2a1008]">{proj.title}</h3>
+                              {proj.status && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-900 border border-cyan-500/25">
+                                  {proj.status}
+                                </span>
+                              )}
+                              {proj.category && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#faeedd] text-[#7a4a35] border border-[#8b1a1a]/15">
+                                  {proj.category}
+                                </span>
+                              )}
+                              <span className="text-[10px] font-mono text-[#7a4a35]/60 bg-white/80 px-2 py-0.5 rounded border border-[#8b1a1a]/10">
+                                /{proj.slug}
+                              </span>
+                            </div>
+
+                            <p className="text-xs text-[#7a4a35] mt-1 line-clamp-2 leading-relaxed">
+                              {proj.description || proj.overview}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Top Right Actions */}
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
+                          <Link
+                            href={`/engineering-lab/${proj.slug}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#8b1a1a]/20 bg-white text-[#7a4a35] hover:text-[#8b1a1a] hover:bg-[#faeedd] text-xs font-semibold transition-colors shadow-xs"
+                            title="View public detail page"
+                          >
+                            <span>View Page</span>
+                            <FiExternalLink className="text-[11px]" />
+                          </Link>
+                          <button
+                            type="button"
+                            onClick={() => openEditEngProject(proj)}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#8b1a1a] hover:bg-[#721515] text-white text-xs font-bold transition-all shadow-xs"
+                            title="Edit project details and live URL"
+                          >
+                            <FiEdit3 /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEngProject(proj.id, proj.slug)}
+                            className="p-2 rounded-lg text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
+                            title="Delete project"
+                          >
+                            <FiTrash2 />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Live Website Preview Status Box */}
+                      <div
+                        className={`p-3 sm:p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs ${
+                          hasLiveUrl
+                            ? "bg-emerald-500/8 border-emerald-500/25 text-emerald-950"
+                            : "bg-amber-500/8 border-amber-500/25 text-amber-950"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              hasLiveUrl ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                            }`}
+                          />
+                          <span className="font-bold shrink-0">
+                            {hasLiveUrl ? "Live Preview Active:" : "Preview URL Pending:"}
+                          </span>
+                          <span className="font-mono text-[11px] truncate opacity-85">
+                            {hasLiveUrl
+                              ? proj.liveUrl
+                              : "No deployed website URL configured yet (displays 'Coming Soon')"}
+                          </span>
+                        </div>
+
+                        {hasLiveUrl ? (
+                          <a
+                            href={proj.liveUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors shrink-0 self-start sm:self-auto"
+                          >
+                            <span>Test Live URL</span>
+                            <FiExternalLink className="text-[10px]" />
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => openEditEngProject(proj)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold transition-colors shrink-0 self-start sm:self-auto"
+                          >
+                            <span>+ Set Live URL</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Meta badges & summaries */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs border-t border-[#8b1a1a]/10 pt-3">
+                        {proj.problem && (
+                          <div className="bg-white/60 p-2.5 rounded-lg border border-[#8b1a1a]/10">
+                            <span className="font-bold text-[#8b1a1a] block mb-0.5">Problem Statement:</span>
+                            <p className="text-[#5a3020] line-clamp-2 leading-relaxed">{proj.problem}</p>
+                          </div>
+                        )}
+                        {proj.solution && (
+                          <div className="bg-white/60 p-2.5 rounded-lg border border-[#8b1a1a]/10">
+                            <span className="font-bold text-emerald-800 block mb-0.5">Solution &amp; Impact:</span>
+                            <p className="text-[#5a3020] line-clamp-2 leading-relaxed">{proj.solution}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Technologies tags */}
+                      {proj.technologies && proj.technologies.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-[#7a4a35] mr-1">
+                            Stack:
+                          </span>
+                          {proj.technologies.map((t) => (
+                            <span
+                              key={t}
+                              className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#faeedd] text-[#5a3020] border border-[#8b1a1a]/10"
+                            >
+                              {t}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </section>
+        )}
+
         {/* ── TAB 2: CERTIFICATES ── */}
         {activeTab === "certificates" && (
           <section className="mt-8 space-y-6">
@@ -2484,6 +2822,22 @@ export default function AdminPage() {
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Live Deployed Website URL (For Interactive Preview)
+                  </label>
+                  <input
+                    type="text"
+                    value={projectForm.liveUrl || ""}
+                    onChange={(e) => setProjectForm({ ...projectForm, liveUrl: e.target.value })}
+                    placeholder="https://your-deployed-app.vercel.app"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all font-mono"
+                  />
+                  <p className="text-[11px] text-[#7a4a35] mt-1">
+                    When provided, the redesigned project detail page embeds an interactive browser preview of this live site.
+                  </p>
+                </div>
+
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#8b1a1a]/15">
                   <button
                     type="button"
@@ -2504,6 +2858,306 @@ export default function AdminPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* ── MODAL: ADD / EDIT ENGINEERING LAB PROJECT ── */}
+      <AnimatePresence>
+        {showEngProjectModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-3xl p-6 sm:p-8 rounded-3xl border border-[#8b1a1a]/20 bg-[#fffaf2] text-[#2a1008] shadow-2xl max-h-[92vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-[#8b1a1a]/15">
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-[#2a1008]">
+                    {editingEngProject ? "Edit Engineer's Lab Project" : "Add Lab Project"}
+                  </h2>
+                  <p className="text-xs text-[#7a4a35] mt-0.5">
+                    Configure the project detail story, problem/solution, architecture, and live deployment URL.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEngProjectModal(false)}
+                  className="p-2 rounded-xl text-[#7a4a35] hover:text-[#8b1a1a] hover:bg-[#faeedd] transition-colors"
+                >
+                  <FiX className="text-lg" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEngProject} className="mt-5 space-y-5">
+                {/* 1. Title & Slug */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Project Title *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={engProjectForm.title || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, title: e.target.value })}
+                      placeholder="e.g. Sankat Saathi"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      URL Slug * (Path identifier)
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={engProjectForm.slug || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "-") })}
+                      placeholder="e.g. sankat-saathi"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] font-mono outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Category & Status Badge */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Category
+                    </label>
+                    <input
+                      type="text"
+                      value={engProjectForm.category || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, category: e.target.value })}
+                      placeholder="e.g. AI & Disaster Logistics"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Status Badge
+                    </label>
+                    <input
+                      type="text"
+                      value={engProjectForm.status || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, status: e.target.value })}
+                      placeholder="e.g. IBM Z Datathon Project or Active PWA"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* 3. LIVE WEBSITE URL (High Priority Highlighted Section) */}
+                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-emerald-950 flex items-center gap-1.5">
+                      <span>✦ Live Deployed Website URL (For Interactive Preview)</span>
+                    </label>
+                    {engProjectForm.liveUrl && (
+                      <a
+                        href={engProjectForm.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 underline flex items-center gap-1"
+                      >
+                        <span>Test Link</span>
+                        <FiExternalLink className="text-[10px]" />
+                      </a>
+                    )}
+                  </div>
+                  <input
+                    type="url"
+                    value={engProjectForm.liveUrl || ""}
+                    onChange={(e) => setEngProjectForm({ ...engProjectForm, liveUrl: e.target.value })}
+                    placeholder="https://your-project.vercel.app"
+                    className="w-full px-4 py-2.5 rounded-xl border border-emerald-500/30 bg-white text-xs sm:text-sm text-[#2a1008] font-mono outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 transition-all"
+                  />
+                  <p className="text-[11px] text-emerald-900/80 leading-relaxed">
+                    When populated, this URL powers the clean, responsive browser preview frame on the redesigned project detail page. If blank, visitors see an elegant &quot;Preview coming soon&quot; banner with your cover screenshot.
+                  </p>
+                </div>
+
+                {/* 4. GitHub & Cover Image */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      GitHub Repository URL
+                    </label>
+                    <input
+                      type="url"
+                      value={engProjectForm.githubUrl || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, githubUrl: e.target.value })}
+                      placeholder="https://github.com/pavan55kumar/..."
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <ImageInputWithUpload
+                      label="Cover / Banner Image"
+                      value={engProjectForm.coverImage || ""}
+                      onChange={(coverImage) => setEngProjectForm({ ...engProjectForm, coverImage, bannerImage: coverImage })}
+                      placeholder="e.g. /projects/atlas/cover.png or upload"
+                      maxDimension={1200}
+                    />
+                  </div>
+                </div>
+
+                {/* 5. Short Description & Overview */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Short Description (For listings &amp; header) *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={engProjectForm.description || ""}
+                    onChange={(e) => setEngProjectForm({ ...engProjectForm, description: e.target.value })}
+                    placeholder="Concise one-line summary of what this project does..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    In-Depth Overview (First detail section)
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={engProjectForm.overview || ""}
+                    onChange={(e) => setEngProjectForm({ ...engProjectForm, overview: e.target.value })}
+                    placeholder="Comprehensive explanation of the project context, technical purpose, and background..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                {/* 6. Problem & Solution */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Problem Statement
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={engProjectForm.problem || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, problem: e.target.value })}
+                      placeholder="What friction, user challenge, or technical bottleneck did this solve?"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Solution &amp; Engineering Impact
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={engProjectForm.solution || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, solution: e.target.value })}
+                      placeholder="How does your architecture and implementation resolve the problem?"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* 7. Key Features */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    Key Features (One feature per line)
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={engFeaturesInput}
+                    onChange={(e) => setEngFeaturesInput(e.target.value)}
+                    placeholder="Urgent SOS triage engine with geospatial coordinates&#10;Explainable AI scoring weighting severity and population&#10;Supabase RLS real-time warehouse coordination"
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] font-mono outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                  <p className="text-[11px] text-[#7a4a35] mt-1">
+                    Each line becomes a distinct feature bullet card on the project detail page.
+                  </p>
+                </div>
+
+                {/* 8. Tech Stack & Role */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Technologies (Comma separated)
+                    </label>
+                    <input
+                      type="text"
+                      value={engTechInput}
+                      onChange={(e) => setEngTechInput(e.target.value)}
+                      placeholder="React 18, Vite, Tailwind CSS, Supabase, IBM Z"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      My Role &amp; Contributions
+                    </label>
+                    <input
+                      type="text"
+                      value={engProjectForm.role || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, role: e.target.value })}
+                      placeholder="Lead Full-Stack &amp; Systems Architecture"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* 9. Expandable Technical Details (Architecture & Challenges) */}
+                <div className="border-t border-[#8b1a1a]/15 pt-4 space-y-3">
+                  <p className="text-xs font-bold text-[#8b1a1a] uppercase tracking-wider">
+                    Expandable Technical Details (Accordions on Detail Page)
+                  </p>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      System Architecture &amp; Implementation
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={engProjectForm.architecture || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, architecture: e.target.value })}
+                      placeholder="Detailed engineering explanation of microservices, edge workers, data pipelines, caching, or algorithms..."
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Technical Challenges &amp; Solutions
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={engProjectForm.challenges || ""}
+                      onChange={(e) => setEngProjectForm({ ...engProjectForm, challenges: e.target.value })}
+                      placeholder="What complex engineering hurdle was encountered and what was the technical solution?"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Submit Actions */}
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#8b1a1a]/15">
+                  <button
+                    type="button"
+                    onClick={() => setShowEngProjectModal(false)}
+                    className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#faeedd] transition-all"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all"
+                  >
+                    {editingEngProject ? "Update Lab Project" : "Save Lab Project"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
 
       {/* ── MODAL: ADD / EDIT CERTIFICATE (Spacious & Clean) ── */}
       <AnimatePresence>

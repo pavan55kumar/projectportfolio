@@ -1,14 +1,30 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { FaArrowRight } from "react-icons/fa6";
 import { useTheme } from "../theme-provider";
-import { engineeringProjects } from "@/data/engineeringProjects";
+import { EngineeringProject, engineeringProjects } from "@/data/engineeringProjects";
 import ProjectCard from "./ProjectCard";
 
 export default function EngineeringLabView() {
   const { dark, toggle } = useTheme();
+  const [dynamicProjects, setDynamicProjects] = useState<EngineeringProject[] | null>(null);
+
+  useEffect(() => {
+    fetch("/api/engineering-projects")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setDynamicProjects(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const projectsToRender = dynamicProjects || engineeringProjects;
+
 
   return (
     <main
@@ -170,12 +186,12 @@ export default function EngineeringLabView() {
 
           {/* ── Project Cards Vertical Stack ── */}
           <div className="flex flex-col gap-6 sm:gap-8">
-            {engineeringProjects.map((project, index) => (
+            {projectsToRender.map((project, index) => (
               <ProjectCard
                 key={project.id}
                 project={project}
                 index={index}
-                totalProjects={engineeringProjects.length}
+                totalProjects={projectsToRender.length}
                 dark={dark}
               />
             ))}

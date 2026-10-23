@@ -10,6 +10,7 @@ export type PortfolioProject = {
   desc: string;
   github?: string;
   labUrl?: string;
+  liveUrl?: string;
   logo?: string;
   emoji?: string;
   order_index?: number;
@@ -26,6 +27,7 @@ const defaultProjects: PortfolioProject[] = [
     desc: "AI-powered humanitarian flood relief platform that optimizes emergency citizen SOS requests, explains urgency scores, and coordinates warehouse supply dispatches.",
     github: "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
     labUrl: "/engineering-lab/sankat-saathi",
+    liveUrl: "",
     logo: "/projects/sankat-saathi/banner.jpg",
     emoji: "🌊",
   },
@@ -36,6 +38,7 @@ const defaultProjects: PortfolioProject[] = [
     desc: "Personal life operating system featuring an intelligent college attendance & bunk margin simulator, CGPA planner, Pomodoro focus engine, and cognitive AI morning brief.",
     github: "https://github.com/pavan55kumar/atlas",
     labUrl: "/engineering-lab/atlas",
+    liveUrl: "",
     logo: "/projects/atlas/cover.png",
     emoji: "🧭",
   },
@@ -46,6 +49,7 @@ const defaultProjects: PortfolioProject[] = [
     desc: "Modern personal portfolio with interactive 3D WebGL hero sphere, LinkedIn OAuth testimonials, and dedicated Engineering Lab deep-dives.",
     github: "https://github.com/pavan55kumar/projectportfolio",
     labUrl: "/engineering-lab/portfolio-3d",
+    liveUrl: "https://projectportfolio-one.vercel.app",
     logo: "/projects/portfolio-3d/cover.png",
     emoji: "✨",
   },
@@ -55,6 +59,7 @@ const defaultProjects: PortfolioProject[] = [
     tech: "Python · scikit-learn · NLTK · SpaCy · Streamlit · Transformers",
     desc: "Python ML app that detects spam messages using NLP pipelines and HuggingFace Transformers.",
     github: "https://github.com/pavan55kumar/E-mail-Spam-Detection",
+    liveUrl: "",
     emoji: "🛡️",
   },
   {
@@ -63,6 +68,7 @@ const defaultProjects: PortfolioProject[] = [
     tech: "Python · Flask · Jinja2 · HTML · CSS · JavaScript",
     desc: "A simple Flask web app with Python backend and dynamic HTML/CSS/JS frontend using Jinja2 templates.",
     github: "https://github.com/pavan55kumar/FLASK-note-saver",
+    liveUrl: "",
     emoji: "📝",
   },
 ];
@@ -106,6 +112,7 @@ export async function GET() {
           desc: p.description,
           github: p.github || "",
           labUrl: p.lab_url || "",
+          liveUrl: p.live_url || "",
           logo: p.logo || "",
           emoji: p.emoji || "🚀",
         }));
@@ -123,7 +130,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { title, tech, desc, github, labUrl, logo, emoji } = body;
+    const { title, tech, desc, github, labUrl, liveUrl, logo, emoji } = body;
 
     if (!title || !desc) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -138,6 +145,7 @@ export async function POST(req: Request) {
       desc: String(desc),
       github: github ? String(github) : "",
       labUrl: labUrl ? String(labUrl) : "",
+      liveUrl: liveUrl ? String(liveUrl) : "",
       logo: logo ? String(logo) : "",
       emoji: emoji ? String(emoji) : "🚀",
     };
@@ -152,6 +160,7 @@ export async function POST(req: Request) {
           description: newProject.desc,
           github: newProject.github || null,
           lab_url: newProject.labUrl || null,
+          live_url: newProject.liveUrl || null,
           logo: newProject.logo || null,
           emoji: newProject.emoji,
         });
@@ -174,7 +183,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, title, tech, desc, github, labUrl, logo, emoji } = body;
+    const { id, title, tech, desc, github, labUrl, liveUrl, logo, emoji } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing project id" }, { status: 400 });
@@ -189,6 +198,7 @@ export async function PATCH(req: Request) {
         if (desc !== undefined) updateData.description = desc;
         if (github !== undefined) updateData.github = github;
         if (labUrl !== undefined) updateData.lab_url = labUrl;
+        if (liveUrl !== undefined) updateData.live_url = liveUrl;
         if (logo !== undefined) updateData.logo = logo;
         if (emoji !== undefined) updateData.emoji = emoji;
 
@@ -208,6 +218,7 @@ export async function PATCH(req: Request) {
           ...(desc !== undefined ? { desc: String(desc) } : {}),
           ...(github !== undefined ? { github: String(github) } : {}),
           ...(labUrl !== undefined ? { labUrl: String(labUrl) } : {}),
+          ...(liveUrl !== undefined ? { liveUrl: String(liveUrl) } : {}),
           ...(logo !== undefined ? { logo: String(logo) } : {}),
           ...(emoji !== undefined ? { emoji: String(emoji) } : {}),
         };
@@ -222,6 +233,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Failed to update project" }, { status: 500 });
   }
 }
+
 
 export async function DELETE(req: Request) {
   try {

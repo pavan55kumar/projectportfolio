@@ -31,7 +31,9 @@ export default function ProjectVisual({
   project: EngineeringProject;
   variant?: "card" | "hero";
 }) {
-  const art = projectArt[project.icon];
+  const art =
+    (project.icon && (projectArt as Record<string, (typeof projectArt)["portfolio"]>)[project.icon]) ||
+    projectArt.portfolio;
   const Icon = art.icon;
   const image = variant === "hero"
     ? project.bannerImage || project.coverImage

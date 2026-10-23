@@ -1,0 +1,53 @@
+[
+  {
+    "id": "sankat-saathi",
+    "title": "Sankat Saathi (संकट साथी)",
+    "tech": "React 18 · Vite · Tailwind · Supabase · IBM Z · Haversine AI",
+    "desc": "AI-powered humanitarian flood relief platform that optimizes emergency citizen SOS requests, explains urgency scores, and coordinates warehouse supply dispatches.",
+    "github": "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
+    "labUrl": "/engineering-lab/sankat-saathi",
+    "liveUrl": "",
+    "logo": "/projects/sankat-saathi/banner.jpg",
+    "emoji": "🌊"
+  },
+  {
+    "id": "atlas",
+    "title": "Atlas Life OS",
+    "tech": "React · Vite · Tailwind · Framer Motion · Supabase · PWA",
+    "desc": "Personal life operating system featuring an intelligent college attendance & bunk margin simulator, CGPA planner, Pomodoro focus engine, and cognitive AI morning brief.",
+    "github": "https://github.com/pavan55kumar/atlas",
+    "labUrl": "/engineering-lab/atlas",
+    "liveUrl": "",
+    "logo": "/projects/atlas/cover.png",
+    "emoji": "🧭"
+  },
+  {
+    "id": "portfolio-3d",
+    "title": "Project Orbital (3D Portfolio)",
+    "tech": "Next.js · React · Three.js · React Three Fiber · Drei · NextAuth",
+    "desc": "Modern personal portfolio with interactive 3D WebGL hero sphere, LinkedIn OAuth testimonials, and dedicated Engineering Lab deep-dives.",
+    "github": "https://github.com/pavan55kumar/projectportfolio",
+    "labUrl": "/engineering-lab/portfolio-3d",
+    "liveUrl": "https://projectportfolio-one.vercel.app",
+    "logo": "/projects/portfolio-3d/cover.png",
+    "emoji": "✨"
+  },
+  {
+    "id": "spam-detection",
+    "title": "Spam Detection",
+    "tech": "Python · scikit-learn · NLTK · SpaCy · Streamlit · Transformers",
+    "desc": "Python ML app that detects spam messages using NLP pipelines and HuggingFace Transformers.",
+    "github": "https://github.com/pavan55kumar/E-mail-Spam-Detection",
+    "liveUrl": "",
+    "emoji": "🛡️"
+  },
+  {
+    "id": "note-saver",
+    "title": "Note Saver App",
+    "tech": "Python · Flask · Jinja2 · HTML · CSS · JavaScript",
+    "desc": "A simple Flask web app with Python backend and dynamic HTML/CSS/JS frontend using Jinja2 templates.",
+    "github": "https://github.com/pavan55kumar/FLASK-note-saver",
+    "liveUrl": "",
+    "emoji": "📝"
+  }
+]
