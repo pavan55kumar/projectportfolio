@@ -662,11 +662,38 @@ const skills = [
   { label: "GSAP" },
 ];
 
-// ── Your real certificate images (add more filenames here as you earn them) ──
-const certFiles = ["az1.jpeg", "az2.jpeg", "az3.jpeg"];
+function getCardImages(card: any): string[] {
+  if (Array.isArray(card.images) && card.images.length > 0) {
+    return card.images.map((s: any) => String(s).trim()).filter(Boolean);
+  }
+  const raw = card.imageUrl || card.image_url;
+  if (!raw) {
+    if (card.title?.toLowerCase().includes("microsoft") || card.id === "microsoft-azure") {
+      return ["/certificates/az1.jpeg", "/certificates/az2.jpeg", "/certificates/az3.jpeg"];
+    }
+    return [];
+  }
+  if (typeof raw === "string") {
+    const trimmed = raw.trim();
+    if (trimmed.startsWith("[")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return parsed.map((s: any) => String(s).trim()).filter(Boolean);
+      } catch {}
+    }
+    if (trimmed.includes(",")) {
+      return trimmed.split(",").map((s: string) => s.trim()).filter(Boolean);
+    }
+    return [trimmed];
+  }
+  return [];
+}
+
+const defaultCertFiles = ["/certificates/az1.jpeg", "/certificates/az2.jpeg", "/certificates/az3.jpeg"];
 
 const certCards = [
   {
+    id: "microsoft-azure",
     title: "Microsoft Certificates",
     subtitle: "Azure Fundamentals · AI Essentials · Cloud Basics",
     issuer: "Microsoft",
@@ -674,7 +701,20 @@ const certCards = [
     icon: "🏅",
     colorDark: "#0ea5e9",
     colorLight: "#c9956a",
+    images: defaultCertFiles,
     real: true,
+  },
+  {
+    id: "ibm-z-datathon",
+    title: "IBM Z Datathon 2026",
+    subtitle: "Humanitarian Logistics & Cloud Systems",
+    issuer: "IBM",
+    year: "2026",
+    icon: "🏆",
+    colorDark: "#f59e0b",
+    colorLight: "#d97706",
+    images: [],
+    real: false,
   },
   {
     title: "Add Your Certificate",
@@ -684,6 +724,7 @@ const certCards = [
     icon: "📜",
     colorDark: "#7c3aed",
     colorLight: "#8b1a1a",
+    images: [],
     real: false,
   },
   {
@@ -694,16 +735,7 @@ const certCards = [
     icon: "🎖️",
     colorDark: "#10b981",
     colorLight: "#6b7280",
-    real: false,
-  },
-  {
-    title: "Add Your Certificate",
-    subtitle: "Issued by · Platform · Topic",
-    issuer: "Issuing Body",
-    year: "—",
-    icon: "🏆",
-    colorDark: "#f59e0b",
-    colorLight: "#d97706",
+    images: [],
     real: false,
   },
   {
@@ -714,6 +746,7 @@ const certCards = [
     icon: "⭐",
     colorDark: "#ec4899",
     colorLight: "#be185d",
+    images: [],
     real: false,
   },
 ];
@@ -1451,6 +1484,8 @@ export default function Home() {
   const [lang, setLang] = useState<"en" | "jp">("en");
   const [certOpen, setCertOpen] = useState(false);
   const [certIndex, setCertIndex] = useState(0);
+  const [certModalImages, setCertModalImages] = useState<string[]>(["/certificates/az1.jpeg", "/certificates/az2.jpeg", "/certificates/az3.jpeg"]);
+  const [certModalTitle, setCertModalTitle] = useState<string>("");
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
@@ -1673,20 +1708,28 @@ export default function Home() {
   }, []);
 
   // Cert modal
-  const openCert = (i: number) => {
-    setCertIndex(i);
+  const openCert = (images: string[], i = 0, title = "") => {
+    const list = images.length > 0 ? images : defaultCertFiles;
+    setCertModalImages(list);
+    setCertIndex(Math.max(0, Math.min(i, list.length - 1)));
+    setCertModalTitle(title);
     setCertOpen(true);
   };
   const closeCert = useCallback(() => setCertOpen(false), []);
-  const showPrev = useCallback(
-    () =>
-      setCertIndex((i) => (i - 1 + certFiles.length) % certFiles.length),
-    []
-  );
-  const showNext = useCallback(
-    () => setCertIndex((i) => (i + 1) % certFiles.length),
-    []
-  );
+  const showPrev = useCallback(() => {
+    setCertModalImages((imgs) => {
+      if (imgs.length <= 1) return imgs;
+      setCertIndex((i) => (i - 1 + imgs.length) % imgs.length);
+      return imgs;
+    });
+  }, []);
+  const showNext = useCallback(() => {
+    setCertModalImages((imgs) => {
+      if (imgs.length <= 1) return imgs;
+      setCertIndex((i) => (i + 1) % imgs.length);
+      return imgs;
+    });
+  }, []);
 
   useEffect(() => {
     if (!certOpen) return;
@@ -2561,8 +2604,16 @@ export default function Home() {
         >
           {(dynamicCertificates || certCards).map((card: any, i: number) => {
             const color = dark ? (card.colorDark || card.color_dark || "#0ea5e9") : (card.colorLight || card.color_light || "#c9956a");
-            const cardImg = card.imageUrl || card.image_url;
-            const isReal = card.real !== false && (card.real === true || !!cardImg);
+            const cardImages = getCardImages(card);
+            const isReal = card.real !== false && (card.real === true || cardImages.length > 0);
+            const stackImages = cardImages.length > 0
+              ? [
+                  cardImages[0],
+                  cardImages[1] || cardImages[0],
+                  cardImages[2] || cardImages[1] || cardImages[0],
+                ]
+              : [];
+
             return (
               <motion.div
                 key={i}
@@ -2605,54 +2656,37 @@ export default function Home() {
                       }}
                     />
 
-                    {cardImg ? (
-                      <div className="relative w-full h-44 flex items-center justify-center">
-                        <div
-                          onClick={() => {
-                            if (cardImg.startsWith("http") || cardImg.startsWith("/")) {
-                              window.open(cardImg, "_blank");
-                            } else {
-                              openCert(0);
-                            }
-                          }}
-                          className="relative w-48 h-32 rounded-xl overflow-hidden shadow-2xl cursor-pointer transition-all duration-300 hover:scale-105"
-                          style={{ border: "1px solid rgba(255,255,255,0.18)" }}
-                        >
-                          <Image
-                            src={cardImg}
-                            alt={card.title}
-                            fill
-                            unoptimized={typeof cardImg === "string" && cardImg.startsWith("data:")}
-                            className="object-cover"
-                          />
-                        </div>
-                      </div>
-                    ) : isReal ? (
+                    {isReal && stackImages.length > 0 ? (
                       <div className="relative w-full h-44 flex items-center justify-center">
                         {[
                           { rot: "-11deg", top: "6px",  scale: 0.86, z: 1 },
                           { rot: "1deg",   top: "16px", scale: 0.93, z: 2 },
                           { rot: "11deg",  top: "26px", scale: 1,    z: 3 },
-                        ].map((s, idx) => (
-                          <div
-                            key={idx}
-                            onClick={() => openCert(idx)}
-                            className="absolute left-1/2 w-48 h-32 rounded-xl overflow-hidden shadow-2xl cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10"
-                            style={{
-                              border: "1px solid rgba(255,255,255,0.18)",
-                              transform: `translateX(-50%) rotate(${s.rot}) scale(${s.scale})`,
-                              top: s.top,
-                              zIndex: s.z,
-                            }}
-                          >
-                            <Image
-                              src={`/certificates/${certFiles[idx]}`}
-                              alt={`Certificate ${idx + 1}`}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        ))}
+                        ].map((s, idx) => {
+                          const img = stackImages[idx] || stackImages[0];
+                          return (
+                            <div
+                              key={idx}
+                              onClick={() => openCert(cardImages, idx % cardImages.length, card.title)}
+                              className="absolute left-1/2 w-48 h-32 rounded-xl overflow-hidden shadow-2xl cursor-pointer transition-all duration-300 hover:scale-105 hover:z-10"
+                              style={{
+                                border: "1px solid rgba(255,255,255,0.18)",
+                                transform: `translateX(-50%) rotate(${s.rot}) scale(${s.scale})`,
+                                top: s.top,
+                                zIndex: s.z,
+                                backgroundColor: "#ffffff",
+                              }}
+                            >
+                              <Image
+                                src={img}
+                                alt={`${card.title} - ${idx + 1}`}
+                                fill
+                                unoptimized={typeof img === "string" && img.startsWith("data:")}
+                                className="object-cover"
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
                     ) : (
                       <div className="flex flex-col items-center gap-3 opacity-35 group-hover:opacity-55 transition-opacity duration-400">
@@ -2709,23 +2743,18 @@ export default function Home() {
                       </span>
                     </div>
 
-                    {isReal ? (
+                    {isReal && cardImages.length > 0 ? (
                       <button
-                        onClick={() => {
-                          if (cardImg) {
-                            window.open(cardImg, "_blank");
-                          } else {
-                            openCert(0);
-                          }
-                        }}
+                        type="button"
+                        onClick={() => openCert(cardImages, 0, card.title)}
                         className={cn(
-                          "text-xs font-semibold transition-colors duration-200",
+                          "text-xs font-semibold transition-colors duration-200 inline-flex items-center gap-1 cursor-pointer",
                           dark
                             ? "text-cyan-300 hover:text-white"
                             : "text-[#8b1a1a] hover:text-[#2a1008]"
                         )}
                       >
-                        {cardImg ? "View Certificate ↗" : "View all certificates →"}
+                        {cardImages.length > 1 ? "View all certificates →" : "View certificate →"}
                       </button>
                     ) : (
                       <p
@@ -2779,8 +2808,8 @@ export default function Home() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className={cn(
-              "fixed inset-0 backdrop-blur-md flex items-center justify-center z-[100] p-6",
-              dark ? "bg-black/85" : "bg-[#2a1008]/70"
+              "fixed inset-0 backdrop-blur-md flex items-center justify-center z-[100] p-4 sm:p-6",
+              dark ? "bg-black/85" : "bg-[#2a1008]/75"
             )}
             onClick={closeCert}
           >
@@ -2790,10 +2819,10 @@ export default function Home() {
               exit={{ scale: 0.9, opacity: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className={cn(
-                "relative max-w-3xl w-full rounded-2xl overflow-hidden p-6",
+                "relative max-w-3xl w-full rounded-2xl overflow-hidden p-5 sm:p-6 shadow-2xl",
                 dark
                   ? "glass-card border border-white/12"
-                  : "bg-[#f5ede0] border border-[#8b1a1a]/20 shadow-2xl"
+                  : "bg-[#fffaf2] border border-[#8b1a1a]/20 shadow-[0_20px_60px_rgba(139,26,26,0.25)]"
               )}
               onClick={(e) => e.stopPropagation()}
               onTouchStart={(e) => {
@@ -2808,53 +2837,69 @@ export default function Home() {
               }}
             >
               <button
+                type="button"
                 onClick={closeCert}
                 className={cn(
-                  "absolute top-4 right-4 w-9 h-9 rounded-full border flex items-center justify-center transition-colors z-10",
+                  "absolute top-4 right-4 w-9 h-9 rounded-full border flex items-center justify-center transition-colors z-20 cursor-pointer shadow-md",
                   dark
-                    ? "glass border-white/15 text-white/60 hover:text-white"
-                    : "bg-[#f5ede0] border-[#8b1a1a]/25 text-[#8b1a1a]/60 hover:text-[#8b1a1a]"
+                    ? "glass border-white/15 text-white/70 hover:text-white hover:bg-white/10"
+                    : "bg-white border-[#8b1a1a]/25 text-[#8b1a1a] hover:bg-[#faeedd]"
                 )}
+                aria-label="Close certificate viewer"
               >
                 ✕
               </button>
 
-              <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden">
-                <Image
-                  src={`/certificates/${certFiles[certIndex]}`}
-                  alt={`Certificate ${certIndex + 1}`}
-                  fill
-                  className="object-contain"
-                />
+              <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden bg-white shadow-inner flex items-center justify-center border border-black/5">
+                {certModalImages[certIndex] ? (
+                  <Image
+                    src={certModalImages[certIndex]}
+                    alt={certModalTitle ? `${certModalTitle} - Certificate ${certIndex + 1}` : `Certificate ${certIndex + 1}`}
+                    fill
+                    unoptimized={typeof certModalImages[certIndex] === "string" && certModalImages[certIndex].startsWith("data:")}
+                    className="object-contain p-2"
+                    priority
+                  />
+                ) : (
+                  <div className="text-sm text-neutral-400">No image available</div>
+                )}
               </div>
 
               <div className="flex items-center justify-between mt-5">
                 <button
+                  type="button"
                   onClick={showPrev}
+                  disabled={certModalImages.length <= 1}
                   className={cn(
                     "flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all",
-                    dark
-                      ? "glass border-white/10 text-white/70 hover:text-white hover:border-white/25"
-                      : "bg-[#f5ede0] border-[#8b1a1a]/25 text-[#8b1a1a]/70 hover:text-[#8b1a1a] hover:border-[#8b1a1a]/50"
+                    certModalImages.length <= 1
+                      ? "opacity-30 cursor-not-allowed border-transparent"
+                      : dark
+                      ? "glass border-white/10 text-white/80 hover:text-white hover:border-white/25 active:scale-95"
+                      : "bg-white border-[#8b1a1a]/25 text-[#8b1a1a] hover:bg-[#faeedd] active:scale-95 shadow-xs"
                   )}
                 >
                   ← Prev
                 </button>
                 <span
                   className={cn(
-                    "text-sm",
-                    dark ? "text-white/30" : "text-[#7a4a35]/60"
+                    "text-sm font-medium",
+                    dark ? "text-white/45" : "text-[#7a4a35]"
                   )}
                 >
-                  {certIndex + 1} / {certFiles.length}
+                  {certIndex + 1} / {certModalImages.length}
                 </span>
                 <button
+                  type="button"
                   onClick={showNext}
+                  disabled={certModalImages.length <= 1}
                   className={cn(
                     "flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all",
-                    dark
-                      ? "glass border-white/10 text-white/70 hover:text-white hover:border-white/25"
-                      : "bg-[#f5ede0] border-[#8b1a1a]/25 text-[#8b1a1a]/70 hover:text-[#8b1a1a] hover:border-[#8b1a1a]/50"
+                    certModalImages.length <= 1
+                      ? "opacity-30 cursor-not-allowed border-transparent"
+                      : dark
+                      ? "glass border-white/10 text-white/80 hover:text-white hover:border-white/25 active:scale-95"
+                      : "bg-white border-[#8b1a1a]/25 text-[#8b1a1a] hover:bg-[#faeedd] active:scale-95 shadow-xs"
                   )}
                 >
                   Next →

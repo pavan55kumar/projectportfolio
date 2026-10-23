@@ -20,7 +20,11 @@ import {
   FiUpload,
   FiX,
   FiRefreshCw,
+  FiEye,
 } from "react-icons/fi";
+
+const cn = (...classes: (string | boolean | undefined | null)[]) =>
+  classes.filter(Boolean).join(" ");
 
 type Project = {
   id: string;
@@ -43,6 +47,7 @@ type Certificate = {
   colorDark: string;
   colorLight: string;
   imageUrl?: string;
+  images?: string[];
 };
 
 type Testimonial = {
@@ -194,6 +199,129 @@ function ImageInputWithUpload({
   );
 }
 
+// Multi-Certificate Images / Pages manager & device uploader
+function MultiCertificateImagesInput({
+  images,
+  onChange,
+}: {
+  images: string[];
+  onChange: (imgs: string[]) => void;
+}) {
+  const [loading, setLoading] = useState(false);
+  const [urlInput, setUrlInput] = useState("");
+
+  const handleFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    setLoading(true);
+    try {
+      const newImages: string[] = [];
+      for (const file of files) {
+        const dataUrl = await compressImage(file, 1200, 1200, 0.85);
+        newImages.push(dataUrl);
+      }
+      onChange([...images, ...newImages]);
+    } catch (err) {
+      console.error("Failed to process certificate images:", err);
+      alert("Could not load some images from device.");
+    } finally {
+      setLoading(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleAddUrl = () => {
+    if (!urlInput.trim()) return;
+    onChange([...images, urlInput.trim()]);
+    setUrlInput("");
+  };
+
+  const handleRemove = (index: number) => {
+    onChange(images.filter((_, idx) => idx !== index));
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="block text-xs font-bold text-[#2a1008] uppercase tracking-wider">
+          Certificate Images / Pages ({images.length})
+        </label>
+        <span className="text-[11px] text-[#7a4a35]">
+          Upload 1 or more certificate images (front & back, or multiple certificates)
+        </span>
+      </div>
+
+      {images.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-2xl border border-[#8b1a1a]/15 bg-white">
+          {images.map((img, idx) => (
+            <div
+              key={idx}
+              className="relative group rounded-xl overflow-hidden border border-[#8b1a1a]/20 bg-[#fffaf2] aspect-[4/3] flex items-center justify-center shadow-xs"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={img}
+                alt={`Page ${idx + 1}`}
+                className="w-full h-full object-contain p-1"
+              />
+              <span className="absolute bottom-1.5 left-1.5 px-2 py-0.5 rounded-md bg-black/70 text-[10px] font-bold text-white tracking-wide">
+                #{idx + 1}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleRemove(idx)}
+                className="absolute top-1.5 right-1.5 w-6 h-6 rounded-lg bg-rose-500/90 text-white flex items-center justify-center opacity-85 hover:opacity-100 hover:bg-rose-600 transition-all shadow-sm"
+                title="Remove page"
+              >
+                <FiX className="text-xs" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col sm:flex-row gap-2">
+        <label className="cursor-pointer inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-[#8b1a1a]/25 bg-[#faeedd] hover:bg-[#f3dfcb] text-[#8b1a1a] text-xs font-semibold transition-all shrink-0 shadow-sm active:scale-95">
+          <FiUpload className="text-sm" />
+          <span>{loading ? "Processing photos..." : "Add from Device / Album"}</span>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            disabled={loading}
+            onChange={handleFiles}
+          />
+        </label>
+
+        <div className="flex-1 flex gap-2">
+          <input
+            type="text"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="Or paste image URL (e.g. /certificates/az1.jpeg)"
+            className="flex-1 w-full px-3.5 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleAddUrl();
+              }
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleAddUrl}
+            disabled={!urlInput.trim()}
+            className="px-4 py-2.5 rounded-xl border border-[#8b1a1a]/25 bg-white hover:bg-[#faeedd] text-[#8b1a1a] text-xs font-bold transition-all disabled:opacity-40"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const SQL_SCHEMA = `-- Run this in your Supabase SQL Editor:
 CREATE TABLE IF NOT EXISTS public.testimonials (
     id TEXT PRIMARY KEY,
@@ -297,7 +425,18 @@ export default function AdminPage() {
     colorDark: "#0ea5e9",
     colorLight: "#c9956a",
     imageUrl: "",
+    images: [],
   });
+
+  // Admin In-Page Certificate Viewer Modal
+  const [adminCertViewer, setAdminCertViewer] = useState<{
+    isOpen: boolean;
+    title: string;
+    issuer: string;
+    year: string;
+    images: string[];
+    currentIndex: number;
+  } | null>(null);
 
   // Testimonial DP modal
   const [editingTestimonial, setEditingTestimonial] = useState<Testimonial | null>(null);
@@ -446,12 +585,19 @@ export default function AdminPage() {
       colorDark: "#0ea5e9",
       colorLight: "#c9956a",
       imageUrl: "",
+      images: [],
     });
     setShowCertModal(true);
   };
 
   const openEditCert = (cert: Certificate) => {
     setEditingCert(cert);
+    const imgs =
+      cert.images && cert.images.length > 0
+        ? cert.images
+        : cert.imageUrl
+        ? cert.imageUrl.split(",").map((s) => s.trim()).filter(Boolean)
+        : [];
     setCertForm({
       title: cert.title,
       subtitle: cert.subtitle || "",
@@ -460,7 +606,8 @@ export default function AdminPage() {
       icon: cert.icon || "🏅",
       colorDark: cert.colorDark || "#0ea5e9",
       colorLight: cert.colorLight || "#c9956a",
-      imageUrl: cert.imageUrl || "",
+      imageUrl: cert.imageUrl || imgs.join(","),
+      images: imgs,
     });
     setShowCertModal(true);
   };
@@ -468,12 +615,18 @@ export default function AdminPage() {
   const handleSaveCertificate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const imgs = certForm.images || [];
+      const payload = {
+        ...certForm,
+        imageUrl: imgs.join(",") || certForm.imageUrl || "",
+        images: imgs,
+      };
       if (editingCert) {
         // Update existing certificate
         const res = await fetch("/api/certificates", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editingCert.id, ...certForm }),
+          body: JSON.stringify({ id: editingCert.id, ...payload }),
         });
         if (res.ok) {
           setShowCertModal(false);
@@ -485,7 +638,7 @@ export default function AdminPage() {
         const res = await fetch("/api/certificates", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(certForm),
+          body: JSON.stringify(payload),
         });
         if (res.ok) {
           setShowCertModal(false);
@@ -810,65 +963,117 @@ export default function AdminPage() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              {certificates.map((cert) => (
-                <div
-                  key={cert.id}
-                  className="p-5 sm:p-6 rounded-2xl border border-[#8b1a1a]/15 bg-[#fffaf2] shadow-sm flex flex-col justify-between transition-all hover:shadow-md"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
-                        {cert.imageUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={cert.imageUrl}
-                            alt={cert.title}
-                            className="w-12 h-12 rounded-xl object-cover border border-[#8b1a1a]/20 bg-white shrink-0 shadow-xs"
-                          />
-                        ) : (
-                          <span className="text-2xl p-2 rounded-xl bg-[#faeedd] border border-[#8b1a1a]/10 shrink-0">
-                            {cert.icon || "🏅"}
-                          </span>
-                        )}
-                        <div className="min-w-0">
-                          <h3 className="font-bold text-base text-[#2a1008] truncate">{cert.title}</h3>
-                          <p className="text-xs font-semibold text-[#8b1a1a]">{cert.issuer} · {cert.year}</p>
+              {certificates.map((cert) => {
+                const certImages =
+                  cert.images && cert.images.length > 0
+                    ? cert.images
+                    : cert.imageUrl
+                    ? cert.imageUrl.split(",").map((s) => s.trim()).filter(Boolean)
+                    : [];
+                const previewImg = certImages[0] || cert.imageUrl;
+
+                return (
+                  <div
+                    key={cert.id}
+                    className="p-5 sm:p-6 rounded-2xl border border-[#8b1a1a]/15 bg-[#fffaf2] shadow-sm flex flex-col justify-between transition-all hover:shadow-md"
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          {previewImg ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={previewImg}
+                              alt={cert.title}
+                              className="w-12 h-12 rounded-xl object-cover border border-[#8b1a1a]/20 bg-white shrink-0 shadow-xs"
+                            />
+                          ) : (
+                            <span className="text-2xl p-2 rounded-xl bg-[#faeedd] border border-[#8b1a1a]/10 shrink-0">
+                              {cert.icon || "🏅"}
+                            </span>
+                          )}
+                          <div className="min-w-0">
+                            <h3 className="font-bold text-base text-[#2a1008] truncate">{cert.title}</h3>
+                            <p className="text-xs font-semibold text-[#8b1a1a] flex items-center gap-2">
+                              <span>{cert.issuer} · {cert.year}</span>
+                              {certImages.length > 0 && (
+                                <span className="px-2 py-0.5 rounded-md bg-[#8b1a1a]/10 text-[#8b1a1a] text-[10px] font-bold">
+                                  {certImages.length} {certImages.length === 1 ? "page" : "pages"}
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAdminCertViewer({
+                                isOpen: true,
+                                title: cert.title,
+                                issuer: cert.issuer,
+                                year: cert.year,
+                                images: certImages.length > 0 ? certImages : (previewImg ? [previewImg] : ["/certificates/az1.jpeg"]),
+                                currentIndex: 0,
+                              });
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#8b1a1a]/25 bg-white text-[#8b1a1a] hover:bg-[#faeedd] text-xs font-bold transition-colors shadow-xs"
+                            title="View certificate in modal"
+                          >
+                            <FiEye /> View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openEditCert(cert)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#8b1a1a]/25 bg-white text-[#8b1a1a] hover:bg-[#faeedd] text-xs font-bold transition-colors shadow-xs"
+                            title="Edit certificate"
+                          >
+                            <FiEdit3 /> Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCertificate(cert.id)}
+                            className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
+                            title="Delete certificate"
+                          >
+                            <FiTrash2 />
+                          </button>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <p className="text-xs text-[#7a4a35] mt-3 leading-relaxed">{cert.subtitle}</p>
+                    </div>
+
+                    {certImages.length > 0 ? (
+                      <div className="mt-4 pt-3 border-t border-[#8b1a1a]/10 flex items-center justify-between gap-2 text-xs text-[#7a4a35]">
+                        <div className="flex items-center gap-2 truncate">
+                          <FiImage className="text-[#8b1a1a] shrink-0" />
+                          <span className="truncate max-w-[200px]">
+                            {certImages.length} {certImages.length === 1 ? "certificate image attached" : "pages/images attached"}
+                          </span>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => openEditCert(cert)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#8b1a1a]/25 bg-white text-[#8b1a1a] hover:bg-[#faeedd] text-xs font-bold transition-colors shadow-xs"
-                          title="Edit certificate"
+                          onClick={() => {
+                            setAdminCertViewer({
+                              isOpen: true,
+                              title: cert.title,
+                              issuer: cert.issuer,
+                              year: cert.year,
+                              images: certImages,
+                              currentIndex: 0,
+                            });
+                          }}
+                          className="text-xs font-bold text-[#8b1a1a] hover:underline shrink-0"
                         >
-                          <FiEdit3 /> Edit
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteCertificate(cert.id)}
-                          className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
-                          title="Delete certificate"
-                        >
-                          <FiTrash2 />
+                          Preview in window →
                         </button>
                       </div>
-                    </div>
-
-                    <p className="text-xs text-[#7a4a35] mt-3 leading-relaxed">{cert.subtitle}</p>
+                    ) : null}
                   </div>
-
-                  {cert.imageUrl && (
-                    <div className="mt-4 pt-3 border-t border-[#8b1a1a]/10 flex items-center gap-2 text-xs text-[#7a4a35]">
-                      <FiImage className="text-[#8b1a1a]" />
-                      <span className="truncate max-w-[240px]">
-                        {cert.imageUrl.startsWith("data:") ? "Image attached (from device)" : cert.imageUrl}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}
@@ -1247,12 +1452,15 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <ImageInputWithUpload
-                  label="Certificate Image"
-                  value={certForm.imageUrl || ""}
-                  onChange={(imageUrl) => setCertForm({ ...certForm, imageUrl })}
-                  placeholder="e.g. /certificates/az1.jpeg or upload photo from device"
-                  maxDimension={1200}
+                <MultiCertificateImagesInput
+                  images={certForm.images || (certForm.imageUrl ? certForm.imageUrl.split(",").map((s) => s.trim()).filter(Boolean) : [])}
+                  onChange={(images) =>
+                    setCertForm({
+                      ...certForm,
+                      images,
+                      imageUrl: images.join(","),
+                    })
+                  }
                 />
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1385,6 +1593,103 @@ export default function AdminPage() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* ── MODAL: ADMIN IN-PAGE CERTIFICATE VIEWER ── */}
+      <AnimatePresence>
+        {adminCertViewer?.isOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-2xl p-6 sm:p-7 rounded-3xl border border-[#8b1a1a]/20 bg-[#fffaf2] text-[#2a1008] shadow-2xl relative"
+            >
+              <div className="flex items-center justify-between pb-4 border-b border-[#8b1a1a]/15">
+                <div>
+                  <h2 className="text-xl font-bold text-[#2a1008]">{adminCertViewer.title}</h2>
+                  <p className="text-xs text-[#7a4a35] mt-0.5">
+                    {adminCertViewer.issuer} · {adminCertViewer.year}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setAdminCertViewer(null)}
+                  className="w-9 h-9 rounded-full border border-[#8b1a1a]/25 bg-white text-[#8b1a1a] hover:bg-[#faeedd] flex items-center justify-center transition-colors shadow-xs"
+                  aria-label="Close certificate viewer"
+                >
+                  <FiX className="text-base" />
+                </button>
+              </div>
+
+              <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden bg-white shadow-inner flex items-center justify-center border border-black/10 my-5">
+                {adminCertViewer.images[adminCertViewer.currentIndex] ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={adminCertViewer.images[adminCertViewer.currentIndex]}
+                    alt={`${adminCertViewer.title} - ${adminCertViewer.currentIndex + 1}`}
+                    className="w-full h-full object-contain p-2"
+                  />
+                ) : (
+                  <div className="text-sm text-neutral-400">No image available</div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAdminCertViewer((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            currentIndex:
+                              (prev.currentIndex - 1 + prev.images.length) %
+                              prev.images.length,
+                          }
+                        : null
+                    )
+                  }
+                  disabled={adminCertViewer.images.length <= 1}
+                  className={cn(
+                    "flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all",
+                    adminCertViewer.images.length <= 1
+                      ? "opacity-30 cursor-not-allowed border-transparent"
+                      : "bg-white border-[#8b1a1a]/25 text-[#8b1a1a] hover:bg-[#faeedd] active:scale-95 shadow-xs"
+                  )}
+                >
+                  ← Prev
+                </button>
+                <span className="text-sm font-medium text-[#7a4a35]">
+                  {adminCertViewer.currentIndex + 1} / {adminCertViewer.images.length}
+                </span>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAdminCertViewer((prev) =>
+                      prev
+                        ? {
+                            ...prev,
+                            currentIndex:
+                              (prev.currentIndex + 1) % prev.images.length,
+                          }
+                        : null
+                    )
+                  }
+                  disabled={adminCertViewer.images.length <= 1}
+                  className={cn(
+                    "flex items-center gap-2 px-5 py-2.5 rounded-xl border text-sm font-semibold transition-all",
+                    adminCertViewer.images.length <= 1
+                      ? "opacity-30 cursor-not-allowed border-transparent"
+                      : "bg-white border-[#8b1a1a]/25 text-[#8b1a1a] hover:bg-[#faeedd] active:scale-95 shadow-xs"
+                  )}
+                >
+                  Next →
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
