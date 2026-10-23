@@ -25,6 +25,16 @@ import {
 } from "framer-motion";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { FaGithub, FaGoogle, FaLinkedin, FaPenNib, FaReact, FaJsSquare, FaTimes, FaCheck, FaArrowRight, FaUser } from "react-icons/fa";
+import {
+  FiHome,
+  FiUser,
+  FiFolder,
+  FiAward,
+  FiMessageSquare,
+  FiBriefcase,
+  FiMail,
+  FiFileText,
+} from "react-icons/fi";
 import { useTheme } from "./theme-provider";
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -1840,13 +1850,8 @@ export default function Home() {
         />
       </div>
 
-      {/* FABs (hidden while the mobile menu is open — the menu has its own) */}
-      <div
-        className={cn(
-          "fixed bottom-6 right-5 sm:bottom-8 sm:right-8 z-50 flex flex-col gap-3 transition-opacity duration-300",
-          mobileMenuOpen && "pointer-events-none opacity-0"
-        )}
-      >
+      {/* FABs */}
+      <div className="fixed bottom-6 right-5 sm:bottom-8 sm:right-8 z-30 flex flex-col gap-3 transition-opacity duration-300">
         <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
@@ -1955,12 +1960,15 @@ export default function Home() {
             </a>
           </div>
 
-          {/* Hamburger → X */}
+          {/* Hamburger */}
           <button
             type="button"
             className={cn(
-              "md:hidden relative h-11 w-11 rounded-full transition-colors duration-200",
-              dark ? "text-white hover:bg-white/8" : "text-[#2a1008] hover:bg-[#8b1a1a]/8"
+              "md:hidden relative h-11 w-11 rounded-full border transition-all duration-200",
+              dark
+                ? "border-white/15 text-white hover:bg-white/8"
+                : "border-[#8b1a1a]/20 text-[#2a1008] hover:bg-[#8b1a1a]/8",
+              mobileMenuOpen && (dark ? "bg-white/10 border-white/30" : "bg-[#8b1a1a]/10 border-[#8b1a1a]/30")
             )}
             aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileMenuOpen}
@@ -1980,122 +1988,294 @@ export default function Home() {
         </div>
       </motion.nav>
 
-      {/* ── MOBILE MENU (full-screen, minimal) ── */}
+      {/* ── MOBILE MENU (minimal floating popover card) ── */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            key="mobile-menu"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className={cn(
-              "fixed inset-0 z-30 md:hidden flex flex-col overflow-y-auto px-7 pb-8 pt-24 backdrop-blur-2xl",
-              dark ? "bg-[#030712]/95" : "bg-[#f5ede0]/97"
-            )}
-          >
-            <nav className="flex flex-col" aria-label="Mobile">
-              {sectionIds.map((id, i) => {
-                const isActive = activeSection === id;
-                return (
-                  <motion.a
-                    key={id}
-                    href={`#${id}`}
-                    onClick={goTo(id)}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 + i * 0.04, duration: 0.3 }}
-                    className={cn(
-                      "flex items-center justify-between border-b py-4 text-[26px] font-medium tracking-tight transition-colors",
-                      dark ? "border-white/[0.07]" : "border-[#8b1a1a]/10",
-                      isActive
-                        ? dark ? "text-white" : "text-[#8b1a1a]"
-                        : dark ? "text-white/45 active:text-white" : "text-[#2a1008]/50 active:text-[#2a1008]"
-                    )}
-                  >
-                    {sectionLabels[id]}
-                    {isActive && (
-                      <span className={cn("h-1.5 w-1.5 rounded-full", dark ? "bg-cyan-400" : "bg-[#8b1a1a]")} />
-                    )}
-                  </motion.a>
-                );
-              })}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 + sectionIds.length * 0.04, duration: 0.3 }}
-              >
+          <>
+            {/* Backdrop click-away */}
+            <motion.div
+              key="mobile-menu-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 z-40 bg-black/25 backdrop-blur-[2px] md:hidden"
+              aria-hidden="true"
+            />
+
+            {/* Floating Popover Card */}
+            <motion.div
+              key="mobile-menu-card"
+              initial={{ opacity: 0, scale: 0.92, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: -10 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              className={cn(
+                "fixed top-[66px] right-4 sm:right-6 z-50 md:hidden w-[280px] rounded-[26px] p-3 shadow-2xl origin-top-right border select-none",
+                dark
+                  ? "bg-[#070f1e]/96 border-white/12 text-white shadow-[0_22px_60px_rgba(0,0,0,0.7)] backdrop-blur-2xl"
+                  : "bg-[#fffaf2]/98 border-[#8b1a1a]/15 text-[#2a1008] shadow-[0_20px_50px_rgba(42,16,8,0.18)] backdrop-blur-2xl"
+              )}
+            >
+              {/* Pointer Beak pointing up toward the hamburger button */}
+              <div
+                className={cn(
+                  "absolute -top-[7px] right-[23px] w-3.5 h-3.5 rotate-45 border-t border-l pointer-events-none",
+                  dark
+                    ? "bg-[#070f1e] border-white/12"
+                    : "bg-[#fffaf2] border-[#8b1a1a]/15"
+                )}
+              />
+
+              {/* Navigation Items */}
+              <nav className="flex flex-col space-y-1" aria-label="Mobile Navigation">
+                {/* 1. Home */}
+                <a
+                  href="#home"
+                  onClick={goTo("home")}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[15px] transition-colors",
+                    activeSection === "home"
+                      ? dark
+                        ? "bg-cyan-400/15 text-cyan-300 font-semibold"
+                        : "bg-[#8b1a1a]/10 text-[#8b1a1a] font-semibold"
+                      : dark
+                        ? "text-white/80 hover:bg-white/8 hover:text-white"
+                        : "text-[#2a1008]/80 hover:bg-[#8b1a1a]/6 hover:text-[#8b1a1a]"
+                  )}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <FiHome className="text-lg shrink-0" />
+                    <span>{sectionLabels.home}</span>
+                  </div>
+                  {activeSection === "home" && (
+                    <span
+                      className={cn(
+                        "h-2 w-2 rounded-full shrink-0",
+                        dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                      )}
+                    />
+                  )}
+                </a>
+
+                {/* 2. About */}
+                <a
+                  href="#about"
+                  onClick={goTo("about")}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[15px] transition-colors",
+                    activeSection === "about"
+                      ? dark
+                        ? "bg-cyan-400/15 text-cyan-300 font-semibold"
+                        : "bg-[#8b1a1a]/10 text-[#8b1a1a] font-semibold"
+                      : dark
+                        ? "text-white/80 hover:bg-white/8 hover:text-white"
+                        : "text-[#2a1008]/80 hover:bg-[#8b1a1a]/6 hover:text-[#8b1a1a]"
+                  )}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <FiUser className="text-lg shrink-0" />
+                    <span>{sectionLabels.about}</span>
+                  </div>
+                  {activeSection === "about" && (
+                    <span
+                      className={cn(
+                        "h-2 w-2 rounded-full shrink-0",
+                        dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                      )}
+                    />
+                  )}
+                </a>
+
+                {/* 3. Projects */}
+                <a
+                  href="#projects"
+                  onClick={goTo("projects")}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[15px] transition-colors",
+                    activeSection === "projects"
+                      ? dark
+                        ? "bg-cyan-400/15 text-cyan-300 font-semibold"
+                        : "bg-[#8b1a1a]/10 text-[#8b1a1a] font-semibold"
+                      : dark
+                        ? "text-white/80 hover:bg-white/8 hover:text-white"
+                        : "text-[#2a1008]/80 hover:bg-[#8b1a1a]/6 hover:text-[#8b1a1a]"
+                  )}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <FiFolder className="text-lg shrink-0" />
+                    <span>{sectionLabels.projects}</span>
+                  </div>
+                  {activeSection === "projects" && (
+                    <span
+                      className={cn(
+                        "h-2 w-2 rounded-full shrink-0",
+                        dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                      )}
+                    />
+                  )}
+                </a>
+
+                {/* 4. Certifications */}
+                <a
+                  href="#certifications"
+                  onClick={goTo("certifications")}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[15px] transition-colors",
+                    activeSection === "certifications"
+                      ? dark
+                        ? "bg-cyan-400/15 text-cyan-300 font-semibold"
+                        : "bg-[#8b1a1a]/10 text-[#8b1a1a] font-semibold"
+                      : dark
+                        ? "text-white/80 hover:bg-white/8 hover:text-white"
+                        : "text-[#2a1008]/80 hover:bg-[#8b1a1a]/6 hover:text-[#8b1a1a]"
+                  )}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <FiAward className="text-lg shrink-0" />
+                    <span>{sectionLabels.certifications}</span>
+                  </div>
+                  {activeSection === "certifications" && (
+                    <span
+                      className={cn(
+                        "h-2 w-2 rounded-full shrink-0",
+                        dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                      )}
+                    />
+                  )}
+                </a>
+
+                {/* 5. Testimonials */}
+                <a
+                  href="#testimonials"
+                  onClick={goTo("testimonials")}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[15px] transition-colors",
+                    activeSection === "testimonials"
+                      ? dark
+                        ? "bg-cyan-400/15 text-cyan-300 font-semibold"
+                        : "bg-[#8b1a1a]/10 text-[#8b1a1a] font-semibold"
+                      : dark
+                        ? "text-white/80 hover:bg-white/8 hover:text-white"
+                        : "text-[#2a1008]/80 hover:bg-[#8b1a1a]/6 hover:text-[#8b1a1a]"
+                  )}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <FiMessageSquare className="text-lg shrink-0" />
+                    <span>{sectionLabels.testimonials}</span>
+                  </div>
+                  {activeSection === "testimonials" && (
+                    <span
+                      className={cn(
+                        "h-2 w-2 rounded-full shrink-0",
+                        dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                      )}
+                    />
+                  )}
+                </a>
+
+                {/* 6. Engineering Lab */}
                 <Link
                   href="/connect"
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    "flex items-center justify-between py-4 text-[26px] font-medium tracking-tight transition-colors",
-                    dark ? "text-white/45 active:text-white" : "text-[#2a1008]/50 active:text-[#2a1008]"
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[15px] transition-colors",
+                    dark
+                      ? "text-white/80 hover:bg-white/8 hover:text-white"
+                      : "text-[#2a1008]/80 hover:bg-[#8b1a1a]/6 hover:text-[#8b1a1a]"
                   )}
                 >
-                  {t.engineeringLab}
-                  <span className="text-lg">↗</span>
+                  <div className="flex items-center gap-3.5">
+                    <FiBriefcase className="text-lg shrink-0" />
+                    <span>{t.engineeringLab}</span>
+                  </div>
                 </Link>
-              </motion.div>
-            </nav>
 
-            <div className="mt-auto space-y-5 pt-8">
-              <a
-                href="/resume.pdf"
-                download
-                onClick={() => setMobileMenuOpen(false)}
+                {/* 7. Contact */}
+                <a
+                  href="#contact"
+                  onClick={goTo("contact")}
+                  className={cn(
+                    "flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-[15px] transition-colors",
+                    activeSection === "contact"
+                      ? dark
+                        ? "bg-cyan-400/15 text-cyan-300 font-semibold"
+                        : "bg-[#8b1a1a]/10 text-[#8b1a1a] font-semibold"
+                      : dark
+                        ? "text-white/80 hover:bg-white/8 hover:text-white"
+                        : "text-[#2a1008]/80 hover:bg-[#8b1a1a]/6 hover:text-[#8b1a1a]"
+                  )}
+                >
+                  <div className="flex items-center gap-3.5">
+                    <FiMail className="text-lg shrink-0" />
+                    <span>{sectionLabels.contact}</span>
+                  </div>
+                  {activeSection === "contact" && (
+                    <span
+                      className={cn(
+                        "h-2 w-2 rounded-full shrink-0",
+                        dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                      )}
+                    />
+                  )}
+                </a>
+              </nav>
+
+              {/* Subtle Divider */}
+              <div
                 className={cn(
-                  "flex h-12 w-full items-center justify-center rounded-full border text-sm font-semibold transition-colors",
-                  dark
-                    ? "border-white/20 text-white hover:bg-white/8"
-                    : "border-[#8b1a1a]/35 text-[#8b1a1a] hover:bg-[#8b1a1a]/8"
+                  "my-2.5 border-t",
+                  dark ? "border-white/10" : "border-[#8b1a1a]/10"
                 )}
-              >
-                {t.resume}
-              </a>
+              />
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-5">
-                  {socials.map(({ href, icon, label }) => (
-                    <a
-                      key={label}
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={label}
-                      className={cn("text-xl", dark ? "text-white/45 hover:text-white" : "text-[#7a4a35]/70 hover:text-[#8b1a1a]")}
-                    >
-                      {icon}
-                    </a>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={toggleTheme}
-                    aria-label="Toggle theme"
+              {/* Bottom Actions: Socials + Resume Button */}
+              <div className="flex items-center justify-between px-2 pt-0.5 pb-1">
+                <div className="flex items-center gap-3.5">
+                  <a
+                    href="https://github.com/pavan55kumar"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="GitHub"
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full border text-base",
-                      dark ? "border-white/15" : "border-[#8b1a1a]/25"
+                      "text-xl transition-colors",
+                      dark ? "text-white/70 hover:text-white" : "text-[#2a1008]/75 hover:text-[#8b1a1a]"
                     )}
                   >
-                    {dark ? "☀️" : "🌙"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLang(lang === "en" ? "jp" : "en")}
-                    aria-label="Toggle language"
+                    <FaGithub />
+                  </a>
+                  <a
+                    href="https://www.linkedin.com/in/pavan-kumar-6864b2320"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="LinkedIn"
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full border text-xs font-bold",
-                      dark ? "border-white/15 text-cyan-300" : "border-[#8b1a1a]/25 text-[#8b1a1a]"
+                      "text-xl transition-colors",
+                      dark ? "text-white/70 hover:text-white" : "text-[#2a1008]/75 hover:text-[#8b1a1a]"
                     )}
                   >
-                    {lang === "en" ? "JP" : "EN"}
-                  </button>
+                    <FaLinkedin />
+                  </a>
                 </div>
+
+                <a
+                  href="/resume.pdf"
+                  download
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-colors",
+                    dark
+                      ? "border-white/20 text-white/90 hover:bg-white/10 hover:border-white/40"
+                      : "border-[#8b1a1a]/25 text-[#2a1008]/90 hover:bg-[#8b1a1a]/8 hover:border-[#8b1a1a]/45"
+                  )}
+                >
+                  <FiFileText className="text-sm shrink-0" />
+                  <span>{t.resume}</span>
+                </a>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
