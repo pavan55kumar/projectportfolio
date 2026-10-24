@@ -2,172 +2,153 @@
   {
     "id": "skill-threejs",
     "name": "Three.js",
-    "icon_key": "threejs",
-    "icon_url": null,
+    "iconKey": "threejs",
+    "iconUrl": "",
     "category": "Frontend & 3D",
-    "order_index": 2,
-    "created_at": "2026-10-23T11:57:25.659396+00:00"
+    "orderIndex": 2
   },
   {
     "id": "skill-react",
     "name": "React",
-    "icon_key": "react",
-    "icon_url": null,
+    "iconKey": "react",
+    "iconUrl": "",
     "category": "Frontend & 3D",
-    "order_index": 2,
-    "created_at": "2026-10-23T11:57:24.0044+00:00"
+    "orderIndex": 2
   },
   {
     "id": "skill-tailwind",
     "name": "Tailwind",
-    "icon_key": "tailwind",
-    "icon_url": null,
+    "iconKey": "tailwind",
+    "iconUrl": "",
     "category": "Frontend & 3D",
-    "order_index": 3,
-    "created_at": "2026-10-23T11:57:27.2642+00:00"
+    "orderIndex": 3
   },
   {
     "id": "skill-nextjs",
     "name": "Next.js",
-    "icon_key": "nextjs",
-    "icon_url": null,
+    "iconKey": "nextjs",
+    "iconUrl": "",
     "category": "Frontend & 3D",
-    "order_index": 3,
-    "created_at": "2026-10-23T11:57:27.752134+00:00"
+    "orderIndex": 3
   },
   {
     "id": "skill-gsap",
     "name": "GSAP",
-    "icon_key": "gsap",
-    "icon_url": null,
+    "iconKey": "gsap",
+    "iconUrl": "",
     "category": "Frontend & 3D",
-    "order_index": 6,
-    "created_at": "2026-10-23T11:57:30.934754+00:00"
+    "orderIndex": 6
   },
   {
     "id": "skill-vite",
     "name": "Vite",
-    "icon_key": "vite",
-    "icon_url": null,
+    "iconKey": "vite",
+    "iconUrl": "",
     "category": "Frontend & 3D",
-    "order_index": 6,
-    "created_at": "2026-10-23T11:57:30.569929+00:00"
+    "orderIndex": 6
   },
   {
     "id": "skill-html5",
     "name": "HTML5",
-    "icon_key": "html5",
-    "icon_url": null,
+    "iconKey": "html5",
+    "iconUrl": "",
     "category": "Frontend & 3D",
-    "order_index": 6,
-    "created_at": "2026-10-23T11:57:33.888138+00:00"
+    "orderIndex": 6
   },
   {
     "id": "skill-css3",
     "name": "CSS3",
-    "icon_key": "css3",
-    "icon_url": null,
+    "iconKey": "css3",
+    "iconUrl": "",
     "category": "Frontend & 3D",
-    "order_index": 8,
-    "created_at": "2026-10-23T11:57:34.237897+00:00"
+    "orderIndex": 8
   },
   {
     "id": "skill-javascript",
     "name": "JavaScript",
-    "icon_key": "javascript",
-    "icon_url": null,
+    "iconKey": "javascript",
+    "iconUrl": "",
     "category": "Languages",
-    "order_index": 8,
-    "created_at": "2026-10-23T11:57:35.320505+00:00"
+    "orderIndex": 8
   },
   {
     "id": "skill-supabase",
     "name": "Supabase",
-    "icon_key": "supabase",
-    "icon_url": null,
+    "iconKey": "supabase",
+    "iconUrl": "",
     "category": "Backend & DB",
-    "order_index": 9,
-    "created_at": "2026-10-23T11:56:28.191546+00:00"
+    "orderIndex": 9
   },
   {
     "id": "skill-python",
     "name": "Python",
-    "icon_key": "python",
-    "icon_url": null,
+    "iconKey": "python",
+    "iconUrl": "",
     "category": "Languages",
-    "order_index": 10,
-    "created_at": "2026-10-23T11:57:37.176861+00:00"
+    "orderIndex": 10
   },
   {
     "id": "skill-java",
     "name": "Java",
-    "icon_key": "java",
-    "icon_url": null,
+    "iconKey": "java",
+    "iconUrl": "",
     "category": "Languages",
-    "order_index": 12,
-    "created_at": "2026-10-23T11:57:45.092746+00:00"
+    "orderIndex": 12
   },
   {
     "id": "skill-uiux",
     "name": "UI/UX",
-    "icon_key": "uiux",
-    "icon_url": null,
+    "iconKey": "uiux",
+    "iconUrl": "",
     "category": "Design & 3D",
-    "order_index": 12,
-    "created_at": "2026-10-23T11:57:45.743606+00:00"
+    "orderIndex": 12
   },
   {
     "id": "skill-nodejs",
     "name": "Node.js",
-    "icon_key": "nodejs",
-    "icon_url": null,
+    "iconKey": "nodejs",
+    "iconUrl": "",
     "category": "Backend & DB",
-    "order_index": 14,
-    "created_at": "2026-10-23T11:57:50.828872+00:00"
+    "orderIndex": 14
   },
   {
     "id": "skill-express",
     "name": "Express.js",
-    "icon_key": "express",
-    "icon_url": null,
+    "iconKey": "express",
+    "iconUrl": "",
     "category": "Backend & DB",
-    "order_index": 14,
-    "created_at": "2026-10-23T11:57:52.401276+00:00"
+    "orderIndex": 14
   },
   {
     "id": "skill-postgresql",
     "name": "PostgreSQL",
-    "icon_key": "postgresql",
-    "icon_url": null,
+    "iconKey": "postgresql",
+    "iconUrl": "",
     "category": "Backend & DB",
-    "order_index": 14,
-    "created_at": "2026-10-23T11:57:53.396862+00:00"
+    "orderIndex": 14
   },
   {
     "id": "skill-firebase",
     "name": "Firebase",
-    "icon_key": "firebase",
-    "icon_url": null,
+    "iconKey": "firebase",
+    "iconUrl": "",
     "category": "Backend & DB",
-    "order_index": 18,
-    "created_at": "2026-10-23T11:57:59.792938+00:00"
+    "orderIndex": 18
   },
   {
     "id": "skill-git",
     "name": "Git",
-    "icon_key": "git",
-    "icon_url": null,
+    "iconKey": "git",
+    "iconUrl": "",
     "category": "DevOps & Tools",
-    "order_index": 18,
-    "created_at": "2026-10-23T11:58:02.177466+00:00"
+    "orderIndex": 18
   },
   {
     "id": "skill-github",
     "name": "GitHub",
-    "icon_key": "github",
-    "icon_url": null,
+    "iconKey": "github",
+    "iconUrl": "",
     "category": "DevOps & Tools",
-    "order_index": 19,
-    "created_at": "2026-10-23T11:58:02.8864+00:00"
+    "orderIndex": 19
   }
 ]

@@ -177,6 +177,7 @@ export async function GET() {
               real: imgs.length > 0,
             };
           });
+        writeLocalCertificates(mapped).catch(() => {});
         return NextResponse.json(mapped, { headers: noCacheHeaders });
       }
     } catch (err) {

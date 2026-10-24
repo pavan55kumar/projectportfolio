@@ -3,6 +3,13 @@ import fs from "fs/promises";
 import path from "path";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+};
+
 const DATA_FILE = path.join(process.cwd(), "data", "testimonials.json");
 
 export type Testimonial = {
@@ -62,7 +69,7 @@ export async function GET() {
           provider: t.provider,
           approved: t.approved,
         }));
-        return NextResponse.json(mapped);
+        return NextResponse.json(mapped, { headers: noCacheHeaders });
       }
     } catch (err) {
       console.warn("Supabase fetch failed, falling back to local file:", err);
@@ -70,7 +77,7 @@ export async function GET() {
   }
 
   const localItems = await readLocalTestimonials();
-  return NextResponse.json(localItems);
+  return NextResponse.json(localItems, { headers: noCacheHeaders });
 }
 
 export async function POST(req: Request) {

@@ -3,6 +3,13 @@ import fs from "fs/promises";
 import path from "path";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+};
+
 export type SkillItem = {
   id: string;
   name: string;
@@ -74,7 +81,8 @@ export async function GET() {
           category: d.category || "General",
           orderIndex: Number(d.order_index ?? 0),
         }));
-        return NextResponse.json(mapped);
+        writeLocal(mapped).catch(() => {});
+        return NextResponse.json(mapped, { headers: noCacheHeaders });
       }
     } catch (err) {
       console.warn("Supabase skills fetch error, using local fallback:", err);
@@ -82,7 +90,7 @@ export async function GET() {
   }
 
   const local = await readLocal();
-  return NextResponse.json(local);
+  return NextResponse.json(local, { headers: noCacheHeaders });
 }
 
 export async function POST(req: Request) {

@@ -10,20 +10,28 @@ import ProjectCard from "./ProjectCard";
 
 export default function EngineeringLabView() {
   const { dark, toggle } = useTheme();
-  const [dynamicProjects, setDynamicProjects] = useState<EngineeringProject[]>(engineeringProjects);
+  const [dynamicProjects, setDynamicProjects] = useState<EngineeringProject[] | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/engineering-projects", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setDynamicProjects(data);
+        } else {
+          setDynamicProjects([]);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setDynamicProjects(engineeringProjects);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
-  const projectsToRender = dynamicProjects && dynamicProjects.length > 0 ? dynamicProjects : engineeringProjects;
+  const projectsToRender = dynamicProjects ?? [];
 
 
   return (
@@ -186,15 +194,38 @@ export default function EngineeringLabView() {
 
           {/* ── Project Cards Vertical Stack ── */}
           <div className="flex flex-col gap-6 sm:gap-8">
-            {projectsToRender.map((project, index) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                index={index}
-                totalProjects={projectsToRender.length}
-                dark={dark}
-              />
-            ))}
+            {loading ? (
+              [1, 2, 3].map((idx) => (
+                <div
+                  key={idx}
+                  className={`rounded-2xl border p-6 sm:p-8 animate-pulse ${
+                    dark ? "bg-white/[0.02] border-white/10" : "bg-white/60 border-[#8b1a1a]/15"
+                  }`}
+                >
+                  <div className="w-full h-48 sm:h-64 rounded-xl bg-white/10 mb-6" />
+                  <div className="space-y-3">
+                    <div className="w-24 h-4 rounded-full bg-white/15" />
+                    <div className="w-2/3 h-7 rounded bg-white/20" />
+                    <div className="w-full h-4 rounded bg-white/10" />
+                    <div className="w-5/6 h-4 rounded bg-white/10" />
+                  </div>
+                </div>
+              ))
+            ) : projectsToRender.length === 0 ? (
+              <div className="text-center py-12 text-sm opacity-60">
+                No projects found.
+              </div>
+            ) : (
+              projectsToRender.map((project, index) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  index={index}
+                  totalProjects={projectsToRender.length}
+                  dark={dark}
+                />
+              ))
+            )}
           </div>
         </section>
 

@@ -3,6 +3,13 @@ import fs from "fs/promises";
 import path from "path";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+};
+
 export type SiteProfile = {
   id: string;
   heroDesc: string;
@@ -15,11 +22,11 @@ const DATA_FILE = path.join(process.cwd(), "data", "profile.json");
 
 const defaultProfile: SiteProfile = {
   id: "default",
+  heroRole: "Information Science Engineering Student",
   heroDesc:
-    "2nd-year B.Tech student at NMAMIT, exploring web development, AI, and interactive projects that push the boundary of what's possible.",
+    "Third-year Information Science Engineering student passionate about software development, AI, and building meaningful digital experiences.",
   aboutMeDesc:
-    "I am a 2nd-year B.Tech student in Information Science and Engineering at N.M.A.M Institute of Technology, Nitte. Passionate about web development, 3D visuals, and interactive UI design. Skilled in C, Python, HTML, CSS, and React; I enjoy building websites and experimenting with AI-powered tools and creative prompts.",
-  heroRole: "Full-Stack Developer & AI Enthusiast",
+    "I'm an Information Science Engineering student at NMAM Institute of Technology, Nitte, with a strong interest in software engineering, web development, and artificial intelligence. I enjoy turning ideas into practical, well-designed digital solutions through coding, experimentation, and continuous learning. My goal is to build technology that solves real-world problems while growing as a developer and problem-solver.Science and engineering",
 };
 
 async function readLocal(): Promise<SiteProfile> {
@@ -52,14 +59,15 @@ export async function GET() {
         .maybeSingle();
 
       if (!error && data) {
-        const local = await readLocal();
-        return NextResponse.json({
+        const profileObj: SiteProfile = {
           id: data.id,
-          heroDesc: data.hero_desc || defaultProfile.heroDesc,
-          aboutMeDesc: data.about_desc || defaultProfile.aboutMeDesc,
-          heroRole: data.hero_role || local.heroRole || defaultProfile.heroRole,
+          heroDesc: data.hero_desc !== undefined && data.hero_desc !== null ? data.hero_desc : defaultProfile.heroDesc,
+          aboutMeDesc: data.about_desc !== undefined && data.about_desc !== null ? data.about_desc : defaultProfile.aboutMeDesc,
+          heroRole: data.hero_role !== undefined && data.hero_role !== null ? data.hero_role : (defaultProfile.heroRole || ""),
           updatedAt: data.updated_at,
-        });
+        };
+        writeLocal(profileObj).catch(() => {});
+        return NextResponse.json(profileObj, { headers: noCacheHeaders });
       }
     } catch (err) {
       console.warn("Supabase profile fetch error, using local fallback:", err);
@@ -67,7 +75,7 @@ export async function GET() {
   }
 
   const local = await readLocal();
-  return NextResponse.json(local);
+  return NextResponse.json(local, { headers: noCacheHeaders });
 }
 
 export async function PUT(req: Request) {

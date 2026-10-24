@@ -39,12 +39,7 @@ import {
 } from "react-icons/fi";
 import { useTheme } from "./theme-provider";
 import { SkillIcon } from "@/lib/skills-catalog";
-import defaultProfile from "@/data/profile.json";
-import localCertificates from "@/data/certificates.json";
-import localProjects from "@/data/projects.json";
-import localEducation from "@/data/education.json";
-import localExperience from "@/data/experience.json";
-import localSkills from "@/data/skills.json";
+
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 const cn = (...classes: (string | boolean | undefined | null)[]) =>
@@ -495,19 +490,17 @@ const texts = {
     contact: "Contact",
     resume: "Resume",
     name: "Pavan Kumar",
-    heroRole: defaultProfile.heroRole || "Information Science Engineering Student",
+    heroRole: "",
     whoIAm: "Who I Am",
     skillsStack: "Skills & Stack",
     whatIBuilt: "What I've Built",
     credentials: "Credentials",
     getInTouch: "Get in Touch",
-    heroDesc:
-      defaultProfile.heroDesc || "Third-year Information Science Engineering student passionate about software development, AI, and building meaningful digital experiences.",
+    heroDesc: "",
     contactMe: "Contact Me",
     myWork: "My Work",
     aboutMeTitle: "About Me",
-    aboutMeDesc:
-      defaultProfile.aboutMeDesc || "I'm an Information Science Engineering student at NMAM Institute of Technology, Nitte, with a strong interest in software engineering, web development, and artificial intelligence. I enjoy turning ideas into practical, well-designed digital solutions through coding, experimentation, and continuous learning. My goal is to build technology that solves real-world problems while growing as a developer and problem-solver.Science and engineering",
+    aboutMeDesc: "",
     education: "Education",
     educationDesc:
       "B.Tech ISE — N.M.A.M.I.T Institute of Technology, Nitte  ·  2024 – 2028",
@@ -747,7 +740,6 @@ function getCardImages(card: any): string[] {
   return [];
 }
 
-const certCards = localCertificates as any[];
 
 // ─── Testimonials ──────────────────────────────────────────────────────────────
 type Testimonial = {
@@ -1488,57 +1480,105 @@ export default function Home() {
   const [navScrolled, setNavScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("home");
-  const [dynamicProjects, setDynamicProjects] = useState<any[]>(localProjects as any[]);
-  const [dynamicCertificates, setDynamicCertificates] = useState<any[]>(localCertificates as any[]);
+  const [dynamicProjects, setDynamicProjects] = useState<any[]>([]);
+  const [projectsLoading, setProjectsLoading] = useState(true);
+
+  const [dynamicCertificates, setDynamicCertificates] = useState<any[]>([]);
+  const [certsLoading, setCertsLoading] = useState(true);
+
   const [activeProjectCategory, setActiveProjectCategory] = useState<string>("All");
   const [activeCertCategory, setActiveCertCategory] = useState<string>("All");
-  const [siteProfile, setSiteProfile] = useState<{ heroDesc: string; aboutMeDesc: string; heroRole?: string }>(defaultProfile);
-  const [dynamicEducation, setDynamicEducation] = useState<any[]>(localEducation as any[]);
-  const [dynamicExperience, setDynamicExperience] = useState<any[]>(localExperience as any[]);
-  const [dynamicSkills, setDynamicSkills] = useState<any[]>(localSkills as any[]);
+
+  const [siteProfile, setSiteProfile] = useState<{ heroDesc?: string; aboutMeDesc?: string; heroRole?: string } | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  const [dynamicEducation, setDynamicEducation] = useState<any[]>([]);
+  const [educationLoading, setEducationLoading] = useState(true);
+
+  const [dynamicExperience, setDynamicExperience] = useState<any[]>([]);
+  const [experienceLoading, setExperienceLoading] = useState(true);
+
+  const [dynamicSkills, setDynamicSkills] = useState<any[]>([]);
+  const [skillsLoading, setSkillsLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
+
     fetch("/api/projects", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) setDynamicProjects(data);
+        if (isMounted) {
+          if (Array.isArray(data)) setDynamicProjects(data);
+          setProjectsLoading(false);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) setProjectsLoading(false);
+      });
 
     fetch("/api/certificates", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) setDynamicCertificates(data);
+        if (isMounted) {
+          if (Array.isArray(data)) setDynamicCertificates(data);
+          setCertsLoading(false);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) setCertsLoading(false);
+      });
 
     fetch("/api/profile", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data && (data.heroDesc || data.heroRole)) setSiteProfile(data);
+        if (isMounted) {
+          if (data && typeof data === "object") setSiteProfile(data);
+          setProfileLoading(false);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) setProfileLoading(false);
+      });
 
     fetch("/api/education", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) setDynamicEducation(data);
+        if (isMounted) {
+          if (Array.isArray(data)) setDynamicEducation(data);
+          setEducationLoading(false);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) setEducationLoading(false);
+      });
 
     fetch("/api/experience", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) setDynamicExperience(data);
+        if (isMounted) {
+          if (Array.isArray(data)) setDynamicExperience(data);
+          setExperienceLoading(false);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) setExperienceLoading(false);
+      });
 
     fetch("/api/skills", { cache: "no-store" })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
-        if (Array.isArray(data) && data.length > 0) setDynamicSkills(data);
+        if (isMounted) {
+          if (Array.isArray(data)) setDynamicSkills(data);
+          setSkillsLoading(false);
+        }
       })
-      .catch(() => {});
+      .catch(() => {
+        if (isMounted) setSkillsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -1641,7 +1681,7 @@ export default function Home() {
 
   const t = texts[lang];
 
-  const allProjects = (dynamicProjects && dynamicProjects.length > 0) ? dynamicProjects : (localProjects as any[]);
+  const allProjects = dynamicProjects;
   const filteredProjects = activeProjectCategory === "All"
     ? allProjects
     : allProjects.filter((p: any) => {
@@ -1649,7 +1689,7 @@ export default function Home() {
         return cat === activeProjectCategory.trim().toLowerCase();
       });
 
-  const rawCertificates = (dynamicCertificates && dynamicCertificates.length > 0) ? dynamicCertificates : (localCertificates as any[]);
+  const rawCertificates = dynamicCertificates;
   const allCertificates = rawCertificates.filter((c: any) => {
     if (!c || !c.title) return false;
     const title = c.title.trim().toLowerCase();
@@ -2379,22 +2419,48 @@ export default function Home() {
 
             {/* Badge */}
             <motion.div variants={fadeUp} className="pointer-events-auto">
-              <span
-                className={cn(
-                  "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border glass",
-                  dark
-                    ? "border-cyan-400/30 text-cyan-300"
-                    : "border-[#8b1a1a]/30 text-[#8b1a1a] bg-[#f5ede0]/60"
-                )}
-              >
+              {profileLoading ? (
                 <span
                   className={cn(
-                    "w-1.5 h-1.5 rounded-full animate-pulse",
-                    dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                    "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border glass",
+                    dark
+                      ? "border-cyan-400/30 text-cyan-300"
+                      : "border-[#8b1a1a]/30 text-[#8b1a1a] bg-[#f5ede0]/60"
                   )}
-                />
-                {(lang === "en" && siteProfile?.heroRole) ? siteProfile.heroRole : t.heroRole}
-              </span>
+                >
+                  <span
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full animate-pulse",
+                      dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      "inline-block h-3.5 w-36 rounded-full animate-pulse",
+                      dark ? "bg-cyan-400/20" : "bg-[#8b1a1a]/15"
+                    )}
+                  />
+                </span>
+              ) : (
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold border glass",
+                    dark
+                      ? "border-cyan-400/30 text-cyan-300"
+                      : "border-[#8b1a1a]/30 text-[#8b1a1a] bg-[#f5ede0]/60"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full animate-pulse",
+                      dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
+                    )}
+                  />
+                  {(lang === "en" && siteProfile?.heroRole)
+                    ? siteProfile.heroRole
+                    : (siteProfile?.heroRole || t.heroRole)}
+                </span>
+              )}
             </motion.div>
 
             <motion.h1
@@ -2404,15 +2470,38 @@ export default function Home() {
               {t.name}
             </motion.h1>
 
-            <motion.p
+            <motion.div
               variants={fadeUp}
-              className={cn(
-                "text-base sm:text-lg max-w-xl leading-relaxed",
-                dark ? "text-white/50" : "text-[#7a4a35]"
-              )}
+              className="w-full flex justify-center"
             >
-              {(lang === "en" && siteProfile?.heroDesc) ? siteProfile.heroDesc : t.heroDesc}
-            </motion.p>
+              {profileLoading ? (
+                <div className="w-full max-w-xl space-y-2 py-1 flex flex-col items-center">
+                  <div
+                    className={cn(
+                      "h-4 w-11/12 max-w-lg rounded-full animate-pulse",
+                      dark ? "bg-white/10" : "bg-[#8b1a1a]/10"
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      "h-4 w-4/5 max-w-md rounded-full animate-pulse",
+                      dark ? "bg-white/10" : "bg-[#8b1a1a]/10"
+                    )}
+                  />
+                </div>
+              ) : (
+                <p
+                  className={cn(
+                    "text-base sm:text-lg max-w-xl leading-relaxed text-center",
+                    dark ? "text-white/50" : "text-[#7a4a35]"
+                  )}
+                >
+                  {(lang === "en" && siteProfile?.heroDesc)
+                    ? siteProfile.heroDesc
+                    : (siteProfile?.heroDesc || t.heroDesc)}
+                </p>
+              )}
+            </motion.div>
 
             <motion.div
               variants={fadeUp}
@@ -2526,14 +2615,22 @@ export default function Home() {
           <div className="space-y-10 sm:space-y-14">
             {/* Bio Story Narrative */}
             <motion.div variants={fadeUp} className="max-w-3xl">
-              <p
-                className={cn(
-                  "text-base sm:text-lg leading-relaxed",
-                  dark ? "text-white/70" : "text-[#5a3020]"
-                )}
-              >
-                {(lang === "en" && siteProfile?.aboutMeDesc) ? siteProfile.aboutMeDesc : t.aboutMeDesc}
-              </p>
+              {profileLoading ? (
+                <div className="space-y-2.5 py-1">
+                  <div className={cn("h-4 w-full rounded-full animate-pulse", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                  <div className={cn("h-4 w-11/12 rounded-full animate-pulse", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                  <div className={cn("h-4 w-4/5 rounded-full animate-pulse", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                </div>
+              ) : (
+                <p
+                  className={cn(
+                    "text-base sm:text-lg leading-relaxed",
+                    dark ? "text-white/70" : "text-[#5a3020]"
+                  )}
+                >
+                  {(lang === "en" && siteProfile?.aboutMeDesc) ? siteProfile.aboutMeDesc : (siteProfile?.aboutMeDesc || t.aboutMeDesc)}
+                </p>
+              )}
             </motion.div>
 
             {/* ── 1. EDUCATION (Matching Reference Image) ── */}
@@ -2579,35 +2676,30 @@ export default function Home() {
                 />
 
                 <div className="divide-y divide-white/[0.05]">
-                  {(dynamicEducation && dynamicEducation.length > 0
-                    ? dynamicEducation
-                    : [
-                        {
-                          id: "edu-1792752050208",
-                          levelTag: "B.TECH",
-                          degree: "B.tech information science and engineering",
-                          institution: "N.M.A.M. Institute of Technology, Nitte",
-                          period: "2024-2028",
-                          status: "In Progress",
-                        },
-                        {
-                          id: "puc-science",
-                          levelTag: "PRE-UNIVERSITY",
-                          degree: "Pre-University Course (PUC)",
-                          institution: "Science · Shamili PU College",
-                          period: "2022 - 2024",
-                          status: "",
-                        },
-                        {
-                          id: "sslc-school",
-                          levelTag: "SECONDARY EDUCATION",
-                          degree: "Secondary School (SSLC)",
-                          institution: "St.Cecily's High school",
-                          period: "2022",
-                          status: "",
-                        },
-                      ]
-                  ).map((item, idx) => {
+                  {educationLoading ? (
+                    <div className="space-y-4 py-2">
+                      {[1, 2].map((idx) => (
+                        <div key={idx} className="relative pl-11 sm:pl-13 py-4 sm:py-5 animate-pulse">
+                          <div
+                            className={cn(
+                              "absolute left-3.5 top-7 -translate-x-1/2 -translate-y-1/2 w-7 h-7 rounded-full border",
+                              dark ? "border-slate-800 bg-slate-900/40" : "border-[#8b1a1a]/15 bg-white/60"
+                            )}
+                          />
+                          <div className="space-y-2.5">
+                            <div className={cn("h-3 w-20 rounded-full", dark ? "bg-white/15" : "bg-[#8b1a1a]/15")} />
+                            <div className={cn("h-4.5 w-3/5 rounded", dark ? "bg-white/20" : "bg-[#8b1a1a]/20")} />
+                            <div className={cn("h-3.5 w-2/5 rounded", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : dynamicEducation.length === 0 ? (
+                    <div className={cn("pl-11 py-6 text-xs sm:text-sm italic", dark ? "text-white/40" : "text-[#7a4a35]/60")}>
+                      No education records found.
+                    </div>
+                  ) : (
+                    dynamicEducation.map((item, idx) => {
                     const isFirst = idx === 0;
                     const isInProgress = item.status && item.status.toLowerCase().includes("progress");
 
@@ -2728,7 +2820,8 @@ export default function Home() {
                         </div>
                       </div>
                     );
-                  })}
+                  })
+                )}
                 </div>
               </div>
             </motion.div>
@@ -2773,18 +2866,32 @@ export default function Home() {
 
               {/* Clean & Minimal Experience Timeline (No Card Containers) */}
               <div className="space-y-6 sm:space-y-7">
-                {(dynamicExperience && dynamicExperience.length > 0
-                  ? dynamicExperience
-                  : [
-                      {
-                        id: "web-intern-abc",
-                        role: "Web Intern",
-                        company: "ABC Corp",
-                        period: "May 2025 – July 2025",
-                        description: "Full-stack web application development and component engineering.",
-                      },
-                    ]
-                ).map((exp: any, i: number, arr: any[]) => {
+                {experienceLoading ? (
+                  <div className="space-y-6 py-2">
+                    {[1, 2].map((idx) => (
+                      <div key={idx} className="relative pl-6 sm:pl-7 py-2 animate-pulse">
+                        <div
+                          className={cn(
+                            "absolute left-1 top-2.5 -translate-x-1/2 w-2.5 h-2.5 rounded-full",
+                            dark ? "bg-cyan-400/40" : "bg-[#8b1a1a]/40"
+                          )}
+                        />
+                        <div className="space-y-2">
+                          <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
+                            <div className={cn("h-4 w-44 rounded", dark ? "bg-white/20" : "bg-[#8b1a1a]/20")} />
+                            <div className={cn("h-4 w-28 rounded-md", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                          </div>
+                          <div className={cn("h-3.5 w-3/4 rounded", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : dynamicExperience.length === 0 ? (
+                  <div className={cn("pl-6 py-4 text-xs sm:text-sm italic", dark ? "text-white/40" : "text-[#7a4a35]/60")}>
+                    No experience records found.
+                  </div>
+                ) : (
+                  dynamicExperience.map((exp: any, i: number, arr: any[]) => {
                   let role = exp.role || "";
                   let company = exp.company || "";
                   let period = exp.period || "";
@@ -2865,7 +2972,8 @@ export default function Home() {
                       )}
                     </div>
                   );
-                })}
+                })
+              )}
               </div>
             </motion.div>
 
@@ -2898,31 +3006,40 @@ export default function Home() {
               </h3>
 
               {/* 4-Column Grid with Clean & Minimal Aesthetic (Matching Reference Design) */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4">
-                {(dynamicSkills && dynamicSkills.length > 0
-                  ? dynamicSkills
-                  : [
-                      { id: "skill-threejs", name: "Three.js", iconKey: "threejs" },
-                      { id: "skill-react", name: "React", iconKey: "react" },
-                      { id: "skill-tailwind", name: "Tailwind", iconKey: "tailwind" },
-                      { id: "skill-nextjs", name: "Next.js", iconKey: "nextjs" },
-                      { id: "skill-gsap", name: "GSAP", iconKey: "gsap" },
-                      { id: "skill-vite", name: "Vite", iconKey: "vite" },
-                      { id: "skill-html5", name: "HTML5", iconKey: "html5" },
-                      { id: "skill-css3", name: "CSS3", iconKey: "css3" },
-                      { id: "skill-javascript", name: "JavaScript", iconKey: "javascript" },
-                      { id: "skill-supabase", name: "Supabase", iconKey: "supabase" },
-                      { id: "skill-python", name: "Python", iconKey: "python" },
-                      { id: "skill-java", name: "Java", iconKey: "java" },
-                      { id: "skill-uiux", name: "UI/UX", iconKey: "uiux" },
-                      { id: "skill-nodejs", name: "Node.js", iconKey: "nodejs" },
-                      { id: "skill-express", name: "Express.js", iconKey: "express" },
-                      { id: "skill-postgresql", name: "PostgreSQL", iconKey: "postgresql" },
-                      { id: "skill-firebase", name: "Firebase", iconKey: "firebase" },
-                      { id: "skill-git", name: "Git", iconKey: "git" },
-                      { id: "skill-github", name: "GitHub", iconKey: "github" },
-                    ]
-                ).map((skill: any, i: number) => (
+              {skillsLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4">
+                  {[1, 2, 3, 4, 5, 6, 7, 8].map((idx) => (
+                    <div
+                      key={idx}
+                      className={cn(
+                        "rounded-xl sm:rounded-2xl px-3.5 py-3 sm:px-4.5 sm:py-3.5 md:px-5 md:py-4 flex items-center gap-3 sm:gap-4 border animate-pulse min-h-[48px] sm:min-h-[56px] md:min-h-[62px]",
+                        dark
+                          ? "bg-[#040e1c]/60 border-cyan-500/10"
+                          : "bg-[#fffaf2]/80 border-[#8b1a1a]/10"
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-lg shrink-0",
+                          dark ? "bg-white/10" : "bg-[#8b1a1a]/10"
+                        )}
+                      />
+                      <div
+                        className={cn(
+                          "h-4 w-20 rounded",
+                          dark ? "bg-white/15" : "bg-[#8b1a1a]/15"
+                        )}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : dynamicSkills.length === 0 ? (
+                <div className={cn("py-8 text-center text-xs sm:text-sm italic", dark ? "text-white/40" : "text-[#7a4a35]/60")}>
+                  No skills added yet.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4">
+                  {dynamicSkills.map((skill: any, i: number) => (
                   <motion.div
                     key={skill.id || skill.name}
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -2975,7 +3092,8 @@ export default function Home() {
                     </div>
                   </motion.div>
                 ))}
-              </div>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>
@@ -3041,7 +3159,41 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {filteredProjects.length === 0 ? (
+        {projectsLoading ? (
+          <div
+            className="flex gap-6 overflow-x-auto scrollbar-hide pb-2"
+            style={{
+              paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
+              paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
+            }}
+          >
+            {[1, 2, 3].map((idx) => (
+              <div
+                key={idx}
+                className={cn(
+                  "snap-start shrink-0 w-[300px] sm:w-[360px] glass-card border rounded-2xl p-7 flex flex-col gap-4 animate-pulse",
+                  dark ? "border-white/8 bg-white/[0.02]" : "border-[#8b1a1a]/14 bg-white/60"
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <div className={cn("w-12 h-12 rounded-xl", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                  <div className={cn("h-5 w-20 rounded-full", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                </div>
+                <div className={cn("h-6 w-3/4 rounded mt-2", dark ? "bg-white/20" : "bg-[#8b1a1a]/20")} />
+                <div className={cn("h-3.5 w-full rounded", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                <div className="space-y-2 mt-1">
+                  <div className={cn("h-3 w-full rounded", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                  <div className={cn("h-3 w-5/6 rounded", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                  <div className={cn("h-3 w-2/3 rounded", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                </div>
+                <div className="flex gap-3 mt-auto pt-4 border-t border-white/5">
+                  <div className={cn("h-8 w-24 rounded-lg", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                  <div className={cn("h-8 w-24 rounded-lg", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredProjects.length === 0 ? (
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               key="empty-projects"
@@ -3301,7 +3453,35 @@ export default function Home() {
           </motion.div>
         </div>
 
-        {filteredCertificates.length === 0 ? (
+        {certsLoading ? (
+          <div
+            className="flex gap-6 overflow-x-auto scrollbar-hide pb-4 pt-2"
+            style={{
+              paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
+              paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
+            }}
+          >
+            {[1, 2, 3].map((idx) => (
+              <div
+                key={idx}
+                className={cn(
+                  "snap-start shrink-0 w-[280px] sm:w-[320px] rounded-2xl p-5 border animate-pulse flex flex-col gap-3",
+                  dark
+                    ? "bg-[#040e1c]/60 border-cyan-500/10"
+                    : "bg-[#fffaf2]/80 border-[#8b1a1a]/10"
+                )}
+              >
+                <div className={cn("w-full h-36 rounded-xl", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                <div className="flex items-center justify-between mt-1">
+                  <div className={cn("h-4 w-20 rounded-full", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                  <div className={cn("h-4 w-12 rounded", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+                </div>
+                <div className={cn("h-5 w-4/5 rounded", dark ? "bg-white/20" : "bg-[#8b1a1a]/20")} />
+                <div className={cn("h-3.5 w-1/2 rounded", dark ? "bg-white/10" : "bg-[#8b1a1a]/10")} />
+              </div>
+            ))}
+          </div>
+        ) : filteredCertificates.length === 0 ? (
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
               key="empty-certs"
