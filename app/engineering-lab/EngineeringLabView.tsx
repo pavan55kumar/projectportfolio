@@ -10,28 +10,23 @@ import ProjectCard from "./ProjectCard";
 
 export default function EngineeringLabView() {
   const { dark, toggle } = useTheme();
-  const [dynamicProjects, setDynamicProjects] = useState<EngineeringProject[] | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [dynamicProjects, setDynamicProjects] = useState<EngineeringProject[]>(engineeringProjects);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetch("/api/engineering-projects", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           setDynamicProjects(data);
-        } else {
-          setDynamicProjects([]);
         }
       })
       .catch(() => {
         setDynamicProjects(engineeringProjects);
-      })
-      .finally(() => {
-        setLoading(false);
       });
   }, []);
 
-  const projectsToRender = dynamicProjects ?? [];
+  const projectsToRender = dynamicProjects && dynamicProjects.length > 0 ? dynamicProjects : engineeringProjects;
 
 
   return (
@@ -59,45 +54,33 @@ export default function EngineeringLabView() {
 
       {/* ── Top Navigation Header ── */}
       <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:px-12">
+        {/* Return to Main Portfolio (Left Side) */}
         <Link
           href="/"
-          className={`text-base font-bold tracking-tight transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 ${
-            dark ? "text-white focus-visible:ring-cyan-300" : "text-[#2a1008] focus-visible:ring-[#8b1a1a]"
+          className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs sm:text-sm font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 backdrop-blur-md ${
+            dark
+              ? "border-white/10 bg-white/[0.04] text-white/80 hover:border-cyan-400/40 hover:text-white hover:bg-white/[0.08] focus-visible:ring-cyan-400"
+              : "border-[#8b1a1a]/20 bg-white/70 text-[#7a4a35] hover:border-[#8b1a1a]/45 hover:text-[#2a1008] hover:bg-white/90 shadow-sm focus-visible:ring-[#8b1a1a]"
           }`}
         >
-          PAVAN
-          <span className={dark ? "text-cyan-400" : "text-[#8b1a1a]"}>.</span>
+          <span className="text-sm">←</span>
+          <span>Main portfolio</span>
         </Link>
 
-        <div className="flex items-center gap-3 sm:gap-5">
-          {/* Theme Switcher Button */}
-          <button
-            type="button"
-            onClick={toggle}
-            aria-label={dark ? "Switch to Day Mode" : "Switch to Night Mode"}
-            title={dark ? "Switch to Day Mode" : "Switch to Night Mode"}
-            className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border text-sm sm:text-base transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 ${
-              dark
-                ? "border-white/15 bg-white/[0.04] text-white hover:border-cyan-400/50 hover:bg-white/[0.08] focus-visible:ring-cyan-400"
-                : "border-[#8b1a1a]/20 bg-[#faeedd] text-[#8b1a1a] hover:border-[#8b1a1a]/45 hover:bg-[#faeedd]/90 shadow-sm focus-visible:ring-[#8b1a1a]"
-            }`}
-          >
-            {dark ? "☀️" : "🌙"}
-          </button>
-
-          {/* Main Portfolio Link */}
-          <Link
-            href="/"
-            className={`inline-flex items-center gap-2 rounded-xl border px-3.5 sm:px-4 py-2 text-xs font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 ${
-              dark
-                ? "border-white/10 bg-white/[0.03] text-white/70 hover:border-cyan-400/35 hover:text-white focus-visible:ring-cyan-400"
-                : "border-[#8b1a1a]/20 bg-[#fbf5ea] text-[#7a4a35] hover:border-[#8b1a1a]/45 hover:text-[#2a1008] shadow-sm focus-visible:ring-[#8b1a1a]"
-            }`}
-          >
-            <span>Main portfolio</span>
-            <FaArrowRight className="text-[10px]" />
-          </Link>
-        </div>
+        {/* Theme Switcher Button (Right Side) */}
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={dark ? "Switch to Day Mode" : "Switch to Night Mode"}
+          title={dark ? "Switch to Day Mode" : "Switch to Night Mode"}
+          className={`flex h-10 w-10 items-center justify-center rounded-full border text-base transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 backdrop-blur-md ${
+            dark
+              ? "border-white/15 bg-white/[0.04] text-white hover:border-cyan-400/50 hover:bg-white/[0.08] focus-visible:ring-cyan-400"
+              : "border-[#8b1a1a]/20 bg-white/70 text-[#8b1a1a] hover:border-[#8b1a1a]/45 hover:bg-white/90 shadow-sm focus-visible:ring-[#8b1a1a]"
+          }`}
+        >
+          {dark ? "☀️" : "🌙"}
+        </button>
       </header>
 
       {/* ── Main Container ── */}
@@ -111,20 +94,36 @@ export default function EngineeringLabView() {
             transition={{ duration: 0.5 }}
             className="mb-5 sm:mb-6"
           >
-            <span
-              className={`inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] border transition-colors ${
+            <div
+              className={`inline-flex items-center gap-3 px-3.5 py-1.5 rounded-full border transition-colors backdrop-blur-md ${
                 dark
-                  ? "bg-white/[0.035] border-white/10 text-white/60"
-                  : "bg-[#8b1a1a]/[0.05] border-[#8b1a1a]/15 text-[#7a4a35]"
+                  ? "bg-white/[0.035] border-white/10 text-white"
+                  : "bg-white/70 border-[#8b1a1a]/20 text-[#2a1008] shadow-sm"
               }`}
             >
+              <div className="inline-flex items-center gap-2">
+                <span
+                  className={`h-2 w-2 rounded-full shrink-0 ${
+                    dark ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-[#8b1a1a]"
+                  }`}
+                />
+                <span
+                  className={`text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] ${
+                    dark ? "text-cyan-300" : "text-[#8b1a1a]"
+                  }`}
+                >
+                  Selected work
+                </span>
+              </div>
+              <span className={`text-xs ${dark ? "text-white/20" : "text-[#8b1a1a]/25"}`}>|</span>
               <span
-                className={`h-2 w-2 rounded-full shrink-0 ${
-                  dark ? "bg-cyan-400 shadow-[0_0_10px_#22d3ee]" : "bg-[#8b1a1a]"
+                className={`text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] ${
+                  dark ? "text-white/50" : "text-[#7a4a35]/70"
                 }`}
-              />
-              Selected work <span className="opacity-40">·</span> Engineering Lab
-            </span>
+              >
+                Engineering Lab
+              </span>
+            </div>
           </motion.div>
 
           {/* Main Headline */}
@@ -132,14 +131,14 @@ export default function EngineeringLabView() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.08 }}
-            className="text-[clamp(3rem,7.5vw,6rem)] font-extrabold leading-[0.96] tracking-[-0.055em]"
+            className="text-[clamp(2.75rem,7vw,5.5rem)] font-extrabold leading-[0.98] tracking-[-0.05em]"
           >
             Things I&apos;ve
             <br />
             <span
               className={
                 dark
-                  ? "bg-gradient-to-r from-cyan-200 via-sky-400 to-indigo-400 bg-clip-text text-transparent"
+                  ? "bg-gradient-to-r from-cyan-300 via-sky-400 to-cyan-200 bg-clip-text text-transparent"
                   : "text-[#8b1a1a]"
               }
             >
@@ -152,7 +151,7 @@ export default function EngineeringLabView() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.16 }}
-            className={`mt-5 sm:mt-6 max-w-xl text-base sm:text-lg leading-relaxed transition-colors ${
+            className={`mt-4 sm:mt-5 max-w-xl text-sm sm:text-base leading-relaxed transition-colors ${
               dark ? "text-white/60" : "text-[#7a4a35]"
             }`}
           >
@@ -163,7 +162,7 @@ export default function EngineeringLabView() {
 
         {/* ── "Featured Work / My Projects" Divider Bar ── */}
         <section className="scroll-mt-10" id="projects">
-          <div className="mb-8 flex items-center gap-6">
+          <div className="mb-6 sm:mb-8 flex items-center gap-4 sm:gap-6">
             <div className="flex flex-col shrink-0">
               <span
                 className={`text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.22em] ${
@@ -173,12 +172,12 @@ export default function EngineeringLabView() {
                 FEATURED WORK
               </span>
               <h2
-                className={`text-2xl sm:text-3xl font-bold tracking-tight mt-1 ${
+                className={`text-xl sm:text-2xl font-bold tracking-tight mt-0.5 ${
                   dark ? "text-white" : "text-[#2a1008]"
                 }`}
               >
                 My{" "}
-                <span className={dark ? "text-cyan-300" : "text-[#8b1a1a]"}>
+                <span className={dark ? "text-cyan-400" : "text-[#8b1a1a]"}>
                   Projects
                 </span>
               </h2>

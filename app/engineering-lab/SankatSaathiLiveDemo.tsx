@@ -157,11 +157,11 @@ export default function SankatSaathiLiveDemo() {
       prev.map((c) =>
         c.id === chosenCentre.id
           ? {
-              ...c,
-              water: Math.max(0, c.water - (target.category === "Water" ? target.people * 5 : 0)),
-              food: Math.max(0, c.food - (target.category === "Food" ? target.people * 2 : 0)),
-              medical: Math.max(0, c.medical - (target.category === "Medical" ? 5 : 0)),
-            }
+            ...c,
+            water: Math.max(0, c.water - (target.category === "Water" ? target.people * 5 : 0)),
+            food: Math.max(0, c.food - (target.category === "Food" ? target.people * 2 : 0)),
+            medical: Math.max(0, c.medical - (target.category === "Medical" ? 5 : 0)),
+          }
           : c
       )
     );
@@ -170,12 +170,12 @@ export default function SankatSaathiLiveDemo() {
       prev.map((r) =>
         r.id === reqId
           ? {
-              ...r,
-              status: "Allocated",
-              assignedCentre: chosenCentre.name,
-              distanceKm: dist,
-              etaMin: eta,
-            }
+            ...r,
+            status: "Allocated",
+            assignedCentre: chosenCentre.name,
+            distanceKm: dist,
+            etaMin: eta,
+          }
           : r
       )
     );
@@ -184,12 +184,12 @@ export default function SankatSaathiLiveDemo() {
       setSelectedReq((prev) =>
         prev
           ? {
-              ...prev,
-              status: "Allocated",
-              assignedCentre: chosenCentre.name,
-              distanceKm: dist,
-              etaMin: eta,
-            }
+            ...prev,
+            status: "Allocated",
+            assignedCentre: chosenCentre.name,
+            distanceKm: dist,
+            etaMin: eta,
+          }
           : null
       );
     }
@@ -200,9 +200,9 @@ export default function SankatSaathiLiveDemo() {
       prev.map((r) =>
         r.id === reqId
           ? {
-              ...r,
-              status: "Dispatched",
-            }
+            ...r,
+            status: "Dispatched",
+          }
           : r
       )
     );
@@ -216,9 +216,9 @@ export default function SankatSaathiLiveDemo() {
       prev.map((r) =>
         r.id === reqId
           ? {
-              ...r,
-              status: "Delivered",
-            }
+            ...r,
+            status: "Delivered",
+          }
           : r
       )
     );
@@ -259,21 +259,19 @@ export default function SankatSaathiLiveDemo() {
         <div className="flex rounded-xl border border-lab-fg/15 bg-lab-fg/[0.04] p-1.5 self-start md:self-auto">
           <button
             onClick={() => setActiveTab("command")}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition ${
-              activeTab === "command"
-                ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/30"
-                : "text-lab-fg/70 hover:text-lab-fg"
-            }`}
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition ${activeTab === "command"
+              ? "bg-cyan-500 text-white shadow-lg shadow-cyan-500/30"
+              : "text-lab-fg/70 hover:text-lab-fg"
+              }`}
           >
             <FaShieldAlt /> Command Operations
           </button>
           <button
             onClick={() => setActiveTab("citizen")}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition ${
-              activeTab === "citizen"
-                ? "bg-rose-500 text-white shadow-lg shadow-rose-500/30"
-                : "text-lab-fg/70 hover:text-lab-fg"
-            }`}
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-semibold transition ${activeTab === "citizen"
+              ? "bg-rose-500 text-white shadow-lg shadow-rose-500/30"
+              : "text-lab-fg/70 hover:text-lab-fg"
+              }`}
           >
             <FaExclamationTriangle /> Citizen SOS Portal
           </button>
@@ -344,11 +342,10 @@ export default function SankatSaathiLiveDemo() {
                     <div
                       key={req.id}
                       onClick={() => setSelectedReq(req)}
-                      className={`cursor-pointer rounded-2xl border p-4 transition-all ${
-                        selectedReq?.id === req.id
-                          ? "border-cyan-400 bg-cyan-500/[0.08] shadow-md"
-                          : "border-lab-fg/10 bg-lab-fg/[0.02] hover:border-lab-fg/25 hover:bg-lab-fg/[0.04]"
-                      }`}
+                      className={`cursor-pointer rounded-2xl border p-4 transition-all ${selectedReq?.id === req.id
+                        ? "border-cyan-400 bg-cyan-500/[0.08] shadow-md"
+                        : "border-lab-fg/10 bg-lab-fg/[0.02] hover:border-lab-fg/25 hover:bg-lab-fg/[0.04]"
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex items-center gap-2">
@@ -356,26 +353,24 @@ export default function SankatSaathiLiveDemo() {
                             {req.id}
                           </span>
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              isCritical
-                                ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                                : isHigh
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${isCritical
+                              ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                              : isHigh
                                 ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                                 : "bg-sky-500/20 text-sky-400 border border-sky-500/30"
-                            }`}
+                              }`}
                           >
                             {req.priority} ({req.urgencyScore}/100)
                           </span>
                         </div>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                          req.status === "Delivered"
-                            ? "bg-emerald-500/20 text-emerald-400"
-                            : req.status === "Dispatched"
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${req.status === "Delivered"
+                          ? "bg-emerald-500/20 text-emerald-400"
+                          : req.status === "Dispatched"
                             ? "bg-violet-500/20 text-violet-400 animate-pulse"
                             : req.status === "Allocated"
-                            ? "bg-cyan-500/20 text-cyan-400"
-                            : "bg-amber-500/20 text-amber-400"
-                        }`}>
+                              ? "bg-cyan-500/20 text-cyan-400"
+                              : "bg-amber-500/20 text-amber-400"
+                          }`}>
                           {req.status}
                         </span>
                       </div>
@@ -522,11 +517,10 @@ export default function SankatSaathiLiveDemo() {
                     key={cat}
                     type="button"
                     onClick={() => setCitizenForm({ ...citizenForm, category: cat })}
-                    className={`flex items-center justify-center gap-1.5 rounded-xl border p-2.5 text-xs font-semibold transition ${
-                      citizenForm.category === cat
-                        ? "border-rose-500 bg-rose-500/15 text-rose-400"
-                        : "border-lab-fg/10 bg-lab-fg/[0.02] text-lab-fg/70 hover:border-lab-fg/20"
-                    }`}
+                    className={`flex items-center justify-center gap-1.5 rounded-xl border p-2.5 text-xs font-semibold transition ${citizenForm.category === cat
+                      ? "border-rose-500 bg-rose-500/15 text-rose-400"
+                      : "border-lab-fg/10 bg-lab-fg/[0.02] text-lab-fg/70 hover:border-lab-fg/20"
+                      }`}
                   >
                     {cat === "Water" && <FaTint />}
                     {cat === "Food" && <FaUtensils />}
