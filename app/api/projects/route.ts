@@ -111,7 +111,8 @@ async function syncToEngineeringProjectsTable(p: PortfolioProject) {
       if (p.title) engUpdate.title = p.title;
       if (p.desc) engUpdate.description = p.desc;
       if (p.liveUrl !== undefined) engUpdate.live_url = p.liveUrl || null;
-      if (p.logo) engUpdate.cover_image = p.logo;
+      // Note: We do NOT sync p.logo to cover_image or banner_image.
+      // Main portfolio project image and Engineering Lab images are kept completely independent.
       if (p.github !== undefined) engUpdate.github_url = p.github;
 
       await supabase
@@ -137,7 +138,8 @@ async function syncToEngineeringProjectsTable(p: PortfolioProject) {
             ...(p.title ? { title: p.title } : {}),
             ...(p.desc ? { description: p.desc } : {}),
             ...(p.liveUrl !== undefined ? { liveUrl: p.liveUrl } : {}),
-            ...(p.logo ? { coverImage: p.logo, bannerImage: p.logo } : {}),
+            // Note: We do NOT overwrite coverImage or bannerImage with p.logo.
+            // Main portfolio image and Engineering Lab images remain separate.
             ...(p.github !== undefined ? { githubUrl: p.github } : {}),
           };
         }

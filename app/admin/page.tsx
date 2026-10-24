@@ -2156,7 +2156,7 @@ export default function AdminPage() {
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2a1008]">Portfolio Projects</h2>
                 <p className="text-xs sm:text-sm text-[#7a4a35] mt-1">
-                  Add, edit, or remove projects shown on your main portfolio & Engineering Lab.
+                  Add, edit, or remove projects shown on your main portfolio. Images configured here are dedicated to the main portfolio card.
                 </p>
               </div>
               <button
@@ -2905,12 +2905,15 @@ export default function AdminPage() {
                   </div>
                   <div className="sm:col-span-3">
                     <ImageInputWithUpload
-                      label="Project Cover / Logo"
+                      label="Main Portfolio Project Image / Logo (Separate)"
                       value={projectForm.logo || ""}
                       onChange={(logo) => setProjectForm({ ...projectForm, logo })}
-                      placeholder="e.g. /projects/atlas/cover.png or upload from album"
+                      placeholder="e.g. /projects/portfolio-3d/cover.png or upload from album"
                       maxDimension={1000}
                     />
+                    <p className="text-[11px] text-[#7a4a35] mt-1">
+                      ✦ Dedicated image for the main portfolio project card. This is separate and not linked to Engineering Lab images.
+                    </p>
                   </div>
                 </div>
 
@@ -3096,29 +3099,57 @@ export default function AdminPage() {
                   </p>
                 </div>
 
-                {/* 4. GitHub & Cover Image */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* 4. GitHub Repository URL */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                    GitHub Repository URL
+                  </label>
+                  <input
+                    type="url"
+                    value={engProjectForm.githubUrl || ""}
+                    onChange={(e) => setEngProjectForm({ ...engProjectForm, githubUrl: e.target.value })}
+                    placeholder="https://github.com/pavan55kumar/..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                  />
+                </div>
+
+                {/* 5. Engineering Lab & Explore Project Images (Connected, Separate from Main Portfolio) */}
+                <div className="p-4 rounded-2xl bg-[#faeedd]/70 border border-[#8b1a1a]/20 space-y-3">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
-                      GitHub Repository URL
-                    </label>
-                    <input
-                      type="url"
-                      value={engProjectForm.githubUrl || ""}
-                      onChange={(e) => setEngProjectForm({ ...engProjectForm, githubUrl: e.target.value })}
-                      placeholder="https://github.com/pavan55kumar/..."
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
-                    />
+                    <span className="text-xs font-bold uppercase tracking-wider text-[#2a1008] flex items-center gap-1.5">
+                      <span>✦ Engineering Lab &amp; Explore Project Images</span>
+                    </span>
+                    <p className="text-[11px] text-[#7a4a35] mt-0.5 leading-relaxed">
+                      These images are connected together for this project: displayed in the Engineering Lab card carousel and on the Explore Project page (<code className="font-mono text-[10px]">/engineering-lab/[slug]</code>). They are completely independent and will not overwrite the main portfolio project image.
+                    </p>
                   </div>
 
-                  <div>
-                    <ImageInputWithUpload
-                      label="Cover / Banner Image"
-                      value={engProjectForm.coverImage || ""}
-                      onChange={(coverImage) => setEngProjectForm({ ...engProjectForm, coverImage, bannerImage: coverImage })}
-                      placeholder="e.g. /projects/atlas/cover.png or upload"
-                      maxDimension={1200}
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <ImageInputWithUpload
+                        label="Lab Cover Image (Card Carousel)"
+                        value={engProjectForm.coverImage || ""}
+                        onChange={(coverImage) =>
+                          setEngProjectForm({
+                            ...engProjectForm,
+                            coverImage,
+                            bannerImage: engProjectForm.bannerImage || coverImage,
+                          })
+                        }
+                        placeholder="e.g. /projects/atlas/cover.png or upload"
+                        maxDimension={1200}
+                      />
+                    </div>
+
+                    <div>
+                      <ImageInputWithUpload
+                        label="Explore Project Banner Image (Detail Page)"
+                        value={engProjectForm.bannerImage || ""}
+                        onChange={(bannerImage) => setEngProjectForm({ ...engProjectForm, bannerImage })}
+                        placeholder="e.g. /projects/atlas/banner.png or upload"
+                        maxDimension={1200}
+                      />
+                    </div>
                   </div>
                 </div>
 

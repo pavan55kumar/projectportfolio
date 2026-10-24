@@ -104,7 +104,8 @@ async function syncToProjectsTable(proj: EngineeringProject) {
       if (proj.title) projUpdate.title = proj.title;
       if (proj.description) projUpdate.description = proj.description;
       if (proj.liveUrl !== undefined) projUpdate.live_url = proj.liveUrl || null;
-      if (proj.coverImage) projUpdate.logo = proj.coverImage;
+      // Note: We do NOT sync proj.coverImage or bannerImage to logo.
+      // Main portfolio project image and Engineering Lab images are kept completely independent.
       if (proj.githubUrl !== undefined) projUpdate.github = proj.githubUrl;
 
       // Update matching project in Supabase by id or slug
@@ -131,7 +132,8 @@ async function syncToProjectsTable(proj: EngineeringProject) {
             ...(proj.title ? { title: proj.title } : {}),
             ...(proj.description ? { desc: proj.description } : {}),
             ...(proj.liveUrl !== undefined ? { liveUrl: proj.liveUrl } : {}),
-            ...(proj.coverImage ? { logo: proj.coverImage } : {}),
+            // Note: We do NOT overwrite logo with proj.coverImage.
+            // Main portfolio image and Engineering Lab images remain separate.
             ...(proj.githubUrl !== undefined ? { github: proj.githubUrl } : {}),
           };
         }
