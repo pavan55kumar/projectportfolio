@@ -1704,12 +1704,18 @@ export default function Home() {
   const allProjects = dynamicProjects || t.projectsList;
   const filteredProjects = activeProjectCategory === "All"
     ? allProjects
-    : allProjects.filter((p: any) => (p.category || "Personal").toLowerCase() === activeProjectCategory.toLowerCase());
+    : allProjects.filter((p: any) => {
+        const cat = (p.category || "Personal").toString().trim().toLowerCase();
+        return cat === activeProjectCategory.trim().toLowerCase();
+      });
 
   const allCertificates = dynamicCertificates || certCards;
   const filteredCertificates = activeCertCategory === "All"
     ? allCertificates
-    : allCertificates.filter((c: any) => (c.category || "Course Certificate").toLowerCase() === activeCertCategory.toLowerCase());
+    : allCertificates.filter((c: any) => {
+        const cat = (c.category || "Course Certificate").toString().trim().toLowerCase();
+        return cat === activeCertCategory.trim().toLowerCase();
+      });
 
   const sectionLabels: Record<(typeof sectionIds)[number], string> = {
     home: t.home,
@@ -1808,7 +1814,7 @@ export default function Home() {
       el.removeEventListener("pointerdown", pause);
       el.removeEventListener("wheel", pause);
     };
-  }, []);
+  }, [activeProjectCategory]);
 
   // Cert modal
   const openCert = (images: string[], i = 0, title = "") => {
@@ -3066,7 +3072,12 @@ export default function Home() {
                 <button
                   key={cat}
                   type="button"
-                  onClick={() => setActiveProjectCategory(cat)}
+                  onClick={() => {
+                    setActiveProjectCategory(cat);
+                    if (scrollRef.current) {
+                      scrollRef.current.scrollTo({ left: 0, behavior: "instant" });
+                    }
+                  }}
                   className={cn(
                     "px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap shrink-0",
                     isActive
@@ -3088,7 +3099,10 @@ export default function Home() {
         {filteredProjects.length === 0 ? (
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
-              variants={fadeUp}
+              key="empty-projects"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
               className={cn(
                 "py-12 px-6 rounded-2xl border text-center flex flex-col items-center justify-center max-w-md mx-auto",
                 dark
@@ -3100,7 +3114,12 @@ export default function Home() {
               <p className="text-sm font-semibold">No projects found in this category.</p>
               <button
                 type="button"
-                onClick={() => setActiveProjectCategory("All")}
+                onClick={() => {
+                  setActiveProjectCategory("All");
+                  if (scrollRef.current) {
+                    scrollRef.current.scrollTo({ left: 0, behavior: "instant" });
+                  }
+                }}
                 className={cn(
                   "mt-3 text-xs underline font-semibold transition-colors cursor-pointer",
                   dark ? "text-cyan-400 hover:text-cyan-300" : "text-[#8b1a1a] hover:text-[#5c0f0f]"
@@ -3113,7 +3132,10 @@ export default function Home() {
         ) : (
           <motion.div
             ref={scrollRef}
-            variants={stagger}
+            key={activeProjectCategory}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
             className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2"
             style={{
               paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
@@ -3122,8 +3144,14 @@ export default function Home() {
           >
             {filteredProjects.map(({ title, tech, desc, github, emoji, logo, labUrl, liveUrl }: any, i: number) => (
             <motion.div
-              key={i}
-              variants={fadeUp}
+              key={title || i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.38,
+                delay: Math.min(i * 0.06, 0.24),
+                ease: [0.22, 1, 0.36, 1],
+              }}
               whileHover={{ y: -6, scale: 1.02 }}
               className={cn(
                 "snap-start shrink-0 w-[300px] sm:w-[360px] glass-card border rounded-2xl p-7 flex flex-col gap-4 group",
@@ -3331,7 +3359,10 @@ export default function Home() {
         {filteredCertificates.length === 0 ? (
           <div className="max-w-6xl mx-auto px-6">
             <motion.div
-              variants={fadeUp}
+              key="empty-certs"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
               className={cn(
                 "py-12 px-6 rounded-2xl border text-center flex flex-col items-center justify-center max-w-md mx-auto",
                 dark
@@ -3356,6 +3387,7 @@ export default function Home() {
         ) : (
           <>
             <div
+              key={activeCertCategory}
               className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 pt-2"
               style={{
                 paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
@@ -3369,14 +3401,13 @@ export default function Home() {
 
             return (
               <motion.div
-                key={i}
+                key={card.id || card.title || i}
                 className="snap-start shrink-0 w-[280px] sm:w-[320px]"
-                initial={{ opacity: 0, y: 70, rotateY: -18 }}
-                whileInView={{ opacity: 1, y: 0, rotateY: 0 }}
-                viewport={{ once: true, amount: 0.25 }}
+                initial={{ opacity: 0, y: 30, rotateY: -10 }}
+                animate={{ opacity: 1, y: 0, rotateY: 0 }}
                 transition={{
-                  duration: 0.75,
-                  delay: i * 0.13,
+                  duration: 0.5,
+                  delay: Math.min(i * 0.08, 0.28),
                   ease: [0.22, 1, 0.36, 1],
                 }}
                 whileHover={{ y: -4 }}
