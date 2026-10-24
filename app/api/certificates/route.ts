@@ -10,6 +10,7 @@ export type PortfolioCertificate = {
   issuer: string;
   year: string;
   icon: string;
+  category?: string;
   colorDark: string;
   colorLight: string;
   imageUrl?: string;
@@ -82,6 +83,7 @@ const defaultCertificates: PortfolioCertificate[] = [
     issuer: "Microsoft",
     year: "2024",
     icon: "🏅",
+    category: "Course Certificate",
     colorDark: "#0ea5e9",
     colorLight: "#c9956a",
     imageUrl: "/certificates/az1.jpeg",
@@ -99,6 +101,7 @@ const defaultCertificates: PortfolioCertificate[] = [
     issuer: "IBM",
     year: "2026",
     icon: "🏆",
+    category: "Achievement",
     colorDark: "#f59e0b",
     colorLight: "#d97706",
     imageUrl: "",
@@ -116,6 +119,7 @@ async function readLocalCertificates(): Promise<PortfolioCertificate[]> {
         const imgs = parseCertificateImages(c.imageUrl || c.image_url, c.images);
         return {
           ...c,
+          category: c.category || (c.id === "ibm-z-datathon" ? "Achievement" : "Course Certificate"),
           images: imgs,
           imageUrl: imgs[0] || c.imageUrl || "",
           real: c.real !== undefined ? Boolean(c.real) : imgs.length > 0,
@@ -156,6 +160,7 @@ export async function GET() {
             issuer: c.issuer,
             year: c.year,
             icon: c.icon || "🏅",
+            category: c.category || (c.id === "ibm-z-datathon" ? "Achievement" : "Course Certificate"),
             colorDark: c.color_dark || "#0ea5e9",
             colorLight: c.color_light || "#c9956a",
             imageUrl: imgs[0] || c.image_url || "",
@@ -177,7 +182,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { title, subtitle, issuer, year, icon, colorDark, colorLight, imageUrl, images } = body;
+    const { title, subtitle, issuer, year, icon, category, colorDark, colorLight, imageUrl, images } = body;
 
     if (!title || !issuer || !year) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -196,6 +201,7 @@ export async function POST(req: Request) {
       issuer: String(issuer),
       year: String(year),
       icon: String(icon || "🏅"),
+      category: category ? String(category) : "Course Certificate",
       colorDark: String(colorDark || "#0ea5e9"),
       colorLight: String(colorLight || "#c9956a"),
       imageUrl: primaryImage,
@@ -213,6 +219,7 @@ export async function POST(req: Request) {
           issuer: newCert.issuer,
           year: newCert.year,
           icon: newCert.icon,
+          category: newCert.category,
           color_dark: newCert.colorDark,
           color_light: newCert.colorLight,
           image_url: certImages.length > 1 ? serializedImages : (primaryImage || null),
@@ -221,8 +228,9 @@ export async function POST(req: Request) {
 
         const { error: upsertErr } = await supabase.from("certificates").upsert(payload);
         if (upsertErr) {
-          // If 'images' column doesn't exist in Supabase yet, fallback gracefully to image_url
+          // If 'category' or 'images' column doesn't exist in Supabase yet, fallback gracefully
           delete payload.images;
+          delete payload.category;
           payload.image_url = certImages.length > 1 ? serializedImages : (primaryImage || null);
           await supabase.from("certificates").upsert(payload);
         }
@@ -245,7 +253,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, title, subtitle, issuer, year, icon, colorDark, colorLight, imageUrl, images } = body;
+    const { id, title, subtitle, issuer, year, icon, category, colorDark, colorLight, imageUrl, images } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing certificate id" }, { status: 400 });
@@ -268,6 +276,7 @@ export async function PATCH(req: Request) {
         if (issuer !== undefined) updateData.issuer = issuer;
         if (year !== undefined) updateData.year = year;
         if (icon !== undefined) updateData.icon = icon;
+        if (category !== undefined) updateData.category = category;
         if (colorDark !== undefined) updateData.color_dark = colorDark;
         if (colorLight !== undefined) updateData.color_light = colorLight;
 
@@ -280,8 +289,9 @@ export async function PATCH(req: Request) {
 
         const { error: patchErr } = await supabase.from("certificates").update(updateData).eq("id", id);
         if (patchErr) {
-          // If 'images' column doesn't exist in Supabase yet, fallback gracefully
+          // Fallback if 'category' or 'images' column doesn't exist in Supabase yet
           delete updateData.images;
+          delete updateData.category;
           if (certImages !== undefined) {
             updateData.image_url = certImages.length > 1 ? serializedImages : (primaryImage || null);
           }
@@ -303,6 +313,7 @@ export async function PATCH(req: Request) {
           ...(issuer !== undefined ? { issuer: String(issuer) } : {}),
           ...(year !== undefined ? { year: String(year) } : {}),
           ...(icon !== undefined ? { icon: String(icon) } : {}),
+          ...(category !== undefined ? { category: String(category) } : {}),
           ...(colorDark !== undefined ? { colorDark: String(colorDark) } : {}),
           ...(colorLight !== undefined ? { colorLight: String(colorLight) } : {}),
           ...(primaryImage !== undefined ? { imageUrl: primaryImage } : {}),

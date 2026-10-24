@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS public.projects (
     title TEXT NOT NULL,
     tech TEXT NOT NULL,
     description TEXT NOT NULL,
+    category TEXT DEFAULT 'Personal',
     github TEXT,
     lab_url TEXT,
     live_url TEXT,
@@ -37,8 +38,9 @@ CREATE TABLE IF NOT EXISTS public.projects (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Add live_url column if table already existed without it
+-- Add live_url and category columns if table already existed without them
 ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS live_url TEXT;
+ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'Personal';
 
 -- 3. ENGINEERING LAB PROJECTS TABLE
 -- Stores deep-dive project stories, architecture, and live preview settings.
@@ -130,6 +132,7 @@ CREATE TABLE IF NOT EXISTS public.certificates (
     issuer TEXT NOT NULL,
     year TEXT NOT NULL,
     icon TEXT DEFAULT '🏅',
+    category TEXT DEFAULT 'Course Certificate',
     color_dark TEXT DEFAULT '#0ea5e9',
     color_light TEXT DEFAULT '#c9956a',
     image_url TEXT,
@@ -137,6 +140,10 @@ CREATE TABLE IF NOT EXISTS public.certificates (
     order_index INTEGER DEFAULT 0,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add category and images columns if table already existed without them
+ALTER TABLE public.certificates ADD COLUMN IF NOT EXISTS category TEXT DEFAULT 'Course Certificate';
+ALTER TABLE public.certificates ADD COLUMN IF NOT EXISTS images JSONB DEFAULT '[]'::jsonb;
 
 -- ==============================================================================
 -- ROW LEVEL SECURITY (RLS) POLICIES

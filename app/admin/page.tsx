@@ -119,6 +119,7 @@ type Project = {
   title: string;
   tech: string;
   desc: string;
+  category?: string;
   github?: string;
   labUrl?: string;
   liveUrl?: string;
@@ -133,6 +134,7 @@ type Certificate = {
   issuer: string;
   year: string;
   icon: string;
+  category?: string;
   colorDark: string;
   colorLight: string;
   imageUrl?: string;
@@ -778,6 +780,7 @@ export default function AdminPage() {
     title: "",
     tech: "",
     desc: "",
+    category: "Personal",
     github: "",
     labUrl: "",
     liveUrl: "",
@@ -822,6 +825,7 @@ export default function AdminPage() {
     issuer: "",
     year: new Date().getFullYear().toString(),
     icon: "🏅",
+    category: "Course Certificate",
     colorDark: "#0ea5e9",
     colorLight: "#c9956a",
     imageUrl: "",
@@ -1194,6 +1198,7 @@ export default function AdminPage() {
       title: "",
       tech: "",
       desc: "",
+      category: "Personal",
       github: "",
       labUrl: "",
       liveUrl: "",
@@ -1209,6 +1214,7 @@ export default function AdminPage() {
       title: proj.title,
       tech: proj.tech,
       desc: proj.desc,
+      category: proj.category || "Personal",
       github: proj.github || "",
       labUrl: proj.labUrl || "",
       liveUrl: proj.liveUrl || "",
@@ -1351,6 +1357,7 @@ export default function AdminPage() {
       issuer: "",
       year: new Date().getFullYear().toString(),
       icon: "🏅",
+      category: "Course Certificate",
       colorDark: "#0ea5e9",
       colorLight: "#c9956a",
       imageUrl: "",
@@ -1368,6 +1375,7 @@ export default function AdminPage() {
       issuer: cert.issuer,
       year: cert.year,
       icon: cert.icon || "🏅",
+      category: cert.category || "Course Certificate",
       colorDark: cert.colorDark || "#0ea5e9",
       colorLight: cert.colorLight || "#c9956a",
       imageUrl: cert.imageUrl || (imgs[0] || ""),
@@ -2201,7 +2209,12 @@ export default function AdminPage() {
                     )}
 
                     <div className="min-w-0">
-                      <h3 className="font-bold text-base sm:text-lg text-[#2a1008] truncate">{proj.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-base sm:text-lg text-[#2a1008] truncate">{proj.title}</h3>
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#8b1a1a]/10 text-[#8b1a1a] border border-[#8b1a1a]/20 shrink-0">
+                          {proj.category || "Personal"}
+                        </span>
+                      </div>
                       <p className="text-xs font-semibold text-[#8b1a1a] mt-0.5">{proj.tech}</p>
                       <p className="text-xs text-[#7a4a35] mt-1.5 max-w-2xl line-clamp-2 leading-relaxed">
                         {proj.desc}
@@ -2497,8 +2510,13 @@ export default function AdminPage() {
                             </span>
                           )}
                           <div className="min-w-0">
-                            <h3 className="font-bold text-base text-[#2a1008] truncate">{cert.title}</h3>
-                            <p className="text-xs font-semibold text-[#8b1a1a] flex items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-base text-[#2a1008] truncate">{cert.title}</h3>
+                              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase bg-[#8b1a1a]/10 text-[#8b1a1a] border border-[#8b1a1a]/20 shrink-0">
+                                {cert.category || "Course Certificate"}
+                              </span>
+                            </div>
+                            <p className="text-xs font-semibold text-[#8b1a1a] flex items-center gap-2 mt-0.5">
                               <span>{cert.issuer} · {cert.year}</span>
                               {certImages.length > 0 && (
                                 <span className="px-2 py-0.5 rounded-md bg-[#8b1a1a]/10 text-[#8b1a1a] text-[10px] font-bold">
@@ -2860,18 +2878,36 @@ export default function AdminPage() {
               </div>
 
               <form onSubmit={handleSaveProject} className="mt-5 space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
-                    Project Title *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={projectForm.title || ""}
-                    onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
-                    placeholder="e.g. AI Flood Relief Portal"
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Project Title *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={projectForm.title || ""}
+                      onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                      placeholder="e.g. AI Flood Relief Portal"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Project Category *
+                    </label>
+                    <select
+                      value={projectForm.category || "Personal"}
+                      onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all cursor-pointer font-medium"
+                    >
+                      <option value="Personal">Personal</option>
+                      <option value="Academic">Academic</option>
+                      <option value="Hackathon">Hackathon</option>
+                      <option value="Open Source">Open Source</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>
@@ -3353,18 +3389,36 @@ export default function AdminPage() {
               </div>
 
               <form onSubmit={handleSaveCertificate} className="mt-5 space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
-                    Certificate Title *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={certForm.title || ""}
-                    onChange={(e) => setCertForm({ ...certForm, title: e.target.value })}
-                    placeholder="e.g. Microsoft Azure Fundamentals"
-                    className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Certificate Title *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={certForm.title || ""}
+                      onChange={(e) => setCertForm({ ...certForm, title: e.target.value })}
+                      placeholder="e.g. Microsoft Azure Fundamentals"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-wider mb-1 text-[#2a1008]">
+                      Certificate Category *
+                    </label>
+                    <select
+                      value={certForm.category || "Course Certificate"}
+                      onChange={(e) => setCertForm({ ...certForm, category: e.target.value })}
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#8b1a1a]/20 bg-white text-xs sm:text-sm text-[#2a1008] outline-none focus:border-[#8b1a1a] focus:ring-2 focus:ring-[#8b1a1a]/15 transition-all cursor-pointer font-medium"
+                    >
+                      <option value="Course Certificate">Course Certificate</option>
+                      <option value="Internship">Internship</option>
+                      <option value="Achievement">Achievement</option>
+                      <option value="Academic Recognition">Academic Recognition</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div>

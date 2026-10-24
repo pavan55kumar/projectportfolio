@@ -8,6 +8,7 @@ export type PortfolioProject = {
   title: string;
   tech: string;
   desc: string;
+  category?: string;
   github?: string;
   labUrl?: string;
   liveUrl?: string;
@@ -25,6 +26,7 @@ const defaultProjects: PortfolioProject[] = [
     title: "Sankat Saathi (संकट साथी)",
     tech: "React 18 · Vite · Tailwind · Supabase · IBM Z · Haversine AI",
     desc: "AI-powered humanitarian flood relief platform that optimizes emergency citizen SOS requests, explains urgency scores, and coordinates warehouse supply dispatches.",
+    category: "Hackathon",
     github: "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
     labUrl: "/engineering-lab/sankat-saathi",
     liveUrl: "",
@@ -36,6 +38,7 @@ const defaultProjects: PortfolioProject[] = [
     title: "Atlas Life OS",
     tech: "React · Vite · Tailwind · Framer Motion · Supabase · PWA",
     desc: "Personal life operating system featuring an intelligent college attendance & bunk margin simulator, CGPA planner, Pomodoro focus engine, and cognitive AI morning brief.",
+    category: "Personal",
     github: "https://github.com/pavan55kumar/atlas",
     labUrl: "/engineering-lab/atlas",
     liveUrl: "",
@@ -47,6 +50,7 @@ const defaultProjects: PortfolioProject[] = [
     title: "Project Orbital (3D Portfolio)",
     tech: "Next.js · React · Three.js · React Three Fiber · Drei · NextAuth",
     desc: "Modern personal portfolio with interactive 3D WebGL hero sphere, LinkedIn OAuth testimonials, and dedicated Engineering Lab deep-dives.",
+    category: "Personal",
     github: "https://github.com/pavan55kumar/projectportfolio",
     labUrl: "/engineering-lab/portfolio-3d",
     liveUrl: "https://projectportfolio-one.vercel.app",
@@ -58,6 +62,7 @@ const defaultProjects: PortfolioProject[] = [
     title: "Spam Detection",
     tech: "Python · scikit-learn · NLTK · SpaCy · Streamlit · Transformers",
     desc: "Python ML app that detects spam messages using NLP pipelines and HuggingFace Transformers.",
+    category: "Academic",
     github: "https://github.com/pavan55kumar/E-mail-Spam-Detection",
     liveUrl: "",
     emoji: "🛡️",
@@ -67,6 +72,7 @@ const defaultProjects: PortfolioProject[] = [
     title: "Note Saver App",
     tech: "Python · Flask · Jinja2 · HTML · CSS · JavaScript",
     desc: "A simple Flask web app with Python backend and dynamic HTML/CSS/JS frontend using Jinja2 templates.",
+    category: "Personal",
     github: "https://github.com/pavan55kumar/FLASK-note-saver",
     liveUrl: "",
     emoji: "📝",
@@ -169,6 +175,7 @@ export async function GET() {
           title: p.title,
           tech: p.tech,
           desc: p.description,
+          category: p.category || "Personal",
           github: p.github || "",
           labUrl: p.lab_url || "",
           liveUrl: p.live_url || "",
@@ -191,7 +198,7 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { title, tech, desc, github, labUrl, liveUrl, logo, emoji } = body;
+    const { title, tech, desc, category, github, labUrl, liveUrl, logo, emoji } = body;
 
     if (!title || !desc) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -204,6 +211,7 @@ export async function POST(req: Request) {
       title: String(title),
       tech: String(tech || ""),
       desc: String(desc),
+      category: category ? String(category) : "Personal",
       github: github ? String(github) : "",
       labUrl: labUrl ? String(labUrl) : "",
       liveUrl: liveUrl ? String(liveUrl) : "",
@@ -214,17 +222,24 @@ export async function POST(req: Request) {
     const supabase = getSupabaseAdmin();
     if (supabase) {
       try {
-        await supabase.from("projects").upsert({
+        const payload: Record<string, unknown> = {
           id,
           title: newProject.title,
           tech: newProject.tech,
           description: newProject.desc,
+          category: newProject.category,
           github: newProject.github || null,
           lab_url: newProject.labUrl || null,
           live_url: newProject.liveUrl || null,
           logo: newProject.logo || null,
           emoji: newProject.emoji,
-        });
+        };
+        const { error: upsertErr } = await supabase.from("projects").upsert(payload);
+        if (upsertErr) {
+          // Fallback if category column doesn't exist in Supabase yet
+          delete payload.category;
+          await supabase.from("projects").upsert(payload);
+        }
       } catch (err) {
         console.warn("Supabase upsert failed:", err);
       }
@@ -247,7 +262,7 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const { id, title, tech, desc, github, labUrl, liveUrl, logo, emoji } = body;
+    const { id, title, tech, desc, category, github, labUrl, liveUrl, logo, emoji } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing project id" }, { status: 400 });
@@ -260,13 +275,18 @@ export async function PATCH(req: Request) {
         if (title !== undefined) updateData.title = title;
         if (tech !== undefined) updateData.tech = tech;
         if (desc !== undefined) updateData.description = desc;
+        if (category !== undefined) updateData.category = category;
         if (github !== undefined) updateData.github = github;
         if (labUrl !== undefined) updateData.lab_url = labUrl;
         if (liveUrl !== undefined) updateData.live_url = liveUrl;
         if (logo !== undefined) updateData.logo = logo;
         if (emoji !== undefined) updateData.emoji = emoji;
 
-        await supabase.from("projects").update(updateData).eq("id", id);
+        const { error: patchErr } = await supabase.from("projects").update(updateData).eq("id", id);
+        if (patchErr && updateData.category !== undefined) {
+          delete updateData.category;
+          await supabase.from("projects").update(updateData).eq("id", id);
+        }
       } catch (err) {
         console.warn("Supabase project update failed:", err);
       }
@@ -281,6 +301,7 @@ export async function PATCH(req: Request) {
           ...(title !== undefined ? { title: String(title) } : {}),
           ...(tech !== undefined ? { tech: String(tech) } : {}),
           ...(desc !== undefined ? { desc: String(desc) } : {}),
+          ...(category !== undefined ? { category: String(category) } : {}),
           ...(github !== undefined ? { github: String(github) } : {}),
           ...(labUrl !== undefined ? { labUrl: String(labUrl) } : {}),
           ...(liveUrl !== undefined ? { liveUrl: String(liveUrl) } : {}),

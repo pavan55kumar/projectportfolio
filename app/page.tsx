@@ -516,6 +516,7 @@ const texts = {
         title: "Sankat Saathi (संकट साथी)",
         tech: "React 18 · Vite · Tailwind · Supabase · IBM Z · Haversine AI",
         desc: "AI-powered humanitarian flood relief platform that optimizes emergency citizen SOS requests, explains urgency scores, and coordinates warehouse supply dispatches.",
+        category: "Hackathon",
         github: "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
         labUrl: "/engineering-lab/sankat-saathi",
         logo: "/projects/sankat-saathi/cover.png",
@@ -525,6 +526,7 @@ const texts = {
         title: "Atlas Life OS",
         tech: "React · Vite · Tailwind · Framer Motion · Supabase · PWA",
         desc: "Personal life operating system featuring an intelligent college attendance & bunk margin simulator, CGPA planner, Pomodoro focus engine, and cognitive AI morning brief.",
+        category: "Personal",
         github: "https://github.com/pavan55kumar/atlas",
         labUrl: "/engineering-lab/atlas",
         logo: "/projects/atlas/cover.png",
@@ -534,6 +536,7 @@ const texts = {
         title: "Interactive 3D Portfolio",
         tech: "Next.js · React · Three.js · React Three Fiber · Drei · NextAuth",
         desc: "Modern personal portfolio with interactive 3D WebGL hero sphere, LinkedIn OAuth testimonials, and dedicated Engineering Lab deep-dives.",
+        category: "Personal",
         github: "https://github.com/pavan55kumar/projectportfolio",
         labUrl: "/engineering-lab/portfolio-3d",
         logo: "/projects/portfolio-3d/cover.png",
@@ -543,6 +546,7 @@ const texts = {
         title: "Spam Detection",
         tech: "Python · scikit-learn · NLTK · SpaCy · Streamlit · Transformers",
         desc: "Python ML app that detects spam messages using NLP pipelines and HuggingFace Transformers.",
+        category: "Academic",
         github: "https://github.com/pavan55kumar/E-mail-Spam-Detection",
         emoji: "🛡️",
       },
@@ -550,6 +554,7 @@ const texts = {
         title: "Note Saver App",
         tech: "Python · Flask · Jinja2 · HTML · CSS · JavaScript",
         desc: "A simple Flask web app with Python backend and dynamic HTML/CSS/JS frontend using Jinja2 templates.",
+        category: "Personal",
         github: "https://github.com/pavan55kumar/FLASK-note-saver",
         emoji: "📝",
       },
@@ -610,6 +615,7 @@ const texts = {
         title: "サンカット・サーティ (Sankat Saathi)",
         tech: "React 18 · Vite · Tailwind · Supabase · IBM Z · ハバーサインAI",
         desc: "IBM Z Datathon 2026向けに構築されたAI洪水救援プラットフォーム。緊急SOSの優先順位付けと物資配分を自動化します。",
+        category: "Hackathon",
         github: "https://github.com/pavankumareng29/Sankat-Saathi-IBM-Z-Datathon-2026-Project",
         labUrl: "/engineering-lab/sankat-saathi",
         logo: "/projects/sankat-saathi/cover.png",
@@ -619,6 +625,7 @@ const texts = {
         title: "Atlas ライフOS",
         tech: "React · Vite · Tailwind · Framer Motion · Supabase · PWA",
         desc: "大学の出席欠席シミュレーター、CGPA計画、ポモドーロ集中タイマー、習慣ストリーク、AIブリーフィングを備えた統合学生ワークスペース。",
+        category: "Personal",
         github: "https://github.com/pavan55kumar/atlas",
         labUrl: "/engineering-lab/atlas",
         logo: "/projects/atlas/cover.png",
@@ -628,6 +635,7 @@ const texts = {
         title: "3Dインタラクティブポートフォリオ",
         tech: "Next.js · React · Three.js · React Three Fiber · Drei · NextAuth",
         desc: "Three.jsによるインタラクティブな3D WebGLシーンとLinkedIn認証の推薦状システムを備えた個人ポートフォリオ。",
+        category: "Personal",
         github: "https://github.com/pavan55kumar/projectportfolio",
         labUrl: "/engineering-lab/portfolio-3d",
         logo: "/projects/portfolio-3d/cover.png",
@@ -637,6 +645,7 @@ const texts = {
         title: "スパム検出",
         tech: "Python · scikit-learn · NLTK · SpaCy · Streamlit · Transformers",
         desc: "NLPとHuggingFace Transformersを使用したスパム検出MLアプリ。",
+        category: "Academic",
         github: "https://github.com/pavan55kumar/E-mail-Spam-Detection",
         emoji: "🛡️",
       },
@@ -644,6 +653,7 @@ const texts = {
         title: "ノート保存アプリ",
         tech: "Python · Flask · Jinja2 · HTML · CSS · JavaScript",
         desc: "PythonバックエンドとJinja2テンプレートを使用したFlaskウェブアプリ。",
+        category: "Personal",
         github: "https://github.com/pavan55kumar/FLASK-note-saver",
         emoji: "📝",
       },
@@ -742,6 +752,7 @@ const certCards = [
     issuer: "Microsoft",
     year: "2024",
     icon: "🏅",
+    category: "Course Certificate",
     colorDark: "#0ea5e9",
     colorLight: "#c9956a",
     images: defaultCertFiles,
@@ -754,6 +765,7 @@ const certCards = [
     issuer: "IBM",
     year: "2026",
     icon: "🏆",
+    category: "Achievement",
     colorDark: "#f59e0b",
     colorLight: "#d97706",
     images: [],
@@ -765,6 +777,7 @@ const certCards = [
     issuer: "Issuing Body",
     year: "—",
     icon: "📜",
+    category: "Course Certificate",
     colorDark: "#7c3aed",
     colorLight: "#8b1a1a",
     images: [],
@@ -776,6 +789,7 @@ const certCards = [
     issuer: "Issuing Body",
     year: "—",
     icon: "🎖️",
+    category: "Internship",
     colorDark: "#10b981",
     colorLight: "#6b7280",
     images: [],
@@ -787,6 +801,7 @@ const certCards = [
     issuer: "Issuing Body",
     year: "—",
     icon: "⭐",
+    category: "Academic Recognition",
     colorDark: "#ec4899",
     colorLight: "#be185d",
     images: [],
@@ -1519,6 +1534,9 @@ function TestimonialsSection({
 // ─── Main Page ────────────────────────────────────────────────────────────────
 const sectionIds = ["home", "about", "projects", "certifications", "testimonials", "contact"] as const;
 
+const PROJECT_CATEGORIES = ["All", "Personal", "Academic", "Hackathon", "Open Source"] as const;
+const CERTIFICATE_CATEGORIES = ["All", "Course Certificate", "Internship", "Achievement", "Academic Recognition"] as const;
+
 export default function Home() {
   const { dark, toggle: toggleTheme } = useTheme(); // shared with Engineering Lab
   const [showNav, setShowNav] = useState(true);
@@ -1532,6 +1550,8 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   const [dynamicProjects, setDynamicProjects] = useState<any[] | null>(null);
   const [dynamicCertificates, setDynamicCertificates] = useState<any[] | null>(null);
+  const [activeProjectCategory, setActiveProjectCategory] = useState<string>("All");
+  const [activeCertCategory, setActiveCertCategory] = useState<string>("All");
   const [siteProfile, setSiteProfile] = useState<{ heroDesc: string; aboutMeDesc: string; heroRole?: string } | null>(null);
   const [dynamicEducation, setDynamicEducation] = useState<any[] | null>(null);
   const [dynamicExperience, setDynamicExperience] = useState<any[] | null>(null);
@@ -1680,6 +1700,16 @@ export default function Home() {
   const heroOpacity = useTransform(heroScrollYProgress, [0, 0.8], [1, 0]);
 
   const t = texts[lang];
+
+  const allProjects = dynamicProjects || t.projectsList;
+  const filteredProjects = activeProjectCategory === "All"
+    ? allProjects
+    : allProjects.filter((p: any) => (p.category || "Personal").toLowerCase() === activeProjectCategory.toLowerCase());
+
+  const allCertificates = dynamicCertificates || certCards;
+  const filteredCertificates = activeCertCategory === "All"
+    ? allCertificates
+    : allCertificates.filter((c: any) => (c.category || "Course Certificate").toLowerCase() === activeCertCategory.toLowerCase());
 
   const sectionLabels: Record<(typeof sectionIds)[number], string> = {
     home: t.home,
@@ -3010,7 +3040,7 @@ export default function Home() {
         variants={stagger}
       >
         <div className="max-w-6xl mx-auto px-6">
-          <motion.div variants={fadeUp} className="mb-8 sm:mb-10">
+          <motion.div variants={fadeUp} className="mb-6 sm:mb-8">
             <p
               className={cn(
                 "text-sm font-semibold tracking-widest uppercase mb-3",
@@ -3024,18 +3054,73 @@ export default function Home() {
             </h2>
             <Divider dark={dark} />
           </motion.div>
+
+          {/* Project Category Filter Pills */}
+          <motion.div
+            variants={fadeUp}
+            className="mb-8 flex items-center gap-2 overflow-x-auto scrollbar-hide py-1"
+          >
+            {PROJECT_CATEGORIES.map((cat) => {
+              const isActive = activeProjectCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setActiveProjectCategory(cat)}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap shrink-0",
+                    isActive
+                      ? dark
+                        ? "bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 shadow-[0_0_12px_rgba(0,212,255,0.25)] font-semibold"
+                        : "bg-[#8b1a1a] text-white border border-[#8b1a1a] shadow-md shadow-[#8b1a1a]/25 font-semibold"
+                      : dark
+                      ? "bg-white/[0.04] text-white/60 border border-white/10 hover:text-white hover:border-white/20 hover:bg-white/[0.08]"
+                      : "bg-[#8b1a1a]/5 text-[#7a4a35] border border-[#8b1a1a]/15 hover:text-[#2a1008] hover:border-[#8b1a1a]/30 hover:bg-[#8b1a1a]/10"
+                  )}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </motion.div>
         </div>
 
-        <motion.div
-          ref={scrollRef}
-          variants={stagger}
-          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2"
-          style={{
-            paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
-            paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
-          }}
-        >
-          {(dynamicProjects || t.projectsList).map(({ title, tech, desc, github, emoji, logo, labUrl, liveUrl }: any, i: number) => (
+        {filteredProjects.length === 0 ? (
+          <div className="max-w-6xl mx-auto px-6">
+            <motion.div
+              variants={fadeUp}
+              className={cn(
+                "py-12 px-6 rounded-2xl border text-center flex flex-col items-center justify-center max-w-md mx-auto",
+                dark
+                  ? "border-white/10 bg-white/[0.02] text-white/60"
+                  : "border-[#8b1a1a]/15 bg-[#8b1a1a]/[0.02] text-[#7a4a35]"
+              )}
+            >
+              <span className="text-3xl mb-2">📂</span>
+              <p className="text-sm font-semibold">No projects found in this category.</p>
+              <button
+                type="button"
+                onClick={() => setActiveProjectCategory("All")}
+                className={cn(
+                  "mt-3 text-xs underline font-semibold transition-colors cursor-pointer",
+                  dark ? "text-cyan-400 hover:text-cyan-300" : "text-[#8b1a1a] hover:text-[#5c0f0f]"
+                )}
+              >
+                Show all projects
+              </button>
+            </motion.div>
+          </div>
+        ) : (
+          <motion.div
+            ref={scrollRef}
+            variants={stagger}
+            className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2"
+            style={{
+              paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
+              paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
+            }}
+          >
+            {filteredProjects.map(({ title, tech, desc, github, emoji, logo, labUrl, liveUrl }: any, i: number) => (
             <motion.div
               key={i}
               variants={fadeUp}
@@ -3164,6 +3249,7 @@ export default function Home() {
             </motion.div>
           ))}
         </motion.div>
+        )}
       </motion.section>
 
       {/* ── CERTIFICATIONS ── */}
@@ -3211,16 +3297,72 @@ export default function Home() {
               {t.certificationsDesc}
             </p>
           </motion.div>
+
+          {/* Certificate Category Filter Pills */}
+          <motion.div
+            variants={fadeUp}
+            className="mb-8 flex items-center justify-center gap-2 overflow-x-auto scrollbar-hide py-1"
+          >
+            {CERTIFICATE_CATEGORIES.map((cat) => {
+              const isActive = activeCertCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setActiveCertCategory(cat)}
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer whitespace-nowrap shrink-0",
+                    isActive
+                      ? dark
+                        ? "bg-cyan-500/20 text-cyan-300 border border-cyan-400/50 shadow-[0_0_12px_rgba(0,212,255,0.25)] font-semibold"
+                        : "bg-[#8b1a1a] text-white border border-[#8b1a1a] shadow-md shadow-[#8b1a1a]/25 font-semibold"
+                      : dark
+                      ? "bg-white/[0.04] text-white/60 border border-white/10 hover:text-white hover:border-white/20 hover:bg-white/[0.08]"
+                      : "bg-[#8b1a1a]/5 text-[#7a4a35] border border-[#8b1a1a]/15 hover:text-[#2a1008] hover:border-[#8b1a1a]/30 hover:bg-[#8b1a1a]/10"
+                  )}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </motion.div>
         </div>
 
-        <div
-          className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 pt-2"
-          style={{
-            paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
-            paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
-          }}
-        >
-          {(dynamicCertificates || certCards).map((card: any, i: number) => {
+        {filteredCertificates.length === 0 ? (
+          <div className="max-w-6xl mx-auto px-6">
+            <motion.div
+              variants={fadeUp}
+              className={cn(
+                "py-12 px-6 rounded-2xl border text-center flex flex-col items-center justify-center max-w-md mx-auto",
+                dark
+                  ? "border-white/10 bg-white/[0.02] text-white/60"
+                  : "border-[#8b1a1a]/15 bg-[#8b1a1a]/[0.02] text-[#7a4a35]"
+              )}
+            >
+              <span className="text-3xl mb-2">📜</span>
+              <p className="text-sm font-semibold">No certificates found in this category.</p>
+              <button
+                type="button"
+                onClick={() => setActiveCertCategory("All")}
+                className={cn(
+                  "mt-3 text-xs underline font-semibold transition-colors cursor-pointer",
+                  dark ? "text-cyan-400 hover:text-cyan-300" : "text-[#8b1a1a] hover:text-[#5c0f0f]"
+                )}
+              >
+                Show all certificates
+              </button>
+            </motion.div>
+          </div>
+        ) : (
+          <>
+            <div
+              className="flex gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 pt-2"
+              style={{
+                paddingLeft: "max(1.5rem, calc((100vw - 72rem) / 2))",
+                paddingRight: "max(1.5rem, calc((100vw - 72rem) / 2))",
+              }}
+            >
+              {filteredCertificates.map((card: any, i: number) => {
             const color = dark ? (card.colorDark || card.color_dark || "#0ea5e9") : (card.colorLight || card.color_light || "#c9956a");
             const cardImages = getCardImages(card);
             const isReal = card.real !== false && (card.real === true || cardImages.length > 0);
@@ -3453,6 +3595,8 @@ export default function Home() {
             )}
           />
         </motion.div>
+          </>
+        )}
       </motion.section>
 
       {/* ── CERT MODAL ── */}
