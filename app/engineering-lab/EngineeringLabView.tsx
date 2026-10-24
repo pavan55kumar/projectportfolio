@@ -10,10 +10,10 @@ import ProjectCard from "./ProjectCard";
 
 export default function EngineeringLabView() {
   const { dark, toggle } = useTheme();
-  const [dynamicProjects, setDynamicProjects] = useState<EngineeringProject[] | null>(null);
+  const [dynamicProjects, setDynamicProjects] = useState<EngineeringProject[]>(engineeringProjects);
 
   useEffect(() => {
-    fetch("/api/engineering-projects")
+    fetch("/api/engineering-projects", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -23,7 +23,7 @@ export default function EngineeringLabView() {
       .catch(() => {});
   }, []);
 
-  const projectsToRender = dynamicProjects || engineeringProjects;
+  const projectsToRender = dynamicProjects && dynamicProjects.length > 0 ? dynamicProjects : engineeringProjects;
 
 
   return (

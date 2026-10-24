@@ -61,7 +61,7 @@ export default function ProjectDetails({
     project.liveUrl ||
     (project.liveDemoUrl?.startsWith("http") ? project.liveDemoUrl : undefined);
 
-  const displayImage = project.bannerImage || project.coverImage || "/projects/portfolio-3d/cover.png";
+  const displayImage = project.bannerImage || project.coverImage || "";
 
   return (
     <main
@@ -270,15 +270,41 @@ export default function ProjectDetails({
               dark ? "border-white/10 bg-[#070e1b]" : "border-[#8b1a1a]/15 bg-[#fbf5ea]"
             }`}
           >
-            <Image
-              src={displayImage}
-              alt={`${project.title} Banner`}
-              fill
-              sizes="(max-width: 1200px) 100vw, 1152px"
-              className="object-cover"
-              priority
-              unoptimized={typeof displayImage === "string" && displayImage.startsWith("data:")}
-            />
+            {displayImage ? (
+              <Image
+                src={displayImage}
+                alt={`${project.title} Banner`}
+                fill
+                sizes="(max-width: 1200px) 100vw, 1152px"
+                className="object-cover"
+                priority
+                unoptimized={typeof displayImage === "string" && displayImage.startsWith("data:")}
+              />
+            ) : (
+              <div
+                className={`w-full h-full flex flex-col items-center justify-center p-8 text-center ${
+                  dark
+                    ? "bg-gradient-to-br from-[#0c192c] via-[#070e1b] to-[#16122c]"
+                    : "bg-gradient-to-br from-[#faeedd] via-[#f7e6d0] to-[#f0d8c0]"
+                }`}
+              >
+                <span className="text-6xl mb-3 opacity-80">⚡</span>
+                <span
+                  className={`text-xs font-bold uppercase tracking-wider ${
+                    dark ? "text-cyan-400" : "text-[#8b1a1a]"
+                  }`}
+                >
+                  {project.category || "Engineering Project"}
+                </span>
+                <span
+                  className={`text-xl sm:text-2xl font-extrabold mt-2 ${
+                    dark ? "text-white" : "text-[#2a1008]"
+                  }`}
+                >
+                  {project.title}
+                </span>
+              </div>
+            )}
             <div
               className={`absolute inset-0 pointer-events-none ${
                 dark

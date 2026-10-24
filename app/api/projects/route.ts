@@ -54,7 +54,7 @@ const defaultProjects: PortfolioProject[] = [
     github: "https://github.com/pavan55kumar/projectportfolio",
     labUrl: "/engineering-lab/portfolio-3d",
     liveUrl: "https://projectportfolio-one.vercel.app",
-    logo: "/projects/portfolio-3d/cover.png",
+    logo: "",
     emoji: "✨",
   },
   {

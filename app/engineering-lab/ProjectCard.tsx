@@ -26,9 +26,6 @@ export default function ProjectCard({
   if (project.bannerImage && project.bannerImage !== project.coverImage) {
     images.push(project.bannerImage);
   }
-  if (images.length === 0) {
-    images.push("/projects/portfolio-3d/cover.png");
-  }
 
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -148,21 +145,47 @@ export default function ProjectCard({
             className="block w-full h-full relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400"
             aria-label={`View deep-dive for ${project.title}`}
           >
-            <Image
-              src={images[activeImageIdx]}
-              alt={`${project.title} preview`}
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover transition-transform duration-700 ease-out group-hover/image:scale-[1.04]"
-              priority={index === 0}
-              unoptimized={
-                typeof images[activeImageIdx] === "string" &&
-                images[activeImageIdx].startsWith("data:")
-              }
-            />
-
-            {/* Subtle overlay gradient on bottom */}
-            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
+            {images.length > 0 ? (
+              <>
+                <Image
+                  src={images[activeImageIdx]}
+                  alt={`${project.title} preview`}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover transition-transform duration-700 ease-out group-hover/image:scale-[1.04]"
+                  priority={index === 0}
+                  unoptimized={
+                    typeof images[activeImageIdx] === "string" &&
+                    images[activeImageIdx].startsWith("data:")
+                  }
+                />
+                <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/60 via-black/20 to-transparent pointer-events-none" />
+              </>
+            ) : (
+              <div
+                className={`w-full h-full flex flex-col items-center justify-center p-6 text-center select-none ${
+                  dark
+                    ? "bg-gradient-to-br from-[#0c192c] via-[#070e1b] to-[#16122c]"
+                    : "bg-gradient-to-br from-[#faeedd] via-[#f7e6d0] to-[#f0d8c0]"
+                }`}
+              >
+                <span className="text-4xl mb-2 opacity-80">⚡</span>
+                <span
+                  className={`text-[11px] font-bold uppercase tracking-wider ${
+                    dark ? "text-cyan-400" : "text-[#8b1a1a]"
+                  }`}
+                >
+                  {project.category || "Engineering Project"}
+                </span>
+                <span
+                  className={`text-sm sm:text-base font-bold mt-1 max-w-[85%] truncate ${
+                    dark ? "text-white/90" : "text-[#2a1008]/90"
+                  }`}
+                >
+                  {project.title}
+                </span>
+              </div>
+            )}
           </Link>
 
           {/* Bottom Left: 01 / 03 index pill badge */}
