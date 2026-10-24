@@ -1,19 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaArrowUpRightFromSquare, FaArrowRight } from "react-icons/fa6";
+import { FaArrowRight } from "react-icons/fa6";
 import {
   FiMoreHorizontal,
-  FiExternalLink,
   FiGithub,
   FiCopy,
   FiCheck,
 } from "react-icons/fi";
 import type { EngineeringProject } from "@/data/engineeringProjects";
-import ProjectVisualGadget from "./ProjectVisualGadget";
 
 export default function ProjectCard({
   project,
@@ -31,15 +29,6 @@ export default function ProjectCard({
 
   // Check if project has an uploaded cover or banner image
   const uploadedImage = project.coverImage || project.bannerImage;
-  const [viewMode, setViewMode] = useState<"photo" | "gadget">(
-    uploadedImage ? "photo" : "gadget"
-  );
-
-  useEffect(() => {
-    if (uploadedImage) {
-      setViewMode("photo");
-    }
-  }, [uploadedImage]);
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -163,12 +152,6 @@ export default function ProjectCard({
     );
   };
 
-  // Live demo URL or internal link
-  const liveUrl =
-    project.liveUrl ||
-    (project.liveDemoUrl?.startsWith("http") ? project.liveDemoUrl : undefined);
-  const isExternal = Boolean(liveUrl?.startsWith("http"));
-  const demoTarget = liveUrl || `/engineering-lab/${project.slug}`;
 
   return (
     <motion.article
@@ -183,97 +166,53 @@ export default function ProjectCard({
       }`}
     >
       <div className="p-3.5 sm:p-5 lg:p-6 grid grid-cols-[130px_1fr] min-[480px]:grid-cols-[150px_1fr] sm:grid-cols-[190px_1fr] lg:grid-cols-[230px_1fr] gap-3.5 sm:gap-5 lg:gap-6 items-center">
-        {/* ── Left Column: Interactive Visual Frame (Photo or Gadget) ── */}
-        <div className="relative w-full h-full min-h-[160px] sm:min-h-[185px] group/gadget">
-          <Link
-            href={`/engineering-lab/${project.slug}`}
-            className="block w-full h-full relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-xl sm:rounded-2xl overflow-hidden"
-            aria-label={`View deep-dive for ${project.title}`}
+        {/* ── Left Column: Clean Uploaded Project Image ── */}
+        <Link
+          href={`/engineering-lab/${project.slug}`}
+          className="block w-full h-full relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-xl sm:rounded-2xl overflow-hidden group/image"
+          aria-label={`View deep-dive for ${project.title}`}
+        >
+          <div
+            className={`relative w-full h-full min-h-[160px] sm:min-h-[185px] rounded-xl sm:rounded-2xl overflow-hidden border transition-all duration-300 ${
+              dark
+                ? "bg-[#040a16] border-white/10 group-hover/image:border-cyan-400/40 shadow-sm"
+                : "bg-[#faeedd] border-[#8b1a1a]/20 group-hover/image:border-[#8b1a1a]/40 shadow-sm"
+            }`}
           >
-            {viewMode === "photo" && uploadedImage ? (
-              <div
-                className={`relative w-full h-full min-h-[160px] sm:min-h-[185px] rounded-xl sm:rounded-2xl overflow-hidden border transition-all duration-300 ${
-                  dark
-                    ? "bg-[#040a16] border-cyan-500/25 shadow-[inset_0_1px_15px_rgba(34,211,238,0.06)]"
-                    : "bg-[#faeedd] border-[#8b1a1a]/25 shadow-sm"
-                }`}
-              >
-                {/* Uploaded Image */}
+            {uploadedImage ? (
+              <>
                 <Image
                   src={uploadedImage}
                   alt={project.title}
                   fill
                   sizes="(max-width: 640px) 150px, (max-width: 1024px) 200px, 240px"
-                  className="object-cover transition-transform duration-500 group-hover/gadget:scale-105"
+                  className="object-cover transition-transform duration-500 group-hover/image:scale-105"
                   unoptimized={uploadedImage.startsWith("data:")}
                   priority={index === 0}
                 />
-
-                {/* Subtle dark gradient overlay at bottom for readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
-
-                {/* Top status tag */}
-                <div className="absolute top-2 left-2 z-10">
-                  <span
-                    className={`font-mono text-[7px] sm:text-[8px] px-1.5 py-0.5 rounded font-bold tracking-wider backdrop-blur-md ${
-                      dark
-                        ? "bg-black/60 text-cyan-300 border border-cyan-400/30"
-                        : "bg-white/80 text-[#8b1a1a] border border-[#8b1a1a]/20"
-                    }`}
-                  >
-                    PREVIEW
-                  </span>
-                </div>
-
-                {/* Bottom index bar */}
-                <div className="absolute bottom-2 inset-x-2.5 z-10 flex items-center justify-between">
-                  <span className="font-mono text-[9px] sm:text-[10px] font-bold tracking-wider text-white drop-shadow-md">
-                    {String(index + 1).padStart(2, "0")} / {String(totalProjects).padStart(2, "0")}
-                  </span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]" />
-                </div>
-              </div>
+                {/* Subtle dark gradient overlay at bottom for clean index visibility */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-transparent pointer-events-none" />
+              </>
             ) : (
-              <ProjectVisualGadget
-                project={project}
-                index={index}
-                totalProjects={totalProjects}
-                dark={dark}
-              />
+              <div
+                className={`w-full h-full flex flex-col items-center justify-center p-4 text-center select-none ${
+                  dark ? "bg-[#08111e] text-white/50" : "bg-[#f5e7d5] text-[#7a4a35]"
+                }`}
+              >
+                <span className="text-3xl mb-1">⚡</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">{project.category || "Project"}</span>
+              </div>
             )}
-          </Link>
 
-          {/* Toggle pill when an image is present so user can toggle between Photo and Vector Telemetry Gadget */}
-          {uploadedImage && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setViewMode((prev) => (prev === "photo" ? "gadget" : "photo"));
-              }}
-              aria-label={viewMode === "photo" ? "Switch to interactive gadget view" : "Switch to photo view"}
-              title={viewMode === "photo" ? "View Radar / Gadget" : "View Uploaded Photo"}
-              className={`absolute top-2 right-2 z-20 flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] font-bold uppercase tracking-wider backdrop-blur-md transition-all duration-200 border cursor-pointer ${
-                dark
-                  ? "bg-black/75 hover:bg-black text-cyan-300 border-cyan-400/40 hover:border-cyan-300 shadow-[0_0_8px_rgba(0,0,0,0.8)]"
-                  : "bg-white/90 hover:bg-white text-[#8b1a1a] border-[#8b1a1a]/30 hover:border-[#8b1a1a] shadow-xs"
-              }`}
-            >
-              {viewMode === "photo" ? (
-                <>
-                  <span className="text-[9px]">⚡</span>
-                  <span>Radar</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-[9px]">📷</span>
-                  <span>Photo</span>
-                </>
-              )}
-            </button>
-          )}
-        </div>
+            {/* Bottom index bar */}
+            <div className="absolute bottom-2 inset-x-2.5 z-10 flex items-center justify-between pointer-events-none">
+              <span className="font-mono text-[9px] sm:text-[10px] font-bold tracking-wider text-white drop-shadow-md">
+                {String(index + 1).padStart(2, "0")} / {String(totalProjects).padStart(2, "0")}
+              </span>
+              <span className={`h-1.5 w-1.5 rounded-full ${dark ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-[#faeedd]"}`} />
+            </div>
+          </div>
+        </Link>
 
         {/* ── Right Column: Project Info & Actions ── */}
         <div className="flex flex-col justify-between h-full min-w-0">
@@ -323,22 +262,6 @@ export default function ProjectCard({
                     >
                       <FaArrowRight className="text-[10px]" /> View Case Study
                     </Link>
-
-                    {liveUrl && (
-                      <a
-                        href={liveUrl}
-                        target={liveUrl.startsWith("http") ? "_blank" : undefined}
-                        rel={liveUrl.startsWith("http") ? "noopener noreferrer" : undefined}
-                        onClick={() => setMenuOpen(false)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                          dark
-                            ? "hover:bg-white/10 text-white/85"
-                            : "hover:bg-[#8b1a1a]/10 text-[#2a1008]"
-                        }`}
-                      >
-                        <FiExternalLink className="text-xs" /> Open Live Demo
-                      </a>
-                    )}
 
                     {project.githubUrl && (
                       <a
@@ -436,48 +359,18 @@ export default function ProjectCard({
             </div>
           )}
 
-          {/* Bottom Action Row */}
-          <div className="mt-3 sm:mt-4 flex items-center justify-between gap-3 pt-1">
-            {/* Primary Action Button: Live Demo ↗ */}
-            {isExternal ? (
-              <a
-                href={demoTarget}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98] ${
-                  dark
-                    ? "bg-[#00d8f6] text-[#030712] shadow-[0_0_15px_rgba(0,216,246,0.35)] hover:bg-[#38e1f9] hover:shadow-[0_0_20px_rgba(0,216,246,0.5)] focus-visible:ring-cyan-300"
-                    : "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/25 hover:bg-[#721515] hover:shadow-[#8b1a1a]/40 focus-visible:ring-[#8b1a1a]"
-                }`}
-              >
-                <span>Live Demo</span>
-                <FaArrowUpRightFromSquare className="text-[10px]" />
-              </a>
-            ) : (
-              <Link
-                href={demoTarget}
-                className={`inline-flex items-center gap-1.5 px-3.5 sm:px-4 py-1.5 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 active:scale-[0.98] ${
-                  dark
-                    ? "bg-[#00d8f6] text-[#030712] shadow-[0_0_15px_rgba(0,216,246,0.35)] hover:bg-[#38e1f9] hover:shadow-[0_0_20px_rgba(0,216,246,0.5)] focus-visible:ring-cyan-300"
-                    : "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/25 hover:bg-[#721515] hover:shadow-[#8b1a1a]/40 focus-visible:ring-[#8b1a1a]"
-                }`}
-              >
-                <span>Live Demo</span>
-                <FaArrowUpRightFromSquare className="text-[10px]" />
-              </Link>
-            )}
-
-            {/* Secondary CTA: View Details → */}
+          {/* Bottom Action Row: View Details Link */}
+          <div className="mt-3 sm:mt-4 flex items-center justify-end pt-1">
             <Link
               href={`/engineering-lab/${project.slug}`}
-              className={`inline-flex items-center gap-1 text-xs sm:text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 rounded-lg py-1 ${
+              className={`inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 rounded-lg py-1 px-1.5 ${
                 dark
-                  ? "text-white/60 hover:text-white focus-visible:ring-cyan-400"
-                  : "text-[#7a4a35] hover:text-[#2a1008] focus-visible:ring-[#8b1a1a]"
+                  ? "text-cyan-400 hover:text-cyan-300 focus-visible:ring-cyan-400 hover:translate-x-0.5"
+                  : "text-[#8b1a1a] hover:text-[#721515] focus-visible:ring-[#8b1a1a] hover:translate-x-0.5"
               }`}
             >
               <span>View Details</span>
-              <FaArrowRight className="text-[10px] transition-transform group-hover:translate-x-1" />
+              <FaArrowRight className="text-[11px] transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
