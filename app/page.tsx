@@ -812,97 +812,115 @@ type Testimonial = {
 // ─── Testimonials Illustration ────────────────────────────────────────────────
 function TestimonialsEmptyIllustration({ dark }: { dark: boolean }) {
   return (
-    <div className="relative w-full max-w-[320px] h-[130px] mx-auto flex items-center justify-center select-none pointer-events-none mb-3">
-      {/* Background radial glow */}
-      <div
-        className="absolute inset-0 rounded-full blur-2xl opacity-60"
-        style={{
-          background: dark
-            ? "radial-gradient(circle, rgba(0, 150, 255, 0.25) 0%, rgba(147, 51, 234, 0.2) 60%, transparent 80%)"
-            : "radial-gradient(circle, rgba(201, 149, 106, 0.2) 0%, transparent 70%)",
-        }}
-      />
-
-      {/* Decorative sparkles */}
-      <span className="absolute top-1 left-6 text-cyan-400/70 text-sm">✦</span>
-      <span className="absolute bottom-3 left-10 text-purple-400/60 text-xs">✦</span>
-      <span className="absolute bottom-1 right-8 text-cyan-300/70 text-xs">✦</span>
-
-      {/* Radiating sparks (top right) */}
-      <div className="absolute top-1 right-12 flex items-end gap-1">
-        <span className="w-0.5 h-2.5 rounded-full bg-cyan-400 -rotate-25 shadow-[0_0_8px_rgba(0,212,255,0.8)]" />
-        <span className="w-0.5 h-3.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(0,212,255,0.8)]" />
-        <span className="w-0.5 h-2.5 rounded-full bg-cyan-400 rotate-25 shadow-[0_0_8px_rgba(0,212,255,0.8)]" />
-      </div>
-
-      {/* Back card (Dark blue with user avatar and placeholder bars) */}
+    <div className="relative w-full max-w-[280px] sm:max-w-[300px] h-[125px] mx-auto flex items-center justify-center select-none pointer-events-none mb-3">
+      {/* Back card */}
       <div
         className={cn(
-          "absolute -top-1 left-4 sm:left-6 w-[190px] sm:w-[210px] rounded-2xl p-3 flex items-center gap-3 border shadow-lg transition-transform",
+          "absolute top-0.5 left-2 sm:left-3 w-[185px] sm:w-[195px] rounded-xl p-3 border shadow-md transition-transform",
           dark
-            ? "bg-[#132238]/95 border-blue-400/30 shadow-[0_8px_25px_rgba(0,100,255,0.25)]"
-            : "bg-[#fffaf2] border-[#8b1a1a]/20 shadow-md"
+            ? "bg-[#0f1728]/80 border-slate-700/40"
+            : "bg-slate-100/90 border-slate-200"
         )}
       >
+        <div className="flex items-center gap-2.5">
+          <div
+            className={cn(
+              "w-7 h-7 rounded-full flex items-center justify-center shrink-0 border",
+              dark
+                ? "bg-slate-800/80 border-slate-700/60 text-slate-500"
+                : "bg-slate-200/80 border-slate-300 text-slate-400"
+            )}
+          >
+            <FaUser className="text-[10px]" />
+          </div>
+          <div className="flex-1 space-y-1.5">
+            <div
+              className={cn(
+                "h-2 w-20 rounded-full",
+                dark ? "bg-slate-700/50" : "bg-slate-300/60"
+              )}
+            />
+            <div
+              className={cn(
+                "h-1.5 w-12 rounded-full",
+                dark ? "bg-slate-700/35" : "bg-slate-300/40"
+              )}
+            />
+          </div>
+        </div>
         <div
           className={cn(
-            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border",
-            dark
-              ? "bg-blue-500/25 border-blue-400/40 text-blue-300"
-              : "bg-[#8b1a1a]/10 border-[#8b1a1a]/20 text-[#8b1a1a]"
+            "h-1.5 w-full rounded-full mt-2.5",
+            dark ? "bg-slate-700/30" : "bg-slate-300/35"
           )}
-        >
-          <FaUser className="text-xs" />
-        </div>
-        <div className="flex-1 space-y-1.5">
-          <div
-            className={cn(
-              "h-2 w-20 rounded-full",
-              dark ? "bg-blue-300/30" : "bg-[#8b1a1a]/25"
-            )}
-          />
-          <div
-            className={cn(
-              "h-1.5 w-12 rounded-full",
-              dark ? "bg-blue-300/20" : "bg-[#8b1a1a]/15"
-            )}
-          />
-        </div>
+        />
       </div>
 
-      {/* Front card (Purple with user avatar and placeholder bars) */}
+      {/* Front card */}
       <div
         className={cn(
-          "absolute top-7 right-4 sm:right-6 w-[190px] sm:w-[210px] rounded-2xl p-3 flex items-center gap-3 border shadow-xl z-10 transition-transform",
+          "absolute top-6 right-2 sm:right-3 w-[215px] sm:w-[225px] rounded-xl p-3 border shadow-2xl z-10 transition-transform",
           dark
-            ? "bg-[#251842]/95 border-purple-400/40 shadow-[0_12px_32px_rgba(147,51,234,0.35)]"
-            : "bg-[#fff] border-[#c9956a]/30 shadow-lg"
+            ? "bg-[#141e30] border-slate-700/70 shadow-[0_12px_32px_rgba(0,0,0,0.6)]"
+            : "bg-white border-slate-200 shadow-[0_8px_25px_rgba(0,0,0,0.08)]"
         )}
       >
+        <div className="flex items-start justify-between gap-2">
+          {/* Avatar with PR and verified blue check badge */}
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="relative shrink-0">
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full border flex items-center justify-center text-[11px] font-bold tracking-tight",
+                  dark
+                    ? "bg-[#182334] border-slate-600/70 text-slate-200"
+                    : "bg-slate-100 border-slate-300 text-slate-700"
+                )}
+              >
+                PR
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-[#1877f2] flex items-center justify-center border-2 border-[#141e30] text-white shadow-sm">
+                <FaCheck className="text-[7px]" />
+              </div>
+            </div>
+
+            <div className="flex-1 space-y-1.5 ml-1">
+              <div
+                className={cn(
+                  "h-2 w-20 rounded-full",
+                  dark ? "bg-slate-600/70" : "bg-slate-400/50"
+                )}
+              />
+              <div
+                className={cn(
+                  "h-1.5 w-12 rounded-full",
+                  dark ? "bg-slate-700/50" : "bg-slate-300/50"
+                )}
+              />
+            </div>
+          </div>
+
+          {/* 5 Rating Dots */}
+          <div className="flex items-center gap-1 shrink-0 pt-1">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <span
+                key={i}
+                className={cn(
+                  "w-1.5 h-1.5 rounded-full",
+                  dark ? "bg-slate-600/80" : "bg-slate-300"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Lower placeholder line */}
         <div
           className={cn(
-            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 border",
-            dark
-              ? "bg-purple-500/35 border-purple-300/50 text-purple-200"
-              : "bg-[#c9956a]/20 border-[#c9956a]/40 text-[#8b1a1a]"
+            "h-1.5 w-full rounded-full mt-2.5",
+            dark ? "bg-slate-700/40" : "bg-slate-300/40"
           )}
-        >
-          <FaUser className="text-xs" />
-        </div>
-        <div className="flex-1 space-y-1.5">
-          <div
-            className={cn(
-              "h-2 w-24 rounded-full",
-              dark ? "bg-purple-300/40" : "bg-[#8b1a1a]/30"
-            )}
-          />
-          <div
-            className={cn(
-              "h-1.5 w-16 rounded-full",
-              dark ? "bg-purple-300/25" : "bg-[#8b1a1a]/20"
-            )}
-          />
-        </div>
+        />
       </div>
     </div>
   );
@@ -1032,31 +1050,31 @@ function TestimonialsSection({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
-              "max-w-xl mx-auto rounded-3xl border p-8 sm:p-10 text-center space-y-6 overflow-hidden relative",
+              "max-w-lg mx-auto rounded-3xl border p-8 sm:p-10 text-center space-y-6 overflow-hidden relative shadow-2xl",
               dark
-                ? "bg-[#091122]/90 border-blue-500/25 shadow-[0_8px_32px_rgba(0,140,255,0.15)]"
-                : "bg-[#fffaf2]/80 border-[#8b1a1a]/15 shadow-[0_8px_32px_rgba(139,26,26,0.08)]"
+                ? "bg-[#0c1424] border-slate-800/90 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+                : "bg-[#fffaf2]/90 border-[#8b1a1a]/15 shadow-xl"
             )}
           >
             <TestimonialsEmptyIllustration dark={dark} />
 
             <div className="space-y-2">
-              <h3 className={cn("text-2xl font-bold tracking-tight", dark ? "text-white" : "text-[#2a1008]")}>
+              <h3 className={cn("text-xl sm:text-2xl font-bold tracking-tight", dark ? "text-white" : "text-[#2a1008]")}>
                 {t.noTestimonialsYet || (lang === "jp" ? "推薦状はまだありません" : "No testimonials yet")}
               </h3>
-              <p className={cn("text-sm leading-relaxed max-w-md mx-auto", dark ? "text-white/60" : "text-[#7a4a35]/80")}>
+              <p className={cn("text-xs sm:text-sm leading-relaxed max-w-md mx-auto", dark ? "text-slate-400" : "text-[#7a4a35]/80")}>
                 {t.noTestimonialsDesc || (lang === "jp"
                   ? "パヴァンとの協業やプロジェクトの体験を最初にシェアしませんか？Googleアカウントでサインインして、LinkedInプロフィールのリンクを添えて推薦状を投稿できます。"
                   : "Be the first peer, colleague, or collaborator to share your experience working with Pavan! Sign in with your Google account to leave a testimonial, and paste your LinkedIn profile link.")}
               </p>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-3 pt-1">
+            <div className="flex flex-wrap justify-center gap-2.5 pt-1">
               <span
                 className={cn(
                   "inline-flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-full border shadow-sm",
                   dark
-                    ? "border-white/10 text-white/80 bg-[#0e1726]/80"
+                    ? "border-slate-800/80 text-slate-300 bg-[#121c2e]"
                     : "border-[#8b1a1a]/15 text-[#7a4a35] bg-[#8b1a1a]/5"
                 )}
               >
@@ -1068,7 +1086,7 @@ function TestimonialsSection({
                 className={cn(
                   "inline-flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-full border shadow-sm",
                   dark
-                    ? "border-white/10 text-white/80 bg-[#0e1726]/80"
+                    ? "border-slate-800/80 text-slate-300 bg-[#121c2e]"
                     : "border-[#8b1a1a]/15 text-[#7a4a35] bg-[#8b1a1a]/5"
                 )}
               >
@@ -1077,23 +1095,25 @@ function TestimonialsSection({
               </span>
             </div>
 
-            {!showForm && (
-              <motion.button
-                type="button"
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => { setShowForm(true); setStatus("idle"); }}
-                className={cn(
-                  "w-full max-w-sm mx-auto flex items-center justify-center gap-2.5 rounded-2xl px-8 py-3.5 font-semibold text-sm text-white shadow-xl transition-all duration-300 mt-2",
-                  dark
-                    ? "bg-gradient-to-r from-[#00d2ff] via-[#009bf9] to-[#0066ff] shadow-[0_0_25px_rgba(0,180,255,0.4)] hover:shadow-[0_0_35px_rgba(0,180,255,0.6)]"
-                    : "bg-gradient-to-r from-[#8b1a1a] to-[#c9956a] shadow-[0_4px_20px_rgba(139,26,26,0.3)] hover:shadow-[0_6px_30px_rgba(139,26,26,0.45)]"
-                )}
-              >
-                <FaPenNib className="text-xs" />
-                <span>{t.leaveFirstTestimonial || (lang === "jp" ? "最初の推薦状を書く" : "Leave the First Testimonial")}</span>
-              </motion.button>
-            )}
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => { setShowForm((v) => !v); setStatus("idle"); }}
+              className={cn(
+                "w-full max-w-sm mx-auto flex items-center justify-center gap-2 rounded-xl py-3 px-6 font-semibold text-sm text-white shadow-lg transition-all duration-300 mt-2",
+                dark
+                  ? "bg-[#0066ff] hover:bg-[#0055dd] shadow-blue-600/30 hover:shadow-blue-600/40"
+                  : "bg-gradient-to-r from-[#8b1a1a] to-[#c9956a] shadow-[0_4px_20px_rgba(139,26,26,0.3)] hover:shadow-[0_6px_30px_rgba(139,26,26,0.45)]"
+              )}
+            >
+              {showForm ? <FaTimes className="text-xs" /> : <FaPenNib className="text-xs" />}
+              <span>
+                {showForm
+                  ? (lang === "jp" ? "閉じる" : "Close Form")
+                  : (t.leaveFirstTestimonial || (lang === "jp" ? "最初の推薦状を書く" : "Leave the First Testimonial"))}
+              </span>
+            </motion.button>
           </motion.div>
         ) : (
           /* Cards grid: Only real testimonials */
@@ -1167,22 +1187,9 @@ function TestimonialsSection({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-1.5">
-                        <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
-                          {item.name}
-                        </p>
-                        {item.linkedin && (
-                          <a
-                            href={item.linkedin.startsWith("http") ? item.linkedin : `https://${item.linkedin}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title="View LinkedIn Profile"
-                            className="text-[#0A66C2] hover:scale-110 transition-transform shrink-0"
-                          >
-                            <FaLinkedin className="text-xs" />
-                          </a>
-                        )}
-                      </div>
+                      <p className={cn("text-sm font-semibold truncate", dark ? "text-white" : "text-[#2a1008]")}>
+                        {item.name}
+                      </p>
                       <p className={cn("text-xs truncate", dark ? "text-white/50" : "text-[#7a4a35]/70")}>
                         {item.role}
                       </p>
@@ -1214,45 +1221,36 @@ function TestimonialsSection({
           </div>
         )}
 
-        {/* Leave a testimonial toggle */}
+        {/* Leave a testimonial toggle (Only shown when testimonials exist) */}
         <motion.div
-          className="mt-10 flex flex-col items-center gap-6"
+          className={cn(testimonials.length > 0 ? "mt-10" : "mt-6", "flex flex-col items-center gap-6")}
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.04, y: -2 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={() => { setShowForm((v) => !v); setStatus("idle"); }}
-            aria-expanded={showForm}
-            className={cn(
-              "group relative inline-flex items-center gap-3.5 overflow-hidden rounded-2xl border px-6 py-2.5 font-semibold text-sm transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 shadow-lg",
-              dark
-                ? "border-cyan-500/25 bg-[#071322]/90 text-white hover:border-cyan-400/50 hover:shadow-[0_8px_30px_rgba(0,212,255,0.15)] focus-visible:ring-cyan-300 focus-visible:ring-offset-[#030712]"
-                : "border-[#8b1a1a]/20 bg-[#fffaf2] text-[#6f1919] hover:border-[#8b1a1a]/45 shadow-[0_4px_20px_rgba(139,26,26,0.08)] focus-visible:ring-[#8b1a1a] focus-visible:ring-offset-[#f5ede0]"
-            )}
-          >
-            <span
+          {testimonials.length > 0 && (
+            <motion.button
+              type="button"
+              whileHover={{ scale: 1.03, y: -1 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => { setShowForm((v) => !v); setStatus("idle"); }}
+              aria-expanded={showForm}
               className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-lg border transition-all duration-300",
+                "group relative inline-flex items-center gap-2.5 rounded-xl border px-6 py-2.5 text-xs sm:text-sm font-medium transition-all duration-300 shadow-md",
                 dark
-                  ? "border-cyan-400/25 bg-cyan-400/10 text-cyan-300 group-hover:border-cyan-400/50"
-                  : "border-[#8b1a1a]/15 bg-[#8b1a1a]/10 text-[#8b1a1a] group-hover:border-[#8b1a1a]/25"
+                  ? "border-slate-800 bg-[#0e1626] text-slate-300 hover:text-white hover:border-slate-700 hover:bg-[#131f33]"
+                  : "border-[#8b1a1a]/20 bg-[#fffaf2] text-[#6f1919] hover:border-[#8b1a1a]/45 shadow-sm"
               )}
             >
-              {showForm ? <FaTimes className="text-xs" /> : <FaPenNib className="text-xs transition-transform duration-300 group-hover:-rotate-12 group-hover:scale-110" />}
-            </span>
-            <span>{showForm ? (lang === "jp" ? "閉じる" : "Close") : t.leaveTestimonial}</span>
-            <span className={cn(
-              "ml-1 h-1.5 w-1.5 rounded-full transition-colors duration-300 shrink-0",
-              dark
-                ? "bg-cyan-400 shadow-[0_0_8px_rgba(0,212,255,0.8)]"
-                : "bg-[#8b1a1a]/60"
-            )} />
-          </motion.button>
+              {showForm ? (
+                <FaTimes className="text-xs text-slate-400" />
+              ) : (
+                <FaPenNib className="text-xs text-slate-400 group-hover:text-white transition-colors" />
+              )}
+              <span>{showForm ? (lang === "jp" ? "閉じる" : "Close") : t.leaveTestimonial}</span>
+            </motion.button>
+          )}
 
           <AnimatePresence>
             {showForm && (
@@ -3591,20 +3589,30 @@ export default function Home() {
           <motion.div variants={fadeUp} className="mb-8 sm:mb-10 text-center">
             <p
               className={cn(
-                "text-sm font-semibold tracking-widest uppercase mb-3",
-                dark ? "text-cyan-400" : "text-[#8b1a1a]"
+                "text-xs sm:text-sm font-semibold tracking-[0.25em] uppercase mb-2",
+                dark ? "text-slate-400" : "text-[#8b1a1a]"
               )}
             >
               {t.whatOthersSay}
             </p>
-            <h2 className="text-4xl sm:text-5xl font-extrabold text-gradient">
+            <h2
+              className={cn(
+                "text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight",
+                dark ? "text-white" : "text-[#2a1008]"
+              )}
+            >
               {t.testimonials}
             </h2>
-            <Divider dark={dark} />
+            <div
+              className={cn(
+                "w-12 h-px mx-auto my-3.5",
+                dark ? "bg-slate-700/60" : "bg-[#8b1a1a]/25"
+              )}
+            />
             <p
               className={cn(
-                "text-sm mt-4",
-                dark ? "text-white/40" : "text-[#7a4a35]/70"
+                "text-xs sm:text-sm leading-relaxed max-w-md mx-auto",
+                dark ? "text-slate-400" : "text-[#7a4a35]/80"
               )}
             >
               {lang === "jp"
