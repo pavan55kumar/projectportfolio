@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaArrowUpRightFromSquare, FaArrowRight } from "react-icons/fa6";
@@ -27,6 +28,18 @@ export default function ProjectCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Check if project has an uploaded cover or banner image
+  const uploadedImage = project.coverImage || project.bannerImage;
+  const [viewMode, setViewMode] = useState<"photo" | "gadget">(
+    uploadedImage ? "photo" : "gadget"
+  );
+
+  useEffect(() => {
+    if (uploadedImage) {
+      setViewMode("photo");
+    }
+  }, [uploadedImage]);
 
   const handleCopyLink = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -170,19 +183,97 @@ export default function ProjectCard({
       }`}
     >
       <div className="p-3.5 sm:p-5 lg:p-6 grid grid-cols-[130px_1fr] min-[480px]:grid-cols-[150px_1fr] sm:grid-cols-[190px_1fr] lg:grid-cols-[230px_1fr] gap-3.5 sm:gap-5 lg:gap-6 items-center">
-        {/* ── Left Column: Interactive Visual Gadget ── */}
-        <Link
-          href={`/engineering-lab/${project.slug}`}
-          className="block w-full h-full relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-xl"
-          aria-label={`View deep-dive for ${project.title}`}
-        >
-          <ProjectVisualGadget
-            project={project}
-            index={index}
-            totalProjects={totalProjects}
-            dark={dark}
-          />
-        </Link>
+        {/* ── Left Column: Interactive Visual Frame (Photo or Gadget) ── */}
+        <div className="relative w-full h-full min-h-[160px] sm:min-h-[185px] group/gadget">
+          <Link
+            href={`/engineering-lab/${project.slug}`}
+            className="block w-full h-full relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 rounded-xl sm:rounded-2xl overflow-hidden"
+            aria-label={`View deep-dive for ${project.title}`}
+          >
+            {viewMode === "photo" && uploadedImage ? (
+              <div
+                className={`relative w-full h-full min-h-[160px] sm:min-h-[185px] rounded-xl sm:rounded-2xl overflow-hidden border transition-all duration-300 ${
+                  dark
+                    ? "bg-[#040a16] border-cyan-500/25 shadow-[inset_0_1px_15px_rgba(34,211,238,0.06)]"
+                    : "bg-[#faeedd] border-[#8b1a1a]/25 shadow-sm"
+                }`}
+              >
+                {/* Uploaded Image */}
+                <Image
+                  src={uploadedImage}
+                  alt={project.title}
+                  fill
+                  sizes="(max-width: 640px) 150px, (max-width: 1024px) 200px, 240px"
+                  className="object-cover transition-transform duration-500 group-hover/gadget:scale-105"
+                  unoptimized={uploadedImage.startsWith("data:")}
+                  priority={index === 0}
+                />
+
+                {/* Subtle dark gradient overlay at bottom for readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+
+                {/* Top status tag */}
+                <div className="absolute top-2 left-2 z-10">
+                  <span
+                    className={`font-mono text-[7px] sm:text-[8px] px-1.5 py-0.5 rounded font-bold tracking-wider backdrop-blur-md ${
+                      dark
+                        ? "bg-black/60 text-cyan-300 border border-cyan-400/30"
+                        : "bg-white/80 text-[#8b1a1a] border border-[#8b1a1a]/20"
+                    }`}
+                  >
+                    PREVIEW
+                  </span>
+                </div>
+
+                {/* Bottom index bar */}
+                <div className="absolute bottom-2 inset-x-2.5 z-10 flex items-center justify-between">
+                  <span className="font-mono text-[9px] sm:text-[10px] font-bold tracking-wider text-white drop-shadow-md">
+                    {String(index + 1).padStart(2, "0")} / {String(totalProjects).padStart(2, "0")}
+                  </span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]" />
+                </div>
+              </div>
+            ) : (
+              <ProjectVisualGadget
+                project={project}
+                index={index}
+                totalProjects={totalProjects}
+                dark={dark}
+              />
+            )}
+          </Link>
+
+          {/* Toggle pill when an image is present so user can toggle between Photo and Vector Telemetry Gadget */}
+          {uploadedImage && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setViewMode((prev) => (prev === "photo" ? "gadget" : "photo"));
+              }}
+              aria-label={viewMode === "photo" ? "Switch to interactive gadget view" : "Switch to photo view"}
+              title={viewMode === "photo" ? "View Radar / Gadget" : "View Uploaded Photo"}
+              className={`absolute top-2 right-2 z-20 flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] font-bold uppercase tracking-wider backdrop-blur-md transition-all duration-200 border cursor-pointer ${
+                dark
+                  ? "bg-black/75 hover:bg-black text-cyan-300 border-cyan-400/40 hover:border-cyan-300 shadow-[0_0_8px_rgba(0,0,0,0.8)]"
+                  : "bg-white/90 hover:bg-white text-[#8b1a1a] border-[#8b1a1a]/30 hover:border-[#8b1a1a] shadow-xs"
+              }`}
+            >
+              {viewMode === "photo" ? (
+                <>
+                  <span className="text-[9px]">⚡</span>
+                  <span>Radar</span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[9px]">📷</span>
+                  <span>Photo</span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
 
         {/* ── Right Column: Project Info & Actions ── */}
         <div className="flex flex-col justify-between h-full min-w-0">

@@ -653,9 +653,15 @@ DROP POLICY IF EXISTS "Admin full experience" ON public.experience;
 CREATE POLICY "Public view experience" ON public.experience FOR SELECT USING (true);
 CREATE POLICY "Admin full experience" ON public.experience FOR ALL USING (true) WITH CHECK (true);`;
 
-const SQL_MIGRATION_ENGINEERING_LAB = `-- Copy & Paste this into Supabase SQL Editor for Engineer's Lab & Live Previews:
+const SQL_MIGRATION_ENGINEERING_LAB = `-- ═══════════════════════════════════════════════════════════════════════
+-- CONNECT & ENGINEERING LAB DATABASE SCHEMA & SEED QUERY
+-- Run this in your Supabase SQL Editor (https://supabase.com/dashboard/project/_/sql)
+-- ═══════════════════════════════════════════════════════════════════════
+
+-- 1. Ensure live_url column exists in projects table for portfolio integration
 ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS live_url TEXT;
 
+-- 2. Create the engineering_projects table
 CREATE TABLE IF NOT EXISTS public.engineering_projects (
     id TEXT PRIMARY KEY,
     slug TEXT UNIQUE NOT NULL,
@@ -687,13 +693,132 @@ CREATE TABLE IF NOT EXISTS public.engineering_projects (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 3. Idempotent column additions (ensures existing tables receive cover_image & banner_image)
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS cover_image TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS banner_image TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS icon TEXT DEFAULT 'portfolio';
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS status TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS category TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS overview TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS problem TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS solution TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS intended_for TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS role TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS duration TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS technologies JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS features JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS contributions JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS architecture TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS challenges TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS additional_details TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS github_url TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS live_url TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS live_demo_url TEXT;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS team JSONB DEFAULT '[]'::jsonb;
+ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS order_index INTEGER DEFAULT 0;
+
+-- 4. Enable Row Level Security (RLS)
 ALTER TABLE public.engineering_projects ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Public view engineering projects" ON public.engineering_projects;
 DROP POLICY IF EXISTS "Admin full engineering projects" ON public.engineering_projects;
 
 CREATE POLICY "Public view engineering projects" ON public.engineering_projects FOR SELECT USING (true);
-CREATE POLICY "Admin full engineering projects" ON public.engineering_projects FOR ALL USING (true) WITH CHECK (true);`;
+CREATE POLICY "Admin full engineering projects" ON public.engineering_projects FOR ALL USING (true) WITH CHECK (true);
+
+-- 5. Seed / Upsert the 5 Connect & Engineering Lab Projects
+INSERT INTO public.engineering_projects (
+    id, slug, title, description, status, category, cover_image, banner_image, 
+    technologies, features, live_url, github_url, order_index
+) VALUES 
+(
+  'sankat-saathi',
+  'sankat-saathi',
+  'Sankat Saathi (संकट साथी)',
+  'AI powered humanitarian flood relief platform that optimizes emergency citizen SOS requests.',
+  'IBM Z Datathon Project',
+  'AI & Disaster Logistics',
+  '/projects/sankat-saathi/banner.jpg',
+  '/projects/sankat-saathi/cover.png',
+  '["React 18", "Vite", "Tailwind CSS", "Supabase", "IBM Z", "FastAPI"]'::jsonb,
+  '["Urgent SOS triage engine with GPS coordinates", "Explainable AI scoring weighting severity and population", "Real-time dispatch telemetry and resource allocations"]'::jsonb,
+  'https://sankat-saathi.vercel.app',
+  'https://github.com/pavan55kumar/sankatsaathi',
+  1
+),
+(
+  'atlas',
+  'atlas',
+  'ATLAS',
+  'Personal life operating system featuring an intelligent college attendance & bunk margin tracker.',
+  'Active Production PWA',
+  'Full-Stack / PWA',
+  '/projects/atlas/cover.png',
+  '/projects/atlas/banner.png',
+  '["React 18", "Vite", "Tailwind CSS", "Framer Motion", "PWA"]'::jsonb,
+  '["Intelligent college attendance bunk margin tracker", "Fast offline-capable Progressive Web App", "Dynamic timetable and daily habit scheduling"]'::jsonb,
+  'https://atlas-app.vercel.app',
+  'https://github.com/pavan55kumar/atlas',
+  2
+),
+(
+  'portfolio-3d',
+  'portfolio-3d',
+  'Portfolio project ',
+  'Modern personal portfolio with interactive 3D WebGL, LinkedIn OAuth testimonials, and dynamic telemetry.',
+  'Live on Vercel',
+  '3D WebGL & Next.js',
+  '',
+  '',
+  '["React 18", "Three.js", "Open-Meteo API", "Express.js", "WebGL"]'::jsonb,
+  '["Interactive 3D WebGL floating computer and shader scene", "LinkedIn OAuth authenticated testimonial wall", "Real-time weather station telemetry"]'::jsonb,
+  'https://pavankumar.dev',
+  'https://github.com/pavan55kumar/projectportfolio',
+  3
+),
+(
+  'weather-app',
+  'weather-app',
+  'Weather App',
+  'Real-time weather dashboard with live forecasts, air quality, and interactive maps.',
+  'Engineering Lab',
+  'Full-Stack & APIs',
+  '',
+  '',
+  '["React 18", "Express.js", "Tailwind CSS", "Open-Meteo API", "Leaflet Maps"]'::jsonb,
+  '["Live atmospheric pressure, temperature, and AQI monitoring", "Interactive vector radar and precipitation velocity mapping", "7-day dynamic forecasting"]'::jsonb,
+  'https://weather-app-live.vercel.app/',
+  'https://github.com/pavan55kumar/weather-app',
+  4
+),
+(
+  'note-saver',
+  'note-saver',
+  'Note Saver App',
+  'Minimalist offline-first markdown notes and thoughts capture with instant search and local storage.',
+  'In Development',
+  'Full-Stack Web App',
+  '',
+  '',
+  '["Python", "Flask", "SQLite", "JavaScript"]'::jsonb,
+  '["Instant search and tag filtering", "Markdown preview and local caching", "Minimalist responsive UI"]'::jsonb,
+  '',
+  'https://github.com/pavan55kumar/note-saver',
+  5
+)
+ON CONFLICT (id) DO UPDATE SET
+  title = EXCLUDED.title,
+  slug = EXCLUDED.slug,
+  description = EXCLUDED.description,
+  status = EXCLUDED.status,
+  category = EXCLUDED.category,
+  cover_image = COALESCE(NULLIF(EXCLUDED.cover_image, ''), engineering_projects.cover_image),
+  banner_image = COALESCE(NULLIF(EXCLUDED.banner_image, ''), engineering_projects.banner_image),
+  technologies = EXCLUDED.technologies,
+  features = EXCLUDED.features,
+  live_url = EXCLUDED.live_url,
+  github_url = EXCLUDED.github_url,
+  order_index = EXCLUDED.order_index;`;
 
 
 export default function AdminPage() {
@@ -1320,7 +1445,11 @@ export default function AdminPage() {
         if (res.ok) {
           setShowEngProjectModal(false);
           setEditingEngProject(null);
-          fetchData();
+          await fetchData();
+          alert("Project updated successfully! Changes and photos are live on /connect and /engineering-lab.");
+        } else {
+          const errData = await res.json().catch(() => null);
+          alert("Failed to update project: " + (errData?.error || res.statusText));
         }
       } else {
         const res = await fetch("/api/engineering-projects", {
@@ -1330,11 +1459,16 @@ export default function AdminPage() {
         });
         if (res.ok) {
           setShowEngProjectModal(false);
-          fetchData();
+          await fetchData();
+          alert("Project created successfully! View it live on /connect and /engineering-lab.");
+        } else {
+          const errData = await res.json().catch(() => null);
+          alert("Failed to create project: " + (errData?.error || res.statusText));
         }
       }
     } catch (err) {
       console.error("Failed to save engineering project:", err);
+      alert("Network error: Failed to save engineering project.");
     }
   };
 
@@ -1646,7 +1780,7 @@ export default function AdminPage() {
                 : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
             }`}
           >
-            <FiCpu /> Engineer&apos;s Lab &amp; Live Previews ({engProjects.length})
+            <FiCpu /> Connect &amp; Engineering Lab ({engProjects.length})
           </button>
 
 
@@ -2269,27 +2403,42 @@ export default function AdminPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[#2a1008] flex items-center gap-2">
-                  <FiCpu className="text-[#8b1a1a]" /> Engineer&apos;s Lab &amp; Live Previews
+                  <FiCpu className="text-[#8b1a1a]" /> Connect &amp; Engineering Lab Projects
                 </h2>
                 <p className="text-xs sm:text-sm text-[#7a4a35] mt-1">
-                  Manage deep-dive technical stories, deployed live website URLs (for interactive iframe previews), system architecture, problem/solution narratives, and features.
+                  Manage all projects displayed on the Connect page (<code className="font-mono text-[11px] bg-white px-1.5 py-0.5 rounded border border-[#8b1a1a]/15">/connect</code>) and Engineering Lab (<code className="font-mono text-[11px] bg-white px-1.5 py-0.5 rounded border border-[#8b1a1a]/15">/engineering-lab</code>).
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={openAddEngProject}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all self-start sm:self-auto cursor-pointer"
-              >
-                <FiPlus /> Add Lab Project
-              </button>
+              <div className="flex items-center gap-2 flex-wrap self-start sm:self-auto">
+                <Link
+                  href="/connect"
+                  target="_blank"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border border-[#8b1a1a]/25 bg-white hover:bg-[#faeedd] text-[#8b1a1a] shadow-xs transition-all cursor-pointer"
+                >
+                  <span>View Live Connect Page</span>
+                  <FiExternalLink className="text-xs" />
+                </Link>
+                <button
+                  type="button"
+                  onClick={openAddEngProject}
+                  className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#8b1a1a] hover:bg-[#721515] text-white shadow-md shadow-[#8b1a1a]/25 transition-all cursor-pointer"
+                >
+                  <FiPlus /> Add Lab Project
+                </button>
+              </div>
             </div>
 
             {/* Quick helper note */}
-            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-xs text-[#5a3020] flex items-start gap-3">
-              <span className="text-base shrink-0">💡</span>
-              <p className="leading-relaxed">
-                <strong>Live Previews:</strong> To make an interactive live website preview load on the project detail page, enter the deployed URL into the <em>Live Website URL</em> field. If left blank, visitors will see an elegant <em>&quot;Live preview coming soon&quot;</em> showcase.
-              </p>
+            <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-xs text-[#0c2e3d] flex items-start gap-3 shadow-xs">
+              <span className="text-base shrink-0">✦</span>
+              <div className="space-y-1 leading-relaxed">
+                <p>
+                  <strong>Connect Page Photo Sync Active:</strong> Any image uploaded under <em>&quot;Lab Cover Image&quot;</em> immediately displays on the project card on the Connect page (<code className="font-mono text-[10px]">/connect</code>), with a sleek interactive <strong>Radar ⚡ / Photo 📷</strong> switcher.
+                </p>
+                <p className="text-[11px] opacity-85">
+                  <strong>Live Previews:</strong> Enter the deployed URL in <em>&quot;Live Deployed Website URL&quot;</em> to power the glowing <strong>Live Demo ↗</strong> button and embedded simulator on the detail page.
+                </p>
+              </div>
             </div>
 
             <div className="grid gap-5">
@@ -2783,18 +2932,18 @@ export default function AdminPage() {
               </button>
             </div>
 
-            {/* Quick Migration Box for Engineer's Lab & Live Previews */}
+            {/* Quick Migration Box for Connect & Engineering Lab Projects */}
             <div className="p-5 rounded-2xl border-2 border-cyan-600/30 bg-cyan-500/10 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <h4 className="text-sm font-bold text-cyan-950 flex items-center gap-2">
                   <FiDatabase className="text-cyan-700" />
-                  Database Query for Engineer&apos;s Lab &amp; Live Previews
+                  Database Query for Connect &amp; Engineering Lab Projects
                 </h4>
                 <p className="text-xs text-cyan-800 mt-1">
-                  Run this query in Supabase SQL Editor to create the <code>engineering_projects</code> table and add <code>live_url</code> to projects:
+                  Run this query in Supabase SQL Editor to create the <code>engineering_projects</code> table with full photo upload support (<code>cover_image</code>, <code>banner_image</code>) and seed all 5 projects:
                 </p>
                 <code className="inline-block mt-2 font-mono text-xs px-3 py-1.5 rounded-lg bg-[#2a1008] text-cyan-300">
-                  ALTER TABLE public.projects ADD COLUMN IF NOT EXISTS live_url TEXT; CREATE TABLE IF NOT EXISTS public.engineering_projects (...);
+                  ALTER TABLE public.engineering_projects ADD COLUMN IF NOT EXISTS cover_image TEXT; ...
                 </code>
               </div>
               <button
@@ -2804,7 +2953,7 @@ export default function AdminPage() {
                   setCopiedEngMigration(true);
                   setTimeout(() => setCopiedEngMigration(false), 2000);
                 }}
-                className="shrink-0 px-4 py-2.5 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5"
+                className="shrink-0 px-4 py-2.5 rounded-xl bg-cyan-700 hover:bg-cyan-800 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 {copiedEngMigration ? (
                   <>
@@ -2812,7 +2961,7 @@ export default function AdminPage() {
                   </>
                 ) : (
                   <>
-                    <FiCopy /> Copy Lab Query
+                    <FiCopy /> Copy Connect &amp; Lab Query
                   </>
                 )}
               </button>
