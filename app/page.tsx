@@ -2557,14 +2557,14 @@ export default function Home() {
               </p>
             </motion.div>
 
-            {/* ── 1. EDUCATION (Compact & Comfortable Layout) ── */}
-            <motion.div variants={fadeUp} className="pt-1 sm:pt-2">
-              {/* Header without top line */}
-              <div className="flex items-center gap-3 mb-4 sm:mb-5">
+            {/* ── 1. EDUCATION (Matching Reference Image) ── */}
+            <motion.div variants={fadeUp} className="pt-2 sm:pt-4">
+              {/* Header with Gold Graduation Cap Icon */}
+              <div className="flex items-center gap-3.5 mb-6 sm:mb-8">
                 <div
                   className={cn(
-                    "text-xl sm:text-2xl shrink-0",
-                    dark ? "text-amber-400/90" : "text-[#8b1a1a]"
+                    "text-2xl sm:text-3xl shrink-0",
+                    dark ? "text-amber-400" : "text-[#8b1a1a]"
                   )}
                 >
                   <LuGraduationCap />
@@ -2572,7 +2572,7 @@ export default function Home() {
                 <div>
                   <h3
                     className={cn(
-                      "text-base sm:text-lg font-bold tracking-[0.2em] uppercase leading-tight",
+                      "text-base sm:text-lg font-bold tracking-[0.25em] uppercase leading-tight",
                       dark ? "text-white" : "text-[#2a1008]"
                     )}
                   >
@@ -2580,8 +2580,8 @@ export default function Home() {
                   </h3>
                   <p
                     className={cn(
-                      "text-[9px] sm:text-[10px] font-semibold tracking-[0.24em] uppercase mt-0.5",
-                      dark ? "text-slate-400/80" : "text-[#7a4a35]/70"
+                      "text-[10px] sm:text-[11px] font-semibold tracking-[0.22em] uppercase mt-0.5",
+                      dark ? "text-slate-400" : "text-[#7a4a35]/70"
                     )}
                   >
                     ACADEMIC BACKGROUND
@@ -2589,17 +2589,17 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Connected Timeline Track (Compact & comfortable sizing) */}
+              {/* Connected Timeline Track */}
               <div className="relative">
                 {/* Continuous vertical track line */}
                 <div
                   className={cn(
-                    "absolute left-3 sm:left-3.5 top-2.5 bottom-3 w-[1.5px] -translate-x-1/2 pointer-events-none",
-                    dark ? "bg-white/10" : "bg-[#8b1a1a]/15"
+                    "absolute left-3.5 top-4 bottom-4 w-[1px] -translate-x-1/2 pointer-events-none",
+                    dark ? "bg-slate-700/60" : "bg-[#8b1a1a]/15"
                   )}
                 />
 
-                <div className="divide-y divide-white/[0.06]">
+                <div className="divide-y divide-white/[0.05]">
                   {(dynamicEducation && dynamicEducation.length > 0
                     ? dynamicEducation
                     : [
@@ -2624,13 +2624,13 @@ export default function Home() {
                           levelTag: "SECONDARY EDUCATION",
                           degree: "Secondary School (SSLC)",
                           institution: "St.Cecily's High school",
-                          period: "2020",
+                          period: "2022",
                           status: "",
                         },
                       ]
                   ).map((item, idx) => {
                     const isFirst = idx === 0;
-                    const isInProgress = item.status?.toLowerCase().includes("progress");
+                    const isInProgress = item.status && item.status.toLowerCase().includes("progress");
 
                     const tagColor = isFirst
                       ? dark ? "text-amber-400" : "text-amber-700"
@@ -2639,18 +2639,18 @@ export default function Home() {
                       : dark ? "text-slate-400" : "text-stone-600";
 
                     return (
-                      <div key={item.id || idx} className="relative pl-7 sm:pl-9 py-3 sm:py-3.5 group">
+                      <div key={item.id || idx} className="relative pl-11 sm:pl-13 py-4 sm:py-5 group">
                         {/* Timeline Node Badge on the track */}
                         <div
-                          className="absolute left-3 sm:left-3.5 top-[18px] sm:top-[20px] -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-10"
+                          className="absolute left-3.5 top-7 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-10"
                         >
                           {isFirst ? (
                             <div
                               className={cn(
-                                "w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
+                                "w-7 h-7 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
                                 dark
-                                  ? "bg-[#050c17] border-amber-400/40 text-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.3)]"
-                                  : "bg-white border-amber-700/30 text-amber-700 shadow-xs"
+                                  ? "bg-[#06111e] border-amber-400/60 text-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.25)]"
+                                  : "bg-white border-amber-700/40 text-amber-700 shadow-xs"
                               )}
                             >
                               <LuGraduationCap className="text-xs" />
@@ -2658,41 +2658,41 @@ export default function Home() {
                           ) : idx === 1 ? (
                             <div
                               className={cn(
-                                "w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
-                                dark ? "bg-[#050c17] border-cyan-400/40" : "bg-white border-blue-600/30"
+                                "w-7 h-7 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
+                                dark ? "bg-[#06111e] border-cyan-400/60" : "bg-white border-blue-600/40"
                               )}
                             >
                               <span
                                 className={cn(
-                                  "w-2 h-2 rounded-full",
-                                  dark ? "bg-cyan-400 shadow-[0_0_6px_rgba(34,211,238,0.9)]" : "bg-blue-600"
+                                  "w-2.5 h-2.5 rounded-full",
+                                  dark ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-blue-600"
                                 )}
                               />
                             </div>
                           ) : (
                             <div
                               className={cn(
-                                "w-4.5 h-4.5 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
-                                dark ? "bg-[#050c17] border-slate-700" : "bg-white border-stone-300"
+                                "w-7 h-7 rounded-full flex items-center justify-center border transition-transform duration-300 group-hover:scale-110",
+                                dark ? "bg-[#06111e] border-slate-600/60" : "bg-white border-stone-300"
                               )}
                             >
                               <span
                                 className={cn(
-                                  "w-2 h-2 rounded-full",
-                                  dark ? "bg-slate-500" : "bg-stone-500"
+                                  "w-2.5 h-2.5 rounded-full",
+                                  dark ? "bg-slate-400" : "bg-stone-500"
                                 )}
                               />
                             </div>
                           )}
                         </div>
 
-                        {/* Row Content: Left is Details, Right is Date & Status Badges */}
-                        <div className="flex items-start justify-between gap-2.5 sm:gap-4">
-                          {/* Left: Level Tag, Degree, Institution */}
+                        {/* Row Content */}
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                          {/* Left: Tag, Degree, Institution */}
                           <div className="min-w-0 flex-1">
                             <span
                               className={cn(
-                                "text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] inline-block",
+                                "text-xs font-bold uppercase tracking-[0.16em] inline-block",
                                 tagColor
                               )}
                             >
@@ -2700,7 +2700,7 @@ export default function Home() {
                             </span>
                             <h4
                               className={cn(
-                                "text-xs sm:text-sm font-bold tracking-tight leading-snug mt-0.5",
+                                "text-sm sm:text-base font-semibold tracking-normal mt-1 leading-snug",
                                 dark ? "text-white" : "text-[#2a1008]"
                               )}
                             >
@@ -2708,7 +2708,7 @@ export default function Home() {
                             </h4>
                             <p
                               className={cn(
-                                "text-[11px] sm:text-xs font-normal leading-relaxed mt-0.5",
+                                "text-xs sm:text-[13px] font-normal leading-relaxed mt-1",
                                 dark ? "text-slate-400" : "text-[#7a4a35]"
                               )}
                             >
@@ -2716,18 +2716,18 @@ export default function Home() {
                             </p>
                           </div>
 
-                          {/* Right: Badges (Period & In Progress Status) compact & right-aligned */}
-                          <div className="flex flex-col sm:flex-row items-end sm:items-center justify-end gap-1 sm:gap-1.5 shrink-0 pt-0.5">
+                          {/* Right Badges */}
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-end gap-1.5 sm:gap-2 shrink-0 pt-0.5">
                             {item.period && (
                               <span
                                 className={cn(
-                                  "inline-flex items-center gap-1 px-2.5 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-medium border tracking-wide whitespace-nowrap",
+                                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border tracking-wide whitespace-nowrap",
                                   dark
-                                    ? "bg-white/[0.04] border-white/10 text-slate-300"
-                                    : "bg-[#8b1a1a]/5 border-[#8b1a1a]/15 text-[#2a1008]/80"
+                                    ? "bg-slate-900/60 border-slate-800 text-slate-300 shadow-xs"
+                                    : "bg-[#8b1a1a]/5 border-[#8b1a1a]/15 text-[#2a1008]/80 shadow-xs"
                                 )}
                               >
-                                <FiCalendar className="text-[10px] opacity-70" />
+                                <FiCalendar className="text-[11px] opacity-70" />
                                 {item.period}
                               </span>
                             )}
@@ -2735,13 +2735,13 @@ export default function Home() {
                             {item.status && isInProgress && (
                               <span
                                 className={cn(
-                                  "inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-semibold border whitespace-nowrap",
+                                  "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border whitespace-nowrap",
                                   dark
-                                    ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.15)]"
+                                    ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.15)]"
                                     : "bg-emerald-50 border-emerald-300 text-emerald-800"
                                 )}
                               >
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)] animate-pulse" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
                                 {item.status}
                               </span>
                             )}
@@ -2754,91 +2754,149 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* ── 2. EXPERIENCE (THEN) ── */}
-            <motion.div variants={fadeUp} className="pt-6 sm:pt-8 border-t border-white/10">
-              <div className="flex items-center gap-3.5 mb-6">
-                <div
+            {/* Subtle Horizontal Divider between Education and Experience */}
+            <div
+              className={cn(
+                "my-8 sm:my-10 border-b",
+                dark ? "border-slate-800/80" : "border-[#8b1a1a]/15"
+              )}
+            />
+
+            {/* ── 2. EXPERIENCE (Matching Reference Image) ── */}
+            <motion.div variants={fadeUp}>
+              {/* Header matching reference image: Title + Subtitle */}
+              <div className="mb-4 sm:mb-5">
+                <h3
                   className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0",
-                    dark ? "text-cyan-400" : "text-[#8b1a1a]"
+                    "text-base sm:text-lg font-bold tracking-[0.25em] uppercase leading-tight",
+                    dark ? "text-white" : "text-[#2a1008]"
                   )}
                 >
-                  <FiBriefcase />
-                </div>
-                <div>
-                  <h3
-                    className={cn(
-                      "text-lg sm:text-xl font-bold tracking-[0.2em] uppercase",
-                      dark ? "text-white" : "text-[#2a1008]"
-                    )}
-                  >
-                    {t.experience}
-                  </h3>
-                  <p
-                    className={cn(
-                      "text-[10px] sm:text-[11px] font-semibold tracking-[0.24em] uppercase",
-                      dark ? "text-white/40" : "text-[#7a4a35]/70"
-                    )}
-                  >
-                    CAREER &amp; INTERNSHIPS
-                  </p>
-                </div>
+                  {t.experience}
+                </h3>
+                <p
+                  className={cn(
+                    "text-[10px] sm:text-[11px] font-semibold tracking-[0.22em] uppercase mt-0.5",
+                    dark ? "text-slate-400" : "text-[#7a4a35]/70"
+                  )}
+                >
+                  CAREER &amp; INTERNSHIPS
+                </p>
               </div>
 
-              {/* Experience List */}
-              <ul className="space-y-4">
+              {/* Thin horizontal line beneath the header */}
+              <div
+                className={cn(
+                  "w-full h-[1px] mb-6 sm:mb-7",
+                  dark ? "bg-slate-800/80" : "bg-[#8b1a1a]/15"
+                )}
+              />
+
+              {/* Clean & Minimal Experience Timeline (No Card Containers) */}
+              <div className="space-y-6 sm:space-y-7">
                 {(dynamicExperience && dynamicExperience.length > 0
                   ? dynamicExperience
-                  : t.experienceList
-                ).map((exp: any, i: number) => {
-                  const isString = typeof exp === "string";
+                  : [
+                      {
+                        id: "web-intern-abc",
+                        role: "Web Intern",
+                        company: "ABC Corp",
+                        period: "May 2025 – July 2025",
+                        description: "Full-stack web application development and component engineering.",
+                      },
+                    ]
+                ).map((exp: any, i: number, arr: any[]) => {
+                  let role = exp.role || "";
+                  let company = exp.company || "";
+                  let period = exp.period || "";
+                  let description = exp.description || "";
+
+                  if (typeof exp === "string") {
+                    const match = exp.match(/^([^(]+?)(?:\s*\((.*?)\))?$/);
+                    const main = match ? match[1].trim() : exp;
+                    period = match && match[2] ? match[2].trim() : "";
+                    const parts = main.split("·").map((s: string) => s.trim());
+                    role = parts[0] || "";
+                    company = parts[1] || "";
+                  }
+
                   return (
-                    <li
-                      key={exp.id || i}
-                      className={cn(
-                        "text-sm flex flex-col gap-1 p-4 rounded-xl border transition-all duration-200",
-                        dark
-                          ? "bg-white/5 border-white/10 hover:border-cyan-400/30 text-white/70"
-                          : "bg-[#faeedd]/60 border-[#8b1a1a]/10 hover:border-[#8b1a1a]/30 text-[#7a4a35]"
-                      )}
-                    >
-                      <div className="flex items-start gap-3">
-                        <span
+                    <div key={exp.id || i} className="relative pl-6 sm:pl-7 group">
+                      {/* Short connecting vertical line if not last */}
+                      {i < arr.length - 1 && (
+                        <div
                           className={cn(
-                            "w-2 h-2 rounded-full mt-1.5 shrink-0",
-                            dark ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]" : "bg-[#8b1a1a]"
+                            "absolute left-1 top-4 bottom-0 w-[1.5px] pointer-events-none",
+                            dark ? "bg-slate-700/60" : "bg-[#8b1a1a]/15"
                           )}
                         />
-                        <div className="flex-1 min-w-0">
-                          {isString ? (
-                            <span className="font-medium">{exp}</span>
-                          ) : (
-                            <>
-                              <div className="flex items-center justify-between gap-2 flex-wrap">
-                                <span className={cn("font-bold text-base", dark ? "text-white" : "text-[#2a1008]")}>
-                                  {exp.role} {exp.company && <span className={dark ? "text-cyan-300" : "text-[#8b1a1a]"}>· {exp.company}</span>}
-                                </span>
-                                {exp.period && (
-                                  <span className={cn("inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-semibold border shrink-0", dark ? "border-white/10 text-white/60 bg-white/5" : "border-[#8b1a1a]/15 text-[#7a4a35]/80 bg-white/60")}>
-                                    <FiCalendar className="text-[11px] opacity-70" />
-                                    {exp.period}
-                                  </span>
-                                )}
-                              </div>
-                              {exp.description && (
-                                <p className={cn("text-xs sm:text-sm mt-1 leading-relaxed", dark ? "text-white/50" : "text-[#7a4a35]/80")}>
-                                  {exp.description}
-                                </p>
-                              )}
-                            </>
+                      )}
+
+                      {/* Cyan glowing dot */}
+                      <div
+                        className={cn(
+                          "absolute left-1 top-2 -translate-x-1/2 w-2.5 h-2.5 rounded-full transition-transform duration-300 group-hover:scale-125",
+                          dark
+                            ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
+                            : "bg-[#8b1a1a] shadow-xs"
+                        )}
+                      />
+
+                      {/* Header row: Role · Company on left, Date Badge on right */}
+                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1.5 sm:gap-4">
+                        <h4
+                          className={cn(
+                            "text-sm sm:text-base font-bold tracking-tight",
+                            dark ? "text-white" : "text-[#2a1008]"
                           )}
-                        </div>
+                        >
+                          {role}
+                          {company && (
+                            <span className={dark ? "text-cyan-300 font-semibold" : "text-[#8b1a1a] font-semibold"}>
+                              {" "}· {company}
+                            </span>
+                          )}
+                        </h4>
+
+                        {period && (
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border shrink-0 self-start sm:self-auto",
+                              dark
+                                ? "bg-slate-900/60 border-slate-800 text-slate-300 shadow-xs"
+                                : "bg-[#8b1a1a]/5 border-[#8b1a1a]/15 text-[#2a1008]/80 shadow-xs"
+                            )}
+                          >
+                            <FiCalendar className="text-[11px] opacity-70" />
+                            {period}
+                          </span>
+                        )}
                       </div>
-                    </li>
+
+                      {/* Description */}
+                      {description && (
+                        <p
+                          className={cn(
+                            "text-xs sm:text-[13px] font-normal leading-relaxed mt-1.5",
+                            dark ? "text-slate-400" : "text-[#7a4a35]"
+                          )}
+                        >
+                          {description}
+                        </p>
+                      )}
+                    </div>
                   );
                 })}
-              </ul>
+              </div>
             </motion.div>
+
+            {/* Subtle Horizontal Divider between Experience and Skills */}
+            <div
+              className={cn(
+                "my-8 sm:my-10 border-b",
+                dark ? "border-slate-800/80" : "border-[#8b1a1a]/15"
+              )}
+            />
 
             {/* ── SKILLS & STACK (Matching Reference Image) ── */}
             <motion.div variants={fadeUp} className="pt-4 sm:pt-6">
