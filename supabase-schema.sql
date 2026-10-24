@@ -85,6 +85,9 @@ CREATE TABLE IF NOT EXISTS public.profile (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Ensure hero_role column exists if table was created previously without it
+ALTER TABLE public.profile ADD COLUMN IF NOT EXISTS hero_role TEXT DEFAULT 'Full-Stack Developer & AI Enthusiast';
+
 -- 5. SKILLS TABLE
 CREATE TABLE IF NOT EXISTS public.skills (
     id TEXT PRIMARY KEY,

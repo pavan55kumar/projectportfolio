@@ -52,11 +52,12 @@ export async function GET() {
         .maybeSingle();
 
       if (!error && data) {
+        const local = await readLocal();
         return NextResponse.json({
           id: data.id,
           heroDesc: data.hero_desc || defaultProfile.heroDesc,
           aboutMeDesc: data.about_desc || defaultProfile.aboutMeDesc,
-          heroRole: data.hero_role || defaultProfile.heroRole,
+          heroRole: data.hero_role || local.heroRole || defaultProfile.heroRole,
           updatedAt: data.updated_at,
         });
       }
@@ -99,14 +100,28 @@ export async function PUT(req: Request) {
           updated_at: new Date().toISOString(),
         });
         if (error) {
-          console.warn("Supabase profile upsert error:", error);
+          console.warn("Supabase profile upsert error with hero_role:", error);
+          // Fallback if hero_role column does not exist yet in Supabase
+          const fallback = await supabase.from("profile").upsert({
+            id: "default",
+            hero_desc: heroDesc,
+            about_desc: aboutMeDesc,
+            updated_at: new Date().toISOString(),
+          });
+          if (fallback.error) {
+            console.warn("Fallback profile upsert error:", fallback.error);
+          }
         }
       } catch (err) {
         console.warn("Failed to update profile in Supabase:", err);
       }
     }
 
-    return NextResponse.json({ success: true, profile: profileData });
+    return NextResponse.json({
+      success: true,
+      profile: profileData,
+      ...profileData,
+    });
   } catch (err) {
     return NextResponse.json(
       { error: "Failed to update profile", details: String(err) },

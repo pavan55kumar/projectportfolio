@@ -1532,7 +1532,7 @@ export default function Home() {
   const [activeSection, setActiveSection] = useState("home");
   const [dynamicProjects, setDynamicProjects] = useState<any[] | null>(null);
   const [dynamicCertificates, setDynamicCertificates] = useState<any[] | null>(null);
-  const [siteProfile, setSiteProfile] = useState<{ heroDesc: string; aboutMeDesc: string } | null>(null);
+  const [siteProfile, setSiteProfile] = useState<{ heroDesc: string; aboutMeDesc: string; heroRole?: string } | null>(null);
   const [dynamicEducation, setDynamicEducation] = useState<any[] | null>(null);
   const [dynamicExperience, setDynamicExperience] = useState<any[] | null>(null);
   const [dynamicSkills, setDynamicSkills] = useState<any[] | null>(null);
@@ -1555,7 +1555,7 @@ export default function Home() {
     fetch("/api/profile")
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data && data.heroDesc) setSiteProfile(data);
+        if (data && (data.heroDesc || data.heroRole)) setSiteProfile(data);
       })
       .catch(() => {});
 
@@ -2412,7 +2412,7 @@ export default function Home() {
                     dark ? "bg-cyan-400" : "bg-[#8b1a1a]"
                   )}
                 />
-                {t.heroRole}
+                {(lang === "en" && siteProfile?.heroRole) ? siteProfile.heroRole : t.heroRole}
               </span>
             </motion.div>
 

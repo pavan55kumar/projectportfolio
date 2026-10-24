@@ -869,8 +869,15 @@ export default function AdminPage() {
       if (certRes.ok) setCertificates(await certRes.json());
       if (testRes.ok) setTestimonials(await testRes.json());
       if (profRes.ok) {
-        const p = await profRes.json();
-        if (p && p.heroDesc) setProfile(p);
+        const resData = await profRes.json();
+        const p = resData.profile || resData;
+        if (p && (p.heroDesc || p.heroRole)) {
+          setProfile((prev) => ({
+            ...prev,
+            ...p,
+            heroRole: p.heroRole ?? prev.heroRole,
+          }));
+        }
       }
       if (eduRes.ok) setEducation(await eduRes.json());
       if (expRes.ok) setExperience(await expRes.json());
@@ -1028,8 +1035,13 @@ export default function AdminPage() {
         body: JSON.stringify(profile),
       });
       if (res.ok) {
-        const updated = await res.json();
-        setProfile(updated);
+        const resData = await res.json();
+        const updated = resData.profile || resData;
+        setProfile((prev) => ({
+          ...prev,
+          ...updated,
+          heroRole: updated.heroRole ?? profile.heroRole,
+        }));
         setProfileSavedToast(true);
         setTimeout(() => setProfileSavedToast(false), 3000);
       } else {
