@@ -3,6 +3,13 @@ import fs from "fs/promises";
 import path from "path";
 import { getSupabaseAdmin } from "@/lib/supabase";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const noCacheHeaders = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0",
+};
+
 export type PortfolioCertificate = {
   id: string;
   title: string;
@@ -151,24 +158,26 @@ export async function GET() {
         .order("order_index", { ascending: true });
 
       if (!error && data && data.length > 0) {
-        const mapped: PortfolioCertificate[] = data.map((c) => {
-          const imgs = parseCertificateImages(c.image_url, c.images);
-          return {
-            id: c.id,
-            title: c.title,
-            subtitle: c.subtitle || "",
-            issuer: c.issuer,
-            year: c.year,
-            icon: c.icon || "🏅",
-            category: c.category || (c.id === "ibm-z-datathon" ? "Achievement" : "Course Certificate"),
-            colorDark: c.color_dark || "#0ea5e9",
-            colorLight: c.color_light || "#c9956a",
-            imageUrl: imgs[0] || c.image_url || "",
-            images: imgs,
-            real: imgs.length > 0,
-          };
-        });
-        return NextResponse.json(mapped);
+        const mapped: PortfolioCertificate[] = data
+          .filter((c) => c && c.title && !c.title.toLowerCase().includes("add your certificate"))
+          .map((c) => {
+            const imgs = parseCertificateImages(c.image_url, c.images);
+            return {
+              id: c.id,
+              title: c.title,
+              subtitle: c.subtitle || "",
+              issuer: c.issuer,
+              year: c.year,
+              icon: c.icon || "🏅",
+              category: c.category || (c.id === "ibm-z-datathon" ? "Achievement" : "Course Certificate"),
+              colorDark: c.color_dark || "#0ea5e9",
+              colorLight: c.color_light || "#c9956a",
+              imageUrl: imgs[0] || c.image_url || "",
+              images: imgs,
+              real: imgs.length > 0,
+            };
+          });
+        return NextResponse.json(mapped, { headers: noCacheHeaders });
       }
     } catch (err) {
       console.warn("Failed to fetch certificates from Supabase, using local fallback:", err);
@@ -176,7 +185,10 @@ export async function GET() {
   }
 
   const localCerts = await readLocalCertificates();
-  return NextResponse.json(localCerts);
+  const filteredLocalCerts = localCerts.filter(
+    (c) => c && c.title && !c.title.toLowerCase().includes("add your certificate")
+  );
+  return NextResponse.json(filteredLocalCerts, { headers: noCacheHeaders });
 }
 
 export async function POST(req: Request) {

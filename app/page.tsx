@@ -746,11 +746,11 @@ function getCardImages(card: any): string[] {
 
 const certCards = [
   {
-    id: "microsoft-azure",
-    title: "Microsoft Certificates",
-    subtitle: "Azure Fundamentals · AI Essentials · Cloud Basics",
-    issuer: "Microsoft",
-    year: "2024",
+    id: "iict",
+    title: "IICT ( Internship)",
+    subtitle: "AI & ML",
+    issuer: "IICTE",
+    year: "2026 (15 June - 30 July)",
     icon: "🏅",
     category: "Course Certificate",
     colorDark: "#0ea5e9",
@@ -759,53 +759,30 @@ const certCards = [
     real: true,
   },
   {
-    id: "ibm-z-datathon",
-    title: "IBM Z Datathon 2026",
-    subtitle: "Humanitarian Logistics & Cloud Systems",
-    issuer: "IBM",
-    year: "2026",
-    icon: "🏆",
-    category: "Achievement",
-    colorDark: "#f59e0b",
-    colorLight: "#d97706",
-    images: [],
-    real: false,
-  },
-  {
-    title: "Add Your Certificate",
-    subtitle: "Issued by · Platform · Topic",
-    issuer: "Issuing Body",
-    year: "—",
-    icon: "📜",
+    id: "algoorbit-flask-fullstack",
+    title: "AlgoOrbit Flask Fullstack",
+    subtitle: "",
+    issuer: "AlgoOrbit ",
+    year: "2024",
+    icon: "🏅",
     category: "Course Certificate",
-    colorDark: "#7c3aed",
-    colorLight: "#8b1a1a",
-    images: [],
-    real: false,
-  },
-  {
-    title: "Add Your Certificate",
-    subtitle: "Issued by · Platform · Topic",
-    issuer: "Issuing Body",
-    year: "—",
-    icon: "🎖️",
-    category: "Internship",
     colorDark: "#10b981",
-    colorLight: "#6b7280",
+    colorLight: "#059669",
     images: [],
-    real: false,
+    real: true,
   },
   {
-    title: "Add Your Certificate",
-    subtitle: "Issued by · Platform · Topic",
-    issuer: "Issuing Body",
-    year: "—",
-    icon: "⭐",
-    category: "Academic Recognition",
-    colorDark: "#ec4899",
-    colorLight: "#be185d",
+    id: "cyber-security-workshop",
+    title: "Cyber Security workshop ",
+    subtitle: "",
+    issuer: "Dept of ISE N.M.A.M.I.T",
+    year: "2024",
+    icon: "🏅",
+    category: "Course Certificate",
+    colorDark: "#8b5cf6",
+    colorLight: "#7c3aed",
     images: [],
-    real: false,
+    real: true,
   },
 ];
 
@@ -1558,14 +1535,14 @@ export default function Home() {
   const [dynamicSkills, setDynamicSkills] = useState<any[] | null>(null);
 
   useEffect(() => {
-    fetch("/api/projects")
+    fetch("/api/projects", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) setDynamicProjects(data);
       })
       .catch(() => {});
 
-    fetch("/api/certificates")
+    fetch("/api/certificates", { cache: "no-store" })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) setDynamicCertificates(data);
@@ -1709,7 +1686,12 @@ export default function Home() {
         return cat === activeProjectCategory.trim().toLowerCase();
       });
 
-  const allCertificates = dynamicCertificates || certCards;
+  const rawCertificates = dynamicCertificates || certCards;
+  const allCertificates = rawCertificates.filter((c: any) => {
+    if (!c || !c.title) return false;
+    const title = c.title.trim().toLowerCase();
+    return title !== "add your certificate" && !title.includes("add your certificate");
+  });
   const filteredCertificates = activeCertCategory === "All"
     ? allCertificates
     : allCertificates.filter((c: any) => {
@@ -3401,7 +3383,7 @@ export default function Home() {
 
             return (
               <motion.div
-                key={card.id || card.title || i}
+                key={card.id ? `cert-${card.id}` : `cert-${card.title || i}-${i}`}
                 className="snap-start shrink-0 w-[280px] sm:w-[320px]"
                 initial={{ opacity: 0, y: 30, rotateY: -10 }}
                 animate={{ opacity: 1, y: 0, rotateY: 0 }}
@@ -3527,7 +3509,7 @@ export default function Home() {
                           className="text-[10px] tracking-[0.2em] uppercase font-semibold"
                           style={{ color }}
                         >
-                          Coming Soon
+                          {isReal ? (card.issuer || "Verified") : "Coming Soon"}
                         </span>
                       </div>
                     )}
@@ -3588,10 +3570,10 @@ export default function Home() {
                       <p
                         className={cn(
                           "text-[10px]",
-                          dark ? "text-white/18" : "text-[#8b1a1a]/28"
+                          dark ? "text-white/40" : "text-[#7a4a35]/60"
                         )}
                       >
-                        Replace with your certificate details
+                        {card.issuer || "Certificate"}
                       </p>
                     )}
                   </div>
