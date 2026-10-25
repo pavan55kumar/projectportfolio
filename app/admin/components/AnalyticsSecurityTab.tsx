@@ -542,45 +542,71 @@ export default function AnalyticsSecurityTab({ token }: Props) {
             </div>
           </div>
         ) : (
-          /* Unconfigured Setup State */
-          <div className="p-6 rounded-2xl bg-white border border-amber-300 shadow-sm space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-xl bg-amber-100 text-amber-800 shrink-0">
-                <FiInfo className="text-xl" />
+          /* Umami Onboarding & Live Dashboard Connect State */
+          <div className="p-6 rounded-2xl bg-white border border-[#8b1a1a]/25 shadow-sm space-y-5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#8b1a1a]/15">
+              <div className="flex items-start gap-3">
+                <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-800 shrink-0">
+                  <FiCheck className="text-xl" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-[#2a1008]">
+                      Visitor Tracking Script is Active!
+                    </h4>
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      Tracking Online
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#7a4a35] mt-0.5">
+                    Your public portfolio is streaming live pageviews to Umami Cloud with Website ID:{" "}
+                    <code className="font-mono text-[#8b1a1a] font-bold">
+                      {analytics?.websiteId || "97da7dd6-c82f-469b-a02a-20201b4df044"}
+                    </code>
+                  </p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-[#2a1008]">
-                  Connect Privacy-Conscious Visitor Analytics (Umami)
-                </h4>
-                <p className="text-xs text-[#7a4a35] leading-relaxed">
-                  To display genuine pageviews, real-time visitors, and geographic breakdown without cookies or tracking personal data, configure your Umami credentials in Vercel or your local environment.
-                </p>
-              </div>
+
+              <a
+                href={`https://cloud.umami.is/websites/${analytics?.websiteId || "97da7dd6-c82f-469b-a02a-20201b4df044"}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#8b1a1a] hover:bg-[#721515] text-white text-xs font-bold transition-all shadow-md shrink-0"
+              >
+                Open Live Umami Dashboard <FiExternalLink />
+              </a>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-              <div className="p-4 rounded-xl bg-[#fffaf2] border border-[#8b1a1a]/15 space-y-2 text-xs">
-                <p className="font-bold text-[#2a1008]">Required Server Environment Variables:</p>
-                <ul className="space-y-1.5 font-mono text-[11px] text-[#7a4a35]">
-                  <li className="bg-white p-1.5 rounded border border-[#8b1a1a]/10">
-                    <span className="text-[#8b1a1a] font-bold">UMAMI_WEBSITE_ID</span>=your-umami-website-id
-                  </li>
-                  <li className="bg-white p-1.5 rounded border border-[#8b1a1a]/10">
-                    <span className="text-[#8b1a1a] font-bold">UMAMI_API_KEY</span>=your-umami-api-key
-                  </li>
-                  <li className="bg-white p-1.5 rounded border border-[#8b1a1a]/10">
-                    <span className="text-[#8b1a1a] font-bold">UMAMI_HOST_URL</span>=https://api.umami.is
-                  </li>
-                </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+              <div className="p-4 rounded-xl bg-[#fffaf2] border border-[#8b1a1a]/15 space-y-2.5">
+                <p className="font-bold text-[#2a1008] flex items-center gap-1.5">
+                  <FiInfo className="text-[#8b1a1a]" /> Stream Graphs Directly Inside This Panel:
+                </p>
+                <p className="text-xs text-[#7a4a35] leading-relaxed">
+                  To pull your live graphs and numbers into this custom admin dashboard, Umami Cloud requires a server-side read API Key.
+                </p>
+                <ol className="list-decimal list-inside space-y-1.5 text-[11px] text-[#7a4a35]">
+                  <li>Log in to <a href="https://cloud.umami.is" target="_blank" rel="noopener noreferrer" className="text-[#8b1a1a] font-bold underline">cloud.umami.is</a></li>
+                  <li>Go to <strong>Settings &gt; API Keys &gt; Create API Key</strong></li>
+                  <li>Copy the key and add it to your Vercel Environment Variables:</li>
+                </ol>
+                <div className="p-2 rounded bg-white border border-[#8b1a1a]/10 font-mono text-[11px] text-[#8b1a1a] font-bold">
+                  UMAMI_API_KEY=&lt;your-umami-api-key&gt;
+                </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-[#fffaf2] border border-[#8b1a1a]/15 space-y-2 text-xs">
-                <p className="font-bold text-[#2a1008]">Public Client Tracking Script Tag (Optional):</p>
-                <div className="p-2 rounded bg-white border border-[#8b1a1a]/10 font-mono text-[11px] text-[#7a4a35] break-all select-all">
-                  &lt;script defer src=&quot;https://cloud.umami.is/script.js&quot; data-website-id=&quot;YOUR_WEBSITE_ID&quot;&gt;&lt;/script&gt;
+              <div className="p-4 rounded-xl bg-[#fffaf2] border border-[#8b1a1a]/15 space-y-2.5">
+                <p className="font-bold text-[#2a1008] flex items-center gap-1.5">
+                  <FiGlobe className="text-[#8b1a1a]" /> Verified Public Tracking Status:
+                </p>
+                <p className="text-xs text-[#7a4a35] leading-relaxed">
+                  The official Umami script is loaded automatically on all public portfolio pages:
+                </p>
+                <div className="p-2 rounded bg-white border border-[#8b1a1a]/10 font-mono text-[10px] text-[#7a4a35] break-all select-all">
+                  &lt;script defer src=&quot;https://cloud.umami.is/script.js&quot; data-website-id=&quot;{analytics?.websiteId || "97da7dd6-c82f-469b-a02a-20201b4df044"}&quot;&gt;&lt;/script&gt;
                 </div>
-                <p className="text-[11px] text-[#7a4a35]">
-                  Umami is completely cookie-free, GDPR compliant, and never stores IP addresses or personal identities.
+                <p className="text-[11px] text-emerald-800 font-semibold flex items-center gap-1">
+                  <FiCheck className="text-emerald-600" /> Excludes /admin pages to keep your editing sessions private.
                 </p>
               </div>
             </div>

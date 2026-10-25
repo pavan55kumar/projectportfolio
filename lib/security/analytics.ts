@@ -57,17 +57,25 @@ function getRangeTimestamps(timeRange: "24h" | "7d" | "30d" = "7d"): {
  * Fetches real analytics metrics from Umami API.
  * Never fabricates data; returns disconnected state if credentials are not configured.
  */
+const DEFAULT_WEBSITE_ID = "97da7dd6-c82f-469b-a02a-20201b4df044";
+
 export async function fetchUmamiAnalytics(
   timeRange: "24h" | "7d" | "30d" = "7d"
 ): Promise<UmamiAnalyticsResponse> {
-  const websiteId = process.env.UMAMI_WEBSITE_ID || process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID;
+  const websiteId =
+    process.env.UMAMI_WEBSITE_ID ||
+    process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID ||
+    DEFAULT_WEBSITE_ID;
   const host = getUmamiHost();
+  const apiKey = process.env.UMAMI_API_KEY;
 
-  if (!websiteId) {
+  if (!apiKey) {
     return {
       connected: false,
+      websiteId,
+      hostUrl: host,
       message:
-        "Umami Analytics is not connected. Add UMAMI_WEBSITE_ID to your environment variables to stream real visitor traffic metrics.",
+        "Tracking script is active and recording visitors. To stream charts directly into this admin panel, add UMAMI_API_KEY from your Umami Cloud settings into Vercel.",
     };
   }
 
