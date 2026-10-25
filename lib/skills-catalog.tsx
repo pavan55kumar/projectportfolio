@@ -6,7 +6,6 @@ import {
   SiNextdotjs,
   SiThreedotjs,
   SiTailwindcss,
-  SiJavascript,
   SiTypescript,
   SiGreensock,
   SiHtml5,

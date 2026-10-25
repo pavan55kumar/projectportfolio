@@ -28,13 +28,13 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const filter: SecurityEventFilter = {
-      timeRange: (searchParams.get("timeRange") as any) || "30d",
+      timeRange: (searchParams.get("timeRange") as SecurityEventFilter["timeRange"]) || "30d",
       startDate: searchParams.get("startDate") || undefined,
       endDate: searchParams.get("endDate") || undefined,
-      severity: (searchParams.get("severity") as any) || "all",
+      severity: (searchParams.get("severity") as SecurityEventFilter["severity"]) || "all",
       eventType: searchParams.get("eventType") || "all",
-      outcome: (searchParams.get("outcome") as any) || "all",
-      reviewed: (searchParams.get("reviewed") as any) || "all",
+      outcome: (searchParams.get("outcome") as SecurityEventFilter["outcome"]) || "all",
+      reviewed: (searchParams.get("reviewed") as SecurityEventFilter["reviewed"]) || "all",
       search: searchParams.get("search") || undefined,
     };
 
