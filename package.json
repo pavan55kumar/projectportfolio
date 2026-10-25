@@ -6,7 +6,8 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:security": "tsx scripts/test-security.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.6",
@@ -31,6 +32,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
     "tailwindcss": "^4",
+    "tsx": "^4.23.15",
     "typescript": "^5"
   }
 }

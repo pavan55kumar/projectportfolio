@@ -252,3 +252,36 @@ ON CONFLICT (id) DO UPDATE SET
     banner_image = EXCLUDED.banner_image,
     github_url = EXCLUDED.github_url,
     live_url = EXCLUDED.live_url;
+
+-- ==============================================================================
+-- 9. SECURITY EVENTS TABLE & POLICIES (Analytics & Security Dashboard)
+-- ==============================================================================
+CREATE TABLE IF NOT EXISTS public.security_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    event_type TEXT NOT NULL,
+    severity TEXT NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+    source TEXT NOT NULL CHECK (source IN ('application', 'middleware', 'edge', 'audit', 'vercel')),
+    http_method TEXT DEFAULT 'GET',
+    path TEXT NOT NULL,
+    status_code INTEGER DEFAULT 200,
+    source_fingerprint TEXT,
+    source_ip_masked TEXT,
+    request_id TEXT,
+    detection_reason TEXT NOT NULL,
+    outcome TEXT NOT NULL CHECK (outcome IN ('blocked', 'flagged', 'allowed', 'denied', 'logged')),
+    details JSONB DEFAULT '{}'::jsonb,
+    reviewed_at TIMESTAMPTZ,
+    reviewed_by TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_security_events_created_at ON public.security_events (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_security_events_severity ON public.security_events (severity);
+CREATE INDEX IF NOT EXISTS idx_security_events_event_type ON public.security_events (event_type);
+CREATE INDEX IF NOT EXISTS idx_security_events_reviewed ON public.security_events (reviewed_at);
+
+ALTER TABLE public.security_events ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Service role full access security_events" ON public.security_events;
+CREATE POLICY "Service role full access security_events" ON public.security_events FOR ALL TO service_role USING (true) WITH CHECK (true);
+REVOKE ALL ON public.security_events FROM anon, authenticated;
+

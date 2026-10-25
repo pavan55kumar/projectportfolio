@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
 import { ThemeProvider } from "./theme-provider";
+import UmamiAnalytics from "./components/UmamiAnalytics";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -60,6 +61,7 @@ export default function RootLayout({
         <ThemeProvider>
           <Providers>{children}</Providers>
         </ThemeProvider>
+        <UmamiAnalytics />
       </body>
     </html>
   );

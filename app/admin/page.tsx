@@ -26,7 +26,9 @@ import {
   FiCalendar,
   FiCpu,
   FiSearch,
+  FiShield,
 } from "react-icons/fi";
+import AnalyticsSecurityTab from "./components/AnalyticsSecurityTab";
 import { FaGraduationCap } from "react-icons/fa";
 import { EngineeringProject } from "@/data/engineeringProjects";
 import {
@@ -821,10 +823,52 @@ ON CONFLICT (id) DO UPDATE SET
   order_index = EXCLUDED.order_index;`;
 
 
+const SQL_MIGRATION_SECURITY = `-- Dedicated Security Events Table with Strict Row Level Security
+CREATE TABLE IF NOT EXISTS public.security_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+    event_type TEXT NOT NULL,
+    severity TEXT NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+    source TEXT NOT NULL CHECK (source IN ('application', 'middleware', 'edge', 'audit', 'vercel')),
+    http_method TEXT DEFAULT 'GET',
+    path TEXT NOT NULL,
+    status_code INTEGER DEFAULT 200,
+    source_fingerprint TEXT,
+    source_ip_masked TEXT,
+    request_id TEXT,
+    detection_reason TEXT NOT NULL,
+    outcome TEXT NOT NULL CHECK (outcome IN ('blocked', 'flagged', 'allowed', 'denied', 'logged')),
+    details JSONB DEFAULT '{}'::jsonb,
+    reviewed_at TIMESTAMPTZ,
+    reviewed_by TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_security_events_created_at ON public.security_events (created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_security_events_severity ON public.security_events (severity);
+CREATE INDEX IF NOT EXISTS idx_security_events_event_type ON public.security_events (event_type);
+CREATE INDEX IF NOT EXISTS idx_security_events_reviewed ON public.security_events (reviewed_at);
+
+ALTER TABLE public.security_events ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Service role full access security_events" ON public.security_events;
+CREATE POLICY "Service role full access security_events" ON public.security_events FOR ALL TO service_role USING (true) WITH CHECK (true);
+REVOKE ALL ON public.security_events FROM anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.cleanup_old_security_events(days_to_keep INTEGER DEFAULT 90)
+RETURNS INTEGER LANGUAGE plpgsql SECURITY DEFINER AS $$
+DECLARE deleted_count INTEGER;
+BEGIN
+    DELETE FROM public.security_events WHERE created_at < NOW() - (days_to_keep || ' days')::INTERVAL;
+    GET DIAGNOSTICS deleted_count = ROW_COUNT;
+    RETURN deleted_count;
+END;
+$$;`;
+
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
+  const [adminToken, setAdminToken] = useState<string>("");
+  const [copiedSecurityMigration, setCopiedSecurityMigration] = useState(false);
   const [activeTab, setActiveTab] = useState<
     | "profile"
     | "skills"
@@ -835,6 +879,7 @@ export default function AdminPage() {
     | "certificates"
     | "testimonials"
     | "supabase"
+    | "analytics-security"
   >("profile");
 
   // Profile state
@@ -974,8 +1019,10 @@ export default function AdminPage() {
   // Check existing session
   useEffect(() => {
     const saved = sessionStorage.getItem("pavan_admin_auth");
+    const savedToken = sessionStorage.getItem("pavan_admin_token");
     if (saved === "true") {
       setIsAuthenticated(true);
+      if (savedToken) setAdminToken(savedToken);
     }
   }, []);
 
@@ -1040,6 +1087,10 @@ export default function AdminPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setIsAuthenticated(true);
+        if (data.token) {
+          setAdminToken(data.token);
+          sessionStorage.setItem("pavan_admin_token", data.token);
+        }
         sessionStorage.setItem("pavan_admin_auth", "true");
       } else {
         setLoginError("Invalid password. Please check your credentials.");
@@ -1051,7 +1102,9 @@ export default function AdminPage() {
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setAdminToken("");
     sessionStorage.removeItem("pavan_admin_auth");
+    sessionStorage.removeItem("pavan_admin_token");
   };
 
   // ── Skills Actions ──
@@ -1818,6 +1871,18 @@ export default function AdminPage() {
             }`}
           >
             <FiDatabase /> Supabase Setup &amp; SQL
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("analytics-security")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-xs shrink-0 ${
+              activeTab === "analytics-security"
+                ? "bg-[#8b1a1a] text-white shadow-md shadow-[#8b1a1a]/20"
+                : "text-[#7a4a35] hover:text-[#2a1008] hover:bg-[#8b1a1a]/8 bg-white/60 border border-[#8b1a1a]/10"
+            }`}
+          >
+            <FiShield /> Analytics &amp; Security
           </button>
         </div>
 
@@ -2993,6 +3058,11 @@ export default function AdminPage() {
               </pre>
             </div>
           </section>
+        )}
+
+        {/* ── TAB: ANALYTICS & SECURITY ── */}
+        {activeTab === "analytics-security" && (
+          <AnalyticsSecurityTab token={adminToken} />
         )}
       </div>
 

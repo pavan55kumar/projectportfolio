@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import fs from "fs/promises";
 import path from "path";
 import { getSupabaseAdmin } from "@/lib/supabase";
+import { recordSecurityEvent } from "@/lib/security/logger";
 
 export type PortfolioProject = {
   id: string;
@@ -252,6 +253,17 @@ export async function POST(req: Request) {
     // Sync to engineering_projects table
     await syncToEngineeringProjectsTable(newProject);
 
+    await recordSecurityEvent({
+      event_type: "content_mutation",
+      severity: "low",
+      source: "audit",
+      http_method: "POST",
+      path: "/api/projects",
+      status_code: 201,
+      detection_reason: `Admin created project: "${newProject.title}" (${newProject.id})`,
+      outcome: "allowed",
+    });
+
     return NextResponse.json({ success: true, project: newProject }, { status: 201, headers: noCacheHeaders });
   } catch (err) {
     console.error("Failed to add project:", err);
@@ -319,6 +331,17 @@ export async function PATCH(req: Request) {
       await syncToEngineeringProjectsTable(updatedTarget);
     }
 
+    await recordSecurityEvent({
+      event_type: "content_mutation",
+      severity: "low",
+      source: "audit",
+      http_method: "PATCH",
+      path: "/api/projects",
+      status_code: 200,
+      detection_reason: `Admin updated project: ${id}`,
+      outcome: "allowed",
+    });
+
     return NextResponse.json({ success: true }, { headers: noCacheHeaders });
   } catch (err) {
     console.error("Failed to update project:", err);
@@ -348,6 +371,17 @@ export async function DELETE(req: Request) {
     const current = await readLocalProjects();
     const updated = current.filter((p) => p.id !== id);
     await writeLocalProjects(updated);
+
+    await recordSecurityEvent({
+      event_type: "content_mutation",
+      severity: "low",
+      source: "audit",
+      http_method: "DELETE",
+      path: `/api/projects?id=${id}`,
+      status_code: 200,
+      detection_reason: `Admin deleted project: ${id}`,
+      outcome: "allowed",
+    });
 
     return NextResponse.json({ success: true });
   } catch (err) {
