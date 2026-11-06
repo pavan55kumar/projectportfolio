@@ -79,7 +79,7 @@ export function SkillsSection({ skills, loading, dark }: SkillsSectionProps) {
       <div
         key={`${keyPrefix}-${skill.id || skill.name}-${index}`}
         className={cn(
-          "group relative shrink-0 inline-flex items-center gap-2.5 sm:gap-3 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full border border-dashed transition-all duration-300 cursor-default select-none",
+          "group relative shrink-0 inline-flex items-center gap-2.5 sm:gap-3 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full border border-dashed transition-all duration-300 cursor-default select-none active:scale-95 sm:hover:-translate-y-0.5 sm:hover:scale-105",
           dark
             ? "bg-[#040e1c]/80 border-slate-700/60 hover:border-cyan-400 hover:bg-[#07182e] hover:shadow-[0_0_20px_rgba(34,211,238,0.22)] backdrop-blur-md"
             : "bg-white/95 border-neutral-300 hover:border-[#8b1a1a]/45 hover:bg-[#fff7ee] hover:shadow-[0_4px_14px_rgba(139,26,26,0.08)] shadow-xs"
@@ -331,7 +331,7 @@ export function SkillsSection({ skills, loading, dark }: SkillsSectionProps) {
                     delay: Math.min(i * 0.025, 0.3),
                   }}
                   className={cn(
-                    "group relative inline-flex items-center gap-3 px-3.5 sm:px-4.5 py-3 sm:py-3.5 rounded-2xl border border-dashed transition-all duration-300 cursor-default select-none min-h-[50px] sm:min-h-[56px]",
+                    "group relative inline-flex items-center gap-3 px-3.5 sm:px-4.5 py-3 sm:py-3.5 rounded-2xl border border-dashed transition-all duration-300 cursor-default select-none min-h-[50px] sm:min-h-[56px] active:scale-95 sm:hover:-translate-y-0.5 sm:hover:scale-[1.02]",
                     dark
                       ? "bg-[#040e1c]/80 border-slate-700/60 hover:border-cyan-400 hover:bg-[#07182e] hover:shadow-[0_0_20px_rgba(34,211,238,0.2)] backdrop-blur-md"
                       : "bg-white/95 border-neutral-300 hover:border-[#8b1a1a]/45 hover:bg-[#fff7ee] hover:shadow-[0_4px_14px_rgba(139,26,26,0.08)] shadow-xs"

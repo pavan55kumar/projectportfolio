@@ -59,28 +59,34 @@ function useMediaQuery(query: string) {
   return matches;
 }
 
-// ─── Animation Variants ───────────────────────────────────────────────────────
+// ─── Unified Motion Design System (Linear / Apple / Vercel Spec) ─────────────
+const easeCubic = [0.22, 1, 0.36, 1] as const;
+
 const fadeUp: Variants = {
-  hidden: { opacity: 0, y: 60, filter: "blur(8px)" },
+  hidden: { opacity: 0, y: 18 },
   visible: {
     opacity: 1,
     y: 0,
-    filter: "blur(0px)",
-    transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.58, ease: easeCubic },
   },
 };
 
 const stagger: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.12 } },
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05,
+    },
+  },
 };
 
 const scaleIn: Variants = {
-  hidden: { opacity: 0, scale: 0.85 },
+  hidden: { opacity: 0, scale: 0.94 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.55, ease: easeCubic },
   },
 };
 
@@ -1070,10 +1076,12 @@ function TestimonialsSection({
             {testimonials.map((item, i) => (
               <motion.div
                 key={item.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                viewport={{ once: true, amount: 0.15 }}
+                transition={{ duration: 0.55, delay: Math.min(i * 0.09, 0.35), ease: easeCubic }}
+                whileHover={{ y: -3, scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
                 className={cn(
                   "relative rounded-2xl border p-6 sm:p-7 flex flex-col justify-between group overflow-hidden transition-all duration-300",
                   dark
@@ -2542,19 +2550,21 @@ export default function Home() {
             </motion.div>
 
             <motion.div
-              variants={fadeUp}
+              variants={stagger}
               className="flex items-center gap-6 mt-2 pointer-events-auto"
             >
               {socials.map(({ href, icon, label }) => (
                 <motion.a
                   key={label}
+                  variants={scaleIn}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  whileHover={{ scale: 1.2, y: -3 }}
+                  whileHover={{ scale: 1.15, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
                   className={cn(
-                    "text-2xl transition-colors duration-300",
+                    "text-2xl transition-colors duration-200",
                     dark
                       ? "text-white/40 hover:text-cyan-400"
                       : "text-[#7a4a35]/60 hover:text-[#8b1a1a]"
@@ -2596,7 +2606,7 @@ export default function Home() {
         className="py-16 sm:py-24 relative z-10"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.15 }}
         variants={stagger}
       >
         <div className="max-w-5xl mx-auto px-6">
@@ -2931,10 +2941,25 @@ export default function Home() {
               )}
             />
 
-            {/* ── 2. EXPERIENCE (Matching Reference Image) ── */}
-            <motion.div variants={fadeUp}>
+            {/* ── 2. EXPERIENCE (Database-Driven Scroll Animation) ── */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.15 }}
+              className="pt-2 sm:pt-4"
+            >
               {/* Header matching reference image: Title + Subtitle */}
-              <div className="mb-4 sm:mb-5">
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 12 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.6, ease: easeCubic },
+                  },
+                }}
+                className="mb-4 sm:mb-5"
+              >
                 <h3
                   className={cn(
                     "text-base sm:text-lg font-bold tracking-[0.25em] uppercase leading-tight",
@@ -2951,12 +2976,21 @@ export default function Home() {
                 >
                   CAREER &amp; INTERNSHIPS
                 </p>
-              </div>
+              </motion.div>
 
               {/* Thin horizontal line beneath the header */}
-              <div
+              <motion.div
+                variants={{
+                  hidden: { scaleX: shouldReduceMotion ? 1 : 0, opacity: 0 },
+                  visible: {
+                    scaleX: 1,
+                    opacity: 1,
+                    transition: { duration: 0.6, ease: easeCubic, delay: 0.1 },
+                  },
+                }}
+                style={{ transformOrigin: "left" }}
                 className={cn(
-                  "w-full h-[1px] mb-6 sm:mb-7",
+                  "w-full h-[1px] mb-6 sm:mb-7 origin-left",
                   dark ? "bg-slate-800/80" : "bg-[#8b1a1a]/15"
                 )}
               />
@@ -3003,20 +3037,61 @@ export default function Home() {
                     company = parts[1] || "";
                   }
 
+                  const itemDelay = 0.16 + i * 0.12;
+
                   return (
-                    <div key={exp.id || i} className="relative pl-6 sm:pl-7 group">
+                    <motion.div
+                      key={exp.id || i}
+                      variants={{
+                        hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 14 },
+                        visible: {
+                          opacity: 1,
+                          y: 0,
+                          transition: {
+                            duration: 0.55,
+                            ease: easeCubic,
+                            delay: itemDelay,
+                          },
+                        },
+                      }}
+                      className="relative pl-6 sm:pl-7 group"
+                    >
                       {/* Short connecting vertical line if not last */}
                       {i < arr.length - 1 && (
-                        <div
+                        <motion.div
+                          variants={{
+                            hidden: { scaleY: shouldReduceMotion ? 1 : 0 },
+                            visible: {
+                              scaleY: 1,
+                              transition: {
+                                duration: 0.5,
+                                ease: easeCubic,
+                                delay: itemDelay + 0.05,
+                              },
+                            },
+                          }}
+                          style={{ transformOrigin: "top" }}
                           className={cn(
-                            "absolute left-1 top-4 bottom-0 w-[1.5px] pointer-events-none",
+                            "absolute left-1 top-4 bottom-0 w-[1.5px] pointer-events-none origin-top",
                             dark ? "bg-slate-700/60" : "bg-[#8b1a1a]/15"
                           )}
                         />
                       )}
 
                       {/* Cyan glowing dot */}
-                      <div
+                      <motion.div
+                        variants={{
+                          hidden: { opacity: 0, scale: shouldReduceMotion ? 1 : 0.5 },
+                          visible: {
+                            opacity: 1,
+                            scale: 1,
+                            transition: {
+                              duration: 0.45,
+                              ease: easeCubic,
+                              delay: itemDelay,
+                            },
+                          },
+                        }}
                         className={cn(
                           "absolute left-1 top-2 -translate-x-1/2 w-2.5 h-2.5 rounded-full transition-transform duration-300 group-hover:scale-125",
                           dark
@@ -3067,7 +3142,7 @@ export default function Home() {
                           {description}
                         </p>
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })
               )}
@@ -3100,7 +3175,7 @@ export default function Home() {
         className="py-16 sm:py-24 relative z-10"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.1 }}
+        viewport={{ once: true, amount: 0.15 }}
         variants={stagger}
       >
         <div className="max-w-6xl mx-auto px-6">
@@ -3237,14 +3312,15 @@ export default function Home() {
             {filteredProjects.map(({ title, tech, desc, github, emoji, logo, labUrl, liveUrl }: any, i: number) => (
             <motion.div
               key={title || i}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{
-                duration: 0.38,
-                delay: Math.min(i * 0.06, 0.24),
-                ease: [0.22, 1, 0.36, 1],
+                duration: 0.55,
+                delay: Math.min(i * 0.08, 0.32),
+                ease: easeCubic,
               }}
-              whileHover={{ y: -6, scale: 1.02 }}
+              whileHover={shouldReduceMotion ? {} : { y: -4, scale: 1.015 }}
+              whileTap={{ scale: 0.98 }}
               className={cn(
                 "snap-start shrink-0 w-[300px] sm:w-[360px] glass-card border rounded-2xl p-7 flex flex-col gap-4 group",
                 dark
@@ -3252,8 +3328,7 @@ export default function Home() {
                   : "border-[#8b1a1a]/14 hover:border-[#8b1a1a]/35 shadow-[0_2px_20px_rgba(139,26,26,0.07)] hover:shadow-[0_6px_32px_rgba(139,26,26,0.14)]"
               )}
               style={{
-                transition:
-                  "transform 0.4s cubic-bezier(0.22,1,0.36,1), border-color 0.3s, box-shadow 0.3s",
+                transition: "border-color 0.3s, box-shadow 0.3s",
               }}
             >
               <div className="flex items-start justify-between">
@@ -3378,7 +3453,7 @@ export default function Home() {
         className="py-16 sm:py-24 relative z-10 overflow-hidden"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.1 }}
+        viewport={{ once: true, amount: 0.15 }}
         variants={stagger}
       >
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -3523,15 +3598,15 @@ export default function Home() {
               <motion.div
                 key={card.id ? `cert-${card.id}` : `cert-${card.title || i}-${i}`}
                 className="snap-start shrink-0 w-[280px] sm:w-[320px]"
-                initial={{ opacity: 0, y: 30, rotateY: -10 }}
-                animate={{ opacity: 1, y: 0, rotateY: 0 }}
+                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 18 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  duration: 0.5,
-                  delay: Math.min(i * 0.08, 0.28),
-                  ease: [0.22, 1, 0.36, 1],
+                  duration: 0.55,
+                  delay: Math.min(i * 0.08, 0.32),
+                  ease: easeCubic,
                 }}
-                whileHover={{ y: -4 }}
-                style={{ perspective: 900 }}
+                whileHover={shouldReduceMotion ? {} : { y: -4, scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <div
                   className={cn(
@@ -3864,7 +3939,7 @@ export default function Home() {
         className="py-16 sm:py-24 relative z-10 overflow-hidden"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.05 }}
+        viewport={{ once: true, amount: 0.15 }}
         variants={stagger}
       >
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -3931,7 +4006,7 @@ export default function Home() {
         className="py-16 sm:py-24 relative z-10"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.15 }}
         variants={stagger}
       >
         <div className="max-w-2xl mx-auto px-6">
@@ -3968,14 +4043,19 @@ export default function Home() {
       </motion.section>
 
       {/* ── FOOTER ── */}
-      <footer
+      <motion.footer
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.15 }}
+        variants={stagger}
         className={cn(
           "relative z-10 py-8 border-t",
           dark ? "border-white/6" : "border-[#8b1a1a]/10"
         )}
       >
         <div className="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p
+          <motion.p
+            variants={fadeUp}
             className={cn(
               "text-xs tracking-wide",
               dark ? "text-white/25" : "text-[#7a4a35]/50"
@@ -3989,26 +4069,29 @@ export default function Home() {
             >
               Admin
             </Link>
-          </p>
-          <div className="flex items-center gap-5">
+          </motion.p>
+          <motion.div variants={stagger} className="flex items-center gap-5">
             {socials.map(({ href, icon, label }) => (
-              <a
+              <motion.a
                 key={label}
+                variants={scaleIn}
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={label}
+                whileHover={{ scale: 1.15, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 className={cn(
-                  "text-lg transition-all duration-200",
+                  "text-lg transition-colors duration-200",
                   dark ? "text-white/25 hover:text-cyan-400" : "text-[#7a4a35]/40 hover:text-[#8b1a1a]"
                 )}
               >
                 {icon}
-              </a>
+              </motion.a>
             ))}
-          </div>
+          </motion.div>
         </div>
-      </footer>
+      </motion.footer>
     </div>
   );
 }
