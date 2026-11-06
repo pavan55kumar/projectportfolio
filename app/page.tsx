@@ -22,6 +22,7 @@ import {
   useTransform,
   Variants,
   AnimatePresence,
+  useReducedMotion,
 } from "framer-motion";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { FaGithub, FaGoogle, FaLinkedin, FaPenNib, FaReact, FaJsSquare, FaTimes, FaCheck, FaArrowRight, FaUser, FaGraduationCap } from "react-icons/fa";
@@ -1472,6 +1473,7 @@ const CERTIFICATE_CATEGORIES = ["All", "Course Certificate", "Internship", "Achi
 
 export default function Home() {
   const { dark, toggle: toggleTheme } = useTheme(); // shared with Engineering Lab
+  const shouldReduceMotion = useReducedMotion();
   const [showNav, setShowNav] = useState(true);
   const [lang, setLang] = useState<"en" | "jp">("en");
   const [certOpen, setCertOpen] = useState(false);
@@ -2634,10 +2636,25 @@ export default function Home() {
               )}
             </motion.div>
 
-            {/* ── 1. EDUCATION (Matching Reference Image) ── */}
-            <motion.div variants={fadeUp} className="pt-2 sm:pt-4">
+            {/* ── 1. EDUCATION (Database-Driven Scroll Animation) ── */}
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.15 }}
+              className="pt-2 sm:pt-4"
+            >
               {/* Header with Gold Graduation Cap Icon */}
-              <div className="flex items-center gap-3.5 mb-6 sm:mb-8">
+              <motion.div
+                variants={{
+                  hidden: { opacity: 0, y: shouldReduceMotion ? 0 : 12 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+                  },
+                }}
+                className="flex items-center gap-3.5 mb-6 sm:mb-8"
+              >
                 <div
                   className={cn(
                     "text-2xl sm:text-3xl shrink-0",
@@ -2664,14 +2681,30 @@ export default function Home() {
                     ACADEMIC BACKGROUND
                   </p>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Connected Timeline Track */}
               <div className="relative">
-                {/* Continuous vertical track line */}
-                <div
+                {/* Continuous vertical track line: Progressive vertical reveal via scaleY */}
+                <motion.div
+                  variants={{
+                    hidden: {
+                      scaleY: shouldReduceMotion ? 1 : 0,
+                      opacity: shouldReduceMotion ? 1 : 0.4,
+                    },
+                    visible: {
+                      scaleY: 1,
+                      opacity: 1,
+                      transition: {
+                        duration: 0.65,
+                        ease: [0.22, 1, 0.36, 1],
+                        delay: 0.12,
+                      },
+                    },
+                  }}
+                  style={{ transformOrigin: "top" }}
                   className={cn(
-                    "absolute left-3.5 top-4 bottom-4 w-[1px] -translate-x-1/2 pointer-events-none",
+                    "absolute left-3.5 top-4 bottom-4 w-[1px] -translate-x-1/2 pointer-events-none origin-top",
                     dark ? "bg-slate-700/60" : "bg-[#8b1a1a]/15"
                   )}
                 />
@@ -2710,10 +2743,41 @@ export default function Home() {
                       ? dark ? "text-cyan-400" : "text-blue-700"
                       : dark ? "text-slate-400" : "text-stone-600";
 
+                    const itemDelay = 0.2 + idx * 0.13;
+
                     return (
-                      <div key={item.id || idx} className="relative pl-11 sm:pl-13 py-4 sm:py-5 group">
-                        {/* Timeline Node Badge on the track */}
-                        <div
+                      <motion.div
+                        key={item.id || idx}
+                        variants={{
+                          hidden: { opacity: 0 },
+                          visible: {
+                            opacity: 1,
+                            transition: {
+                              duration: 0.5,
+                              ease: [0.22, 1, 0.36, 1],
+                              delay: itemDelay,
+                            },
+                          },
+                        }}
+                        className="relative pl-11 sm:pl-13 py-4 sm:py-5 group"
+                      >
+                        {/* Timeline Node Badge on the track: Subtle scale and opacity transition */}
+                        <motion.div
+                          variants={{
+                            hidden: {
+                              opacity: 0,
+                              scale: shouldReduceMotion ? 1 : 0.6,
+                            },
+                            visible: {
+                              opacity: 1,
+                              scale: 1,
+                              transition: {
+                                duration: 0.5,
+                                ease: [0.22, 1, 0.36, 1],
+                                delay: itemDelay,
+                              },
+                            },
+                          }}
                           className="absolute left-3.5 top-7 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-10"
                         >
                           {isFirst ? (
@@ -2756,10 +2820,27 @@ export default function Home() {
                               />
                             </div>
                           )}
-                        </div>
+                        </motion.div>
 
-                        {/* Row Content */}
-                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
+                        {/* Row Content: Fade in + translateY(14px) */}
+                        <motion.div
+                          variants={{
+                            hidden: {
+                              opacity: 0,
+                              y: shouldReduceMotion ? 0 : 14,
+                            },
+                            visible: {
+                              opacity: 1,
+                              y: 0,
+                              transition: {
+                                duration: 0.6,
+                                ease: [0.22, 1, 0.36, 1],
+                                delay: itemDelay + 0.05,
+                              },
+                            },
+                          }}
+                          className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4"
+                        >
                           {/* Left: Tag, Degree, Institution */}
                           <div className="min-w-0 flex-1">
                             <span
@@ -2805,7 +2886,22 @@ export default function Home() {
                             )}
 
                             {item.status && isInProgress && (
-                              <span
+                              <motion.span
+                                variants={{
+                                  hidden: {
+                                    opacity: 0,
+                                    scale: shouldReduceMotion ? 1 : 0.9,
+                                  },
+                                  visible: {
+                                    opacity: 1,
+                                    scale: 1,
+                                    transition: {
+                                      duration: 0.45,
+                                      ease: [0.22, 1, 0.36, 1],
+                                      delay: itemDelay + 0.1,
+                                    },
+                                  },
+                                }}
                                 className={cn(
                                   "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border whitespace-nowrap",
                                   dark
@@ -2815,11 +2911,11 @@ export default function Home() {
                               >
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.9)]" />
                                 {item.status}
-                              </span>
+                              </motion.span>
                             )}
                           </div>
-                        </div>
-                      </div>
+                        </motion.div>
+                      </motion.div>
                     );
                   })
                 )}
