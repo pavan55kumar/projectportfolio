@@ -30,6 +30,7 @@ import {
   SiLinux,
   SiAmazonwebservices,
   SiPostman,
+  SiVercel,
 } from "react-icons/si";
 import { FiPenTool, FiCpu } from "react-icons/fi";
 import { FaJava } from "react-icons/fa";
@@ -90,6 +91,7 @@ export const SKILLS_CATALOG: CatalogSkill[] = [
   { key: "linux", name: "Linux", category: "DevOps & Tools", color: "#fcc624" },
   { key: "aws", name: "AWS", category: "DevOps & Tools", color: "#ff9900" },
   { key: "postman", name: "Postman", category: "DevOps & Tools", color: "#ff6c37" },
+  { key: "vercel", name: "Vercel", category: "DevOps & Tools", color: "#ffffff" },
 ];
 
 // Helper to normalize any input string into a catalog key
@@ -128,6 +130,7 @@ export function normalizeSkillKey(input: string): string {
   if (cleaned.includes("linux")) return "linux";
   if (cleaned.includes("aws")) return "aws";
   if (cleaned.includes("postman")) return "postman";
+  if (cleaned.includes("vercel")) return "vercel";
   return cleaned;
 }
 
@@ -249,6 +252,8 @@ export function SkillIcon({
         return <SiAmazonwebservices className="w-full h-full text-[#ff9900]" />;
       case "postman":
         return <SiPostman className="w-full h-full text-[#ff6c37]" />;
+      case "vercel":
+        return <SiVercel className="w-full h-full text-current" />;
       default:
         return <FiCpu className="w-full h-full text-cyan-300" />;
     }

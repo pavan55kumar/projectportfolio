@@ -350,3 +350,35 @@ h1, h2, h3, h4 {
   border-color: rgba(139,26,26,0.45) !important;
   box-shadow: 0 4px 24px rgba(139,26,26,0.15) !important;
 }
+
+/* ── Skills Marquee Smooth Motion ── */
+@keyframes marquee-scroll-left {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+
+@keyframes marquee-scroll-right {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-scroll-left var(--marquee-speed, 45s) linear infinite;
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-scroll-right var(--marquee-speed, 45s) linear infinite;
+}
+
+.animate-marquee-left:hover,
+.animate-marquee-right:hover,
+.marquee-row:hover .animate-marquee-left,
+.marquee-row:hover .animate-marquee-right {
+  animation-play-state: paused;
+}

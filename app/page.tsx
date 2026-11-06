@@ -39,6 +39,7 @@ import {
 } from "react-icons/fi";
 import { useTheme } from "./theme-provider";
 import { SkillIcon } from "@/lib/skills-catalog";
+import { SkillsSection } from "./components/SkillsSection";
 
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
@@ -2985,115 +2986,13 @@ export default function Home() {
               )}
             />
 
-            {/* ── SKILLS & STACK (Matching Reference Image) ── */}
-            <motion.div variants={fadeUp} className="pt-4 sm:pt-6">
-              {/* Cyan Accent Indicator Bar */}
-              <div
-                className={cn(
-                  "w-12 h-1 rounded-full mb-3",
-                  dark
-                    ? "bg-cyan-400 shadow-[0_0_12px_#22d3ee]"
-                    : "bg-[#8b1a1a] shadow-xs"
-                )}
+            {/* ── SKILLS & STACK (Matching Reference Image with Marquee Motion & Grid Toggle) ── */}
+            <motion.div variants={fadeUp}>
+              <SkillsSection
+                skills={dynamicSkills}
+                loading={skillsLoading}
+                dark={dark}
               />
-              <h3
-                className={cn(
-                  "text-xl sm:text-2xl font-extrabold tracking-wider mb-6 sm:mb-8 uppercase",
-                  dark ? "text-white" : "text-[#2a1008]"
-                )}
-              >
-                SKILLS &amp; <span className={dark ? "text-cyan-400" : "text-[#8b1a1a]"}>STACK</span>
-              </h3>
-
-              {/* 4-Column Grid with Clean & Minimal Aesthetic (Matching Reference Design) */}
-              {skillsLoading ? (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4">
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "rounded-xl sm:rounded-2xl px-3.5 py-3 sm:px-4.5 sm:py-3.5 md:px-5 md:py-4 flex items-center gap-3 sm:gap-4 border animate-pulse min-h-[48px] sm:min-h-[56px] md:min-h-[62px]",
-                        dark
-                          ? "bg-[#040e1c]/60 border-cyan-500/10"
-                          : "bg-[#fffaf2]/80 border-[#8b1a1a]/10"
-                      )}
-                    >
-                      <div
-                        className={cn(
-                          "w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-lg shrink-0",
-                          dark ? "bg-white/10" : "bg-[#8b1a1a]/10"
-                        )}
-                      />
-                      <div
-                        className={cn(
-                          "h-4 w-20 rounded",
-                          dark ? "bg-white/15" : "bg-[#8b1a1a]/15"
-                        )}
-                      />
-                    </div>
-                  ))}
-                </div>
-              ) : dynamicSkills.length === 0 ? (
-                <div className={cn("py-8 text-center text-xs sm:text-sm italic", dark ? "text-white/40" : "text-[#7a4a35]/60")}>
-                  No skills added yet.
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4">
-                  {dynamicSkills.map((skill: any, i: number) => (
-                  <motion.div
-                    key={skill.id || skill.name}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{
-                      duration: 0.35,
-                      ease: [0.22, 1, 0.36, 1],
-                      delay: (i % 8) * 0.03,
-                    }}
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    className={cn(
-                      "relative rounded-xl sm:rounded-2xl px-3.5 py-3 sm:px-4.5 sm:py-3.5 md:px-5 md:py-4 flex items-center gap-3 sm:gap-4 border transition-all duration-200 group cursor-default min-h-[48px] sm:min-h-[56px] md:min-h-[62px]",
-                      dark
-                        ? "bg-[#040e1c]/80 border-cyan-500/20 hover:border-cyan-400 hover:bg-[#07172b]/90 shadow-sm hover:shadow-[0_0_18px_rgba(34,211,238,0.2)] backdrop-blur-md"
-                        : "bg-[#fffaf2] border-[#8b1a1a]/15 hover:border-[#8b1a1a]/40 hover:bg-[#faeedd]/70 shadow-xs hover:shadow-sm"
-                    )}
-                  >
-                    {/* Active/Hover cyan indicator dot in top-right corner matching reference image */}
-                    <span
-                      className={cn(
-                        "absolute top-2.5 right-2.5 sm:top-3 sm:right-3 w-1.5 h-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none",
-                        dark
-                          ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
-                          : "bg-[#8b1a1a] shadow-[0_0_6px_rgba(139,26,26,0.6)]"
-                      )}
-                    />
-
-                    {/* Clean direct logo without inner box frame */}
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
-                      <SkillIcon
-                        iconKey={skill.iconKey}
-                        iconUrl={skill.iconUrl}
-                        name={skill.name}
-                        className="w-full h-full object-contain"
-                      />
-                    </div>
-
-                    {/* Skill Name */}
-                    <div className="min-w-0 flex-1">
-                      <span
-                        className={cn(
-                          "font-semibold text-xs sm:text-sm md:text-base tracking-normal truncate block transition-colors",
-                          dark
-                            ? "text-white group-hover:text-cyan-200"
-                            : "text-[#2a1008] group-hover:text-[#8b1a1a]"
-                        )}
-                      >
-                        {skill.name}
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
-                </div>
-              )}
             </motion.div>
           </div>
         </div>
