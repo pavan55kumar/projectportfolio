@@ -147,7 +147,7 @@ export function SkillsSection({ skills, loading, dark }: SkillsSectionProps) {
           </h3>
         </div>
 
-        {/* ── Switcher Symbol (Matches Reference Image top-right: Grid + AI/Sparkles button) ── */}
+        {/* ── Switcher Button (Clean Single-Icon Toggle: Grid <-> Motion) ── */}
         <button
           type="button"
           onClick={toggleViewMode}
@@ -156,58 +156,53 @@ export function SkillsSection({ skills, loading, dark }: SkillsSectionProps) {
               ? "Switch to Grid View"
               : "Switch to Motion Stream View"
           }
-          aria-label="Toggle Skills Layout"
+          aria-label={
+            viewMode === "marquee"
+              ? "Switch to Grid View"
+              : "Switch to Motion Stream View"
+          }
           className={cn(
-            "group relative inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl border border-dashed transition-all duration-300 outline-none cursor-pointer",
+            "group relative inline-flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl border border-dashed transition-all duration-300 outline-none cursor-pointer",
             dark
-              ? "bg-[#040e1c]/80 border-slate-700/70 hover:border-cyan-400 hover:bg-[#07182e] hover:shadow-[0_0_18px_rgba(34,211,238,0.2)] text-white/80"
+              ? "bg-[#040e1c]/80 border-slate-700/70 hover:border-cyan-400 hover:bg-[#07182e] hover:shadow-[0_0_18px_rgba(34,211,238,0.25)] text-white/80"
               : "bg-white/95 border-neutral-300 hover:border-[#8b1a1a]/40 hover:bg-[#fff7ee] hover:shadow-xs text-[#2a1008]/80"
           )}
         >
-          {/* Grid Icon */}
-          <span
-            className={cn(
-              "transition-all duration-200 flex items-center justify-center",
-              viewMode === "grid"
-                ? dark
-                  ? "text-cyan-400 drop-shadow-[0_0_8px_#22d3ee]"
-                  : "text-[#8b1a1a]"
-                : "opacity-45 group-hover:opacity-80"
+          <AnimatePresence mode="wait" initial={false}>
+            {viewMode === "marquee" ? (
+              <motion.span
+                key="grid-mode-icon"
+                initial={{ opacity: 0, scale: 0.7, rotate: -15 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.7, rotate: 15 }}
+                transition={{ duration: 0.2 }}
+                className={cn(
+                  "flex items-center justify-center transition-colors",
+                  dark
+                    ? "text-white/80 group-hover:text-cyan-300"
+                    : "text-[#2a1008]/80 group-hover:text-[#8b1a1a]"
+                )}
+              >
+                <FiGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </motion.span>
+            ) : (
+              <motion.span
+                key="motion-mode-icon"
+                initial={{ opacity: 0, scale: 0.7, rotate: -15 }}
+                animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                exit={{ opacity: 0, scale: 0.7, rotate: 15 }}
+                transition={{ duration: 0.2 }}
+                className={cn(
+                  "flex items-center justify-center transition-colors",
+                  dark
+                    ? "text-cyan-400 drop-shadow-[0_0_8px_#22d3ee]"
+                    : "text-[#8b1a1a]"
+                )}
+              >
+                <LuSparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </motion.span>
             )}
-          >
-            <FiGrid className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-          </span>
-
-          {/* Sparkle + AI Indicator (as in reference image) */}
-          <span
-            className={cn(
-              "inline-flex items-center gap-0.5 text-[11px] sm:text-xs font-semibold tracking-tight transition-all duration-200",
-              viewMode === "marquee"
-                ? dark
-                  ? "text-cyan-400 drop-shadow-[0_0_8px_#22d3ee]"
-                  : "text-[#8b1a1a]"
-                : "opacity-45 group-hover:opacity-80"
-            )}
-          >
-            <LuSparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-            <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-wider">
-              AI
-            </span>
-          </span>
-
-          {/* Active Mode Pill Dot */}
-          <span
-            className={cn(
-              "w-1.5 h-1.5 rounded-full ml-0.5 transition-all duration-300",
-              dark
-                ? viewMode === "marquee"
-                  ? "bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
-                  : "bg-slate-400"
-                : viewMode === "marquee"
-                ? "bg-[#8b1a1a] shadow-[0_0_6px_rgba(139,26,26,0.5)]"
-                : "bg-neutral-400"
-            )}
-          />
+          </AnimatePresence>
         </button>
       </div>
 
