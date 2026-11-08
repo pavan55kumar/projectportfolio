@@ -256,31 +256,13 @@ function Divider({ dark, className }: { dark: boolean; className?: string }) {
   return (
     <div
       className={cn(
-        "flex items-center justify-center gap-2.5 my-3.5 mx-auto w-full max-w-[190px] sm:max-w-[230px]",
+        "my-3.5 mx-auto h-[1.5px] w-full max-w-[180px] sm:max-w-[220px] rounded-full",
+        dark
+          ? "bg-gradient-to-r from-transparent via-cyan-400 to-transparent shadow-[0_0_8px_rgba(34,211,238,0.55)]"
+          : "bg-gradient-to-r from-transparent via-[#8b1a1a] to-transparent shadow-[0_1px_4px_rgba(139,26,26,0.2)]",
         className
       )}
-    >
-      <div
-        className={cn(
-          "flex-1 h-px bg-gradient-to-r from-transparent",
-          dark ? "via-cyan-400/25 to-cyan-400/50" : "via-[#8b1a1a]/25 to-[#8b1a1a]/55"
-        )}
-      />
-      <div
-        className={cn(
-          "w-10 sm:w-12 h-[3.5px] rounded-full shrink-0 transition-all duration-300",
-          dark
-            ? "bg-gradient-to-r from-cyan-500 via-cyan-300 to-cyan-500 shadow-[0_0_10px_rgba(34,211,238,0.6)]"
-            : "bg-gradient-to-r from-[#8b1a1a] via-[#b33939] to-[#8b1a1a] shadow-[0_1px_6px_rgba(139,26,26,0.3)]"
-        )}
-      />
-      <div
-        className={cn(
-          "flex-1 h-px bg-gradient-to-l from-transparent",
-          dark ? "via-cyan-400/25 to-cyan-400/50" : "via-[#8b1a1a]/25 to-[#8b1a1a]/55"
-        )}
-      />
-    </div>
+    />
   );
 }
 
@@ -3191,7 +3173,6 @@ export default function Home() {
             <h2 className="text-4xl sm:text-5xl font-extrabold text-gradient">
               {t.projectsTitle}
             </h2>
-            <Divider dark={dark} />
           </motion.div>
 
           {/* Project Category Filter Pills */}
@@ -3973,12 +3954,7 @@ export default function Home() {
             >
               {t.testimonials}
             </h2>
-            <div
-              className={cn(
-                "w-12 h-px mx-auto my-3.5",
-                dark ? "bg-slate-700/60" : "bg-[#8b1a1a]/25"
-              )}
-            />
+            <Divider dark={dark} />
             <p
               className={cn(
                 "text-xs sm:text-sm leading-relaxed max-w-md mx-auto",
